@@ -1,0 +1,193 @@
+---
+title: "Demo"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Demo}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+
+```{r message=FALSE}
+library(mmlpwrpackage)
+library(mirt)
+library(dplyr)
+```
+
+```{r eval=FALSE, include=FALSE}
+
+## TODOS
+
+# Setup the Rscript for the paper analyses - Export Missing - Rerun the sim with some improvements.
+
+# Implement everything that has been working before - Other hypothesis.
+
+
+## IMPROVEMENTS
+
+# Move simplified ncp.wald to ncp.sim
+
+# Benchmark Feature: Estimating the Time needed for Analytical Approach
+
+```
+
+
+# Basic Features
+
+## Usage with observed data
+
+We want to know the power and required sample size for a test of the Rasch vs 2PL model. We use the LSAT 6 Dataset from the mirt package.
+
+
+As a first step, we load the dataset and fit a 2PL model. The 2PL parameters are then used as parameters for the alternative hypothesis in our hypothesis definition. We do not have to provide the parameters under the null hypothesis here, because they are implicitly defined as the maximum likelihood parameters when slopes are equal. These maximum likelihood restricted parameters are calculated by the setup_hypothesis function.
+
+
+```{r}
+dat <- expand.table(LSAT7)
+mirtfit <- mirt(dat,1,verbose = FALSE)
+pars = coef_short(mirtfit)
+pars
+```
+
+```{r}
+hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = pars)
+```
+
+
+For this hypothesis, we can estimate the power and required sample size.
+```{r}
+ncps <- calculate_ncps(hyp=hyp)
+power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
+ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
+```
+
+
+## Usage without data
+
+To apply a power analysis without data, we first setup the parameters that take the place of the estimated parameters in the application with data
+
+```{r}
+altpars <- list(
+        a = rlnorm(5,sdlog = .4),
+        d = rnorm(5)
+        )
+altpars
+```
+
+We can estimate the power and sample size as above.
+```{r}
+hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
+
+ncps <- calculate_ncps(hyp=hyp)
+power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
+ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
+```
+
+
+## Larger numbers of items: Simulated Ncp
+
+Applying on same data as above. 
+```{r}
+
+ncps <- calculate_ncps(hyp=hyp,simbased = TRUE,n.pers = 10^5)
+power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
+ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
+
+```
+
+New data with 50 items:
+
+```{r}
+altpars <- list(
+        a = rlnorm(50,sdlog = .1),
+        d = rnorm(50)
+        )
+
+hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
+
+ncps <- calculate_ncps(hyp=hyp,simbased = TRUE,n.pers = 10^3)
+power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
+ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
+
+```
+
+
+# Implemented Hypotheses
+
+The following hypothesis are currently implemented.
+
+* Rasch against 2PL
+* DIF in 2PL
+
+The Rasch against 2PL hypothesis is presented above. We will provide some examples for the other hypotheses. To implement custom hypothesis, see the section for package extensions. 
+
+
+## DIF in 2PL
+
+```{r}
+group1 = group2 <- list(
+        a = rlnorm(5,sdlog = .4),
+        d = rnorm(5)
+        )
+
+group2$a[1] = (group2$a[1])^2
+group2$d[1] = group2$d[1] + .5
+
+altpars <- list(group1,group2)
+
+altpars
+```
+
+
+```{r}
+hyp <- setup_hypothesis(type = "DIF2PL", altpars = altpars)
+ncps <- calculate_ncps(hyp=hyp)
+power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
+ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
+
+```
+
+
+
+# Additional Features
+
+
+## Generate artificial datasets
+
+The hypothesis object can also be used to generate data according to the parameters of the alternative hypothesis. Note that setup.data also allows for non-normal person distributions, e.g. uniform or skewed-normal distributions.
+```{r}
+altpars <- list(
+        a = rlnorm(5,sdlog = .4),
+        d = rnorm(5)
+        )
+
+hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
+
+data <- setup.data(hyp=hyp,n=500)
+```
+
+
+## Performing Hypothesis Tests
+
+```{r}
+fitted <- mml.fit(data = data,hyp = hyp)
+```
+
+From the results, we can calculate the observed statistics and p-values.
+
+```{r}
+stats_obs <- c(wald_obs(fitted),lr_obs(fitted),score_obs(fitted))
+pvals <- pchisq(stats_obs,df=nrow(hyp$resmod$Amat),ncp=0,lower.tail=FALSE)
+```
+
+
+## Extending the package
+
+
+Present other hypotheses, their inner workings and make an example for an extension.
+
+
+
+
+
+
