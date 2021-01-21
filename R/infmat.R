@@ -1,10 +1,17 @@
 
-# Infmat ------------------------------------------------------------------
 
-# Drop resmod argument, it's only needed for the number of items.
-
-
-infmat = function(pars,method = "mirtFisher",resmod=NULL,simbased.npers = 200000,data=NULL) {
+#' Calculate information matrix (expected / observed)
+#'
+#' @param pars Parameter Set
+#' @param method string, method to be used, e.g. "mirtFisher" for the Fisher-expected information matrix calculated using the mirt package
+#' @param simbased.npers integer, number of persons in the sampling based approach
+#' @param data dataset for observed matrix methods
+#'
+#' @return
+#' @export
+#'
+#' @examples
+infmat = function(pars,method = "mirtFisher",simbased.npers = 200000,data=NULL) {
   if(is.null(pars$g)) {pars$g = rep(0,length(pars$a))}
 
   if (method=="mirtFishermultigroup") {
@@ -92,7 +99,7 @@ infmat = function(pars,method = "mirtFisher",resmod=NULL,simbased.npers = 200000
 
   if (method=="customFisher") {
 
-    patterns = as.matrix(expand.grid(lapply(1:resmod$n.items,function(x) 0:1)))
+    patterns = as.matrix(expand.grid(lapply(1:length(pars$d),function(x) 0:1)))
     load.functions(pars$itemtype)
 
     res  = list()
@@ -110,9 +117,6 @@ infmat = function(pars,method = "mirtFisher",resmod=NULL,simbased.npers = 200000
     re = solve(mirt::vcov(mml))/nrow(df)
   }
 
-  if (method=="Thissen") {
-    load.functions(pars$itemtype)
-    re =  tmat(pars)
-  }
+
   return(re)
 }

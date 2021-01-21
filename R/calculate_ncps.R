@@ -1,7 +1,6 @@
-# Noncentrality -----------------------------------------------------------
 
 
-#' Calculate ncps (analytical/simbased, Wald/LR/Score)
+#' Calculate ncps (analytical/sampling based, Wald/LR/Score)
 #'
 #' Wrapper function for the different ncp functions
 #'
@@ -46,7 +45,7 @@ calculate_ncps = function(hyp,stat="all",n=1,simbased=FALSE,n.pers = 10^4,runs =
 
 
 
-#' Calculate simulation based ncps
+#' Calculate sampling based ncps (Wrapper)
 #'
 #' @param hyp Hypothesis Object created from the setup_hypothesis function
 #' @param stat character vector containing the statistics to be calculated. Options are "Wald","LR","Score". Also, "all" (default) for all three.
@@ -87,6 +86,18 @@ ncp.sim = function(hyp,stat="all",n=1,n.pers=NULL,runs=3) {
 }
 
 
+#' Sampling-based ncp for the Wald statistic
+#'
+#' Uses a shortcut not available for LR and score (see paper)
+#'
+#' @param hyp Hypothesis Object created from the setup_hypothesis function
+#' @param n integer, number of persons that the ncp refers to (default 1)
+#' @param simbased.npers integer, Number of persons used in the sampling based approach
+#'
+#' @return
+#' @export
+#'
+#' @examples
 ncp.sim.wald = function(hyp,n=1,simbased.npers) {
   resmod = hyp$resmod
   unresmod = hyp$unresmod
@@ -96,13 +107,22 @@ ncp.sim.wald = function(hyp,n=1,simbased.npers) {
   A = resmod$Amat
   dif = A%*%unresmod$longcoef-resmod$cvec
   # print("calculating fisher expected infmat")
-  sigma = infmat(unresmod,method=method,resmod = resmod,simbased.npers=simbased.npers) %>% solve()
+  sigma = infmat(unresmod,method=method,simbased.npers=simbased.npers) %>% solve()
   # print("finished calculating fisher expected infmat")
   re = t(dif) %*% solve(A%*% sigma %*% t(A)) %*% dif %>% c()
   return(re*n)
 }
 
 
+#' Analytical ncp for the Wald statistic
+#'
+#' @param hyp Hypothesis Object created from the setup_hypothesis function
+#' @param n integer, number of persons that the ncp refers to (default 1)
+#'
+#' @return
+#' @export
+#'
+#' @examples
 ncp.wald = function(hyp,n=1) {
   resmod = hyp$resmod
   unresmod = hyp$unresmod
@@ -116,13 +136,23 @@ ncp.wald = function(hyp,n=1) {
   A = resmod$Amat
   dif = A%*%unresmod$longcoef-resmod$cvec
   # print("calculating fisher expected infmat")
-  sigma = infmat(unresmod,method=method,resmod = resmod) %>% solve()
+  sigma = infmat(unresmod,method=method) %>% solve()
   # print("finished calculating fisher expected infmat")
   re = t(dif) %*% solve(A%*% sigma %*% t(A)) %*% dif %>% c()
   return(re*n)
 }
 
 
+#' Analytical ncp for the LR statistic
+#'
+#' @param hyp Hypothesis Object created from the setup_hypothesis function
+#' @param n integer, number of persons that the ncp refers to (default 1)
+#' @param parsr Restricted parameters
+#'
+#' @return
+#' @export
+#'
+#' @examples
 ncp.lr = function(hyp,n=1,parsr= NULL) {
 
   resmod = hyp$resmod
@@ -175,6 +205,16 @@ ncp.lr = function(hyp,n=1,parsr= NULL) {
 }
 
 
+#' Analytical ncp for the Score statistic
+#'
+#' @param hyp Hypothesis Object created from the setup_hypothesis function
+#' @param n integer, number of persons that the ncp refers to (default 1)
+#' @param parsr Restricted parameters
+#'
+#' @return
+#' @export
+#'
+#' @examples
 ncp.score = function(hyp,n=1,parsr=NULL) {
 
   resmod = hyp$resmod
@@ -218,7 +258,7 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
     lx = do.call(rbind,ly) %>% colSums() %>% array(.,dim=c(length(.),1))
   }
 
-  sigma = infmat(parsr,method=method,resmod = resmod) %>% solve()
+  sigma = infmat(parsr,method=method) %>% solve()
 
   re = t(lx) %*% sigma %*% lx %>% c()
 

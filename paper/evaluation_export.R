@@ -1,8 +1,9 @@
+
 ###########################################################################
 # Export simulation results
 ###########################################################################
 
-source('C:/Users/admin/Google Drive/4 irt/mmlpwrpackage/paper/additional_functions.R')
+source('C:/Users/admin/Google Drive/4 irt/mmlpwrpackage/paper/plot_functions.R')
 
 library(mmlpwrpackage)
 library(car)
@@ -12,10 +13,11 @@ library(ggplot2)
 library(grid)
 library(xtable)
 
-load(file= "C:/Users/admin/Google Drive/4 irt/mmlpwr/results1.Rdata")
-load(file= "C:/Users/admin/Google Drive/4 irt/mmlpwr/results1ncp.Rdata")
-load(file= "C:/Users/admin/Google Drive/4 irt/mmlpwr/results2.Rdata")
-#load(file= "C:/Users/felix/Google Drive/4 irt/mmlpwr/results2temp.Rdata")
+
+load(file= "C:/Users/admin/Google Drive/4 irt/mmlpwrpackage/paper/Rdata/results1.Rdata")
+load(file= "C:/Users/admin/Google Drive/4 irt/mmlpwrpackage/paper/Rdata/results1ncp.Rdata")
+load(file= "C:/Users/admin/Google Drive/4 irt/mmlpwrpackage/paper/Rdata/results2.Rdata")
+
 
 # merge stats and ncps ----------------------------------------------------
 
@@ -69,12 +71,12 @@ p6 = qq.plot(res = res.merged,type="DIF2PL",n.items=50,analytical = FALSE)
 p1;p2;p3;p4;p5;p6
 
 
-pdf("1PLvs2PL_qq_10_analytical.pdf");p1;dev.off()
-pdf("1PLvs2PL_qq_10_simbased.pdf");p2;dev.off()
-pdf("1PLvs2PL_qq_50_simbased.pdf");p3;dev.off()
-pdf("DIF2PL_qq_10_analytical.pdf");p4;dev.off()
-pdf("DIF2PL_qq_10_simbased.pdf");p5;dev.off()
-pdf("DIF2PL_qq_50_simbased.pdf");p6;dev.off()
+pdf("paper/figures/1PLvs2PL_qq_10_analytical.pdf");p1;dev.off()
+pdf("paper/figures/1PLvs2PL_qq_10_simbased.pdf");p2;dev.off()
+pdf("paper/figures/1PLvs2PL_qq_50_simbased.pdf");p3;dev.off()
+pdf("paper/figures/DIF2PL_qq_10_analytical.pdf");p4;dev.off()
+pdf("paper/figures/DIF2PL_qq_10_simbased.pdf");p5;dev.off()
+pdf("paper/figures/DIF2PL_qq_50_simbased.pdf");p6;dev.off()
 
 
 # powerplots --------------------------------------------------------------
@@ -82,8 +84,8 @@ pdf("DIF2PL_qq_50_simbased.pdf");p6;dev.off()
 p7 = power.plot(res = res.merged,analytical = TRUE)
 p8 = power.plot(res = res.merged,analytical = FALSE)
 
-pdf("pw_10.pdf",height=6,width=8);grid.draw(p7);dev.off()
-pdf("pw_50.pdf",height=6,width=8);grid.draw(p8);dev.off()
+pdf("paper/figures/pw_10.pdf",height=6,width=8);grid.draw(p7);dev.off()
+pdf("paper/figures/pw_50.pdf",height=6,width=8);grid.draw(p8);dev.off()
 
 
 # # misspec -----------------------------------------------------------------
@@ -93,16 +95,16 @@ pdf("pw_50.pdf",height=6,width=8);grid.draw(p8);dev.off()
 p9 = qq.plot.mis(res = res.merged2,type="1PLvs2PL",n.items=10,analytical = TRUE,dist= "unif")
 p10 = qq.plot.mis(res = res.merged2,type="1PLvs2PL",n.items=10,analytical = TRUE,dist= "skewed")
 
-pdf("qq_unif.pdf");p9;dev.off()
-pdf("qq_skewed.pdf");p10;dev.off()
+pdf("paper/figures/qq_unif.pdf");p9;dev.off()
+pdf("paper/figures/qq_skewed.pdf");p10;dev.off()
 
 
 # power plot
 p11 = power.plot.mis(res = res.merged2,analytical = TRUE,dist= "unif")
 p12 = power.plot.mis(res = res.merged2,analytical = TRUE,dist= "skewed")
 
-pdf("pw_unif.pdf",height=6,width=8);grid.draw(p11);dev.off()
-pdf("pw_skewed.pdf",height=6,width=8);grid.draw(p12);dev.off()
+pdf("paper/figures/pw_unif.pdf",height=6,width=8);grid.draw(p11);dev.off()
+pdf("paper/figures/pw_skewed.pdf",height=6,width=8);grid.draw(p12);dev.off()
 
 
 

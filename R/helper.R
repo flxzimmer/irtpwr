@@ -1,35 +1,3 @@
-# helper ------------------------------------------------------------------
-
-
-
-coef.long = function(mirtfit=NULL,itemtype=NULL,shortcoef=NULL) {
-  # extracts coefs from mml coef output
-  if (is.null(shortcoef)) {
-    if (itemtype=="2PL"& mirtfit@Call[[1]]=="mirt::multipleGroup") {
-      pars = lapply(mirt::coef(mirtfit,simplify=TRUE),function(x) x$items[,1:2] %>% t() %>% as.numeric())
-      re = c(pars$A,pars$B[1:2])
-    } else if (itemtype=="2PL") {
-      re = mirt::coef(mirtfit,simplify=TRUE)$items[,1:2] %>% t() %>% as.numeric()
-    } else if (itemtype=="3PL") {
-      re = mirt::coef(mirtfit,simplify=TRUE)$items[,1:3] %>% t() %>% as.numeric()
-    } else if (itemtype=="gpcm") {
-      nkatx = max(mirtfit@Data$data)
-      a1 = mirt::coef(mirtfit,simplify=TRUE)$items
-      re =  a1[,c(1,(ncol(a1)-nkatx+1):ncol(a1))] %>% t() %>% as.numeric()
-    }
-  } else {
-    if (itemtype=="2PL") {
-      re = rbind(shortcoef$a,shortcoef$d) %>% as.numeric()
-    } else if (itemtype=="3PL") {
-      re = rbind(shortcoef$a,shortcoef$d,shortcoef$g) %>% as.numeric()
-    } else if (itemtype=="gpcm") {
-      re = cbind(shortcoef$a,shortcoef$d[,2:ncol(shortcoef$d)]) %>% t() %>% as.numeric()
-    }
-
-  }
-  return(re)
-}
-
 
 #' extract coefs from mirtfit
 #'
@@ -64,7 +32,57 @@ coef_short = function(mirtfit,itemtype=NULL) {
 }
 
 
+#' extract coefs from mirtfit or element created by shortcoef
+#'
+#' @param mirtfit object created from mirt
+#' @param itemtype optional, itemtype as string
+#' @param shortcoef alternative, object created from shortcoef
+#'
+#' @return
+#' @export
+#'
+#' @examples
+coef.long = function(mirtfit=NULL,itemtype=NULL,shortcoef=NULL) {
+  # extracts coefs from mml coef output
+  if (is.null(shortcoef)) {
+    if (itemtype=="2PL"& mirtfit@Call[[1]]=="mirt::multipleGroup") {
+      pars = lapply(mirt::coef(mirtfit,simplify=TRUE),function(x) x$items[,1:2] %>% t() %>% as.numeric())
+      re = c(pars$A,pars$B[1:2])
+    } else if (itemtype=="2PL") {
+      re = mirt::coef(mirtfit,simplify=TRUE)$items[,1:2] %>% t() %>% as.numeric()
+    } else if (itemtype=="3PL") {
+      re = mirt::coef(mirtfit,simplify=TRUE)$items[,1:3] %>% t() %>% as.numeric()
+    } else if (itemtype=="gpcm") {
+      nkatx = max(mirtfit@Data$data)
+      a1 = mirt::coef(mirtfit,simplify=TRUE)$items
+      re =  a1[,c(1,(ncol(a1)-nkatx+1):ncol(a1))] %>% t() %>% as.numeric()
+    }
+  } else {
+    if (itemtype=="2PL") {
+      re = rbind(shortcoef$a,shortcoef$d) %>% as.numeric()
+    } else if (itemtype=="3PL") {
+      re = rbind(shortcoef$a,shortcoef$d,shortcoef$g) %>% as.numeric()
+    } else if (itemtype=="gpcm") {
+      re = cbind(shortcoef$a,shortcoef$d[,2:ncol(shortcoef$d)]) %>% t() %>% as.numeric()
+    }
 
+  }
+  return(re)
+}
+
+
+
+#' Extract ncp from vector of chi² distributed values
+#'
+#' Used in the sampling based ncps
+#'
+#' @param chii numeric vector
+#' @param df integer, degrees of freedom
+#'
+#' @return
+#' @export
+#'
+#' @examples
 get_ncp = function(chii,df) {
   ncp_x = mean(chii)-df
   chii[chii<=0] = .00000001
@@ -75,14 +93,7 @@ get_ncp = function(chii,df) {
   return(list(ncp=ncp_x))
 }
 
-# get_ncp = function(chii,df) {
-#   ncp_x = mean(chii)-df
-#   chii[chii<=0] = .00000001
-#   if (ncp_x<0) {return(list(ncp=0,sd = NA))}
-#   chi_ncp <- MASS::fitdistr(chii,"chi-squared",start=list(ncp=0),
-#                       method="Brent",df=df,lower=0,upper=10000000)
-#    return(list(ncp=chi_ncp$estimate,sd = chi_ncp$sd))
-# }
+
 
 #' Calculate sample size
 #'

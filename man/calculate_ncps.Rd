@@ -2,15 +2,15 @@
 % Please edit documentation in R/calculate_ncps.R
 \name{calculate_ncps}
 \alias{calculate_ncps}
-\title{Calculate ncps (analytical/simbased, Wald/LR/Score)}
+\title{Calculate ncps (analytical/sampling based, Wald/LR/Score)}
 \usage{
 calculate_ncps(
   hyp,
   stat = "all",
   n = 1,
   simbased = FALSE,
-  n.pers = NULL,
-  runs = 3
+  n.pers = 10^4,
+  runs = 1
 )
 }
 \arguments{

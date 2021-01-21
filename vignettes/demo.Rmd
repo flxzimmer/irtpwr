@@ -12,7 +12,6 @@ knitr::opts_chunk$set(eval=FALSE)
 ```
 
 
-
 ```{r message=FALSE}
 library(mmlpwrpackage)
 library(mirt)

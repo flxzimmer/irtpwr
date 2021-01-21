@@ -2,7 +2,7 @@
 # Export simulation results
 ###########################################################################
 
-source('C:/Users/felix/Google Drive/4 irt/mmlpwrpackage/paper/additional_functions.R')
+source('C:/Users/felix/Google Drive/4 irt/mmlpwrpackage/paper/plot_functions.R')
 
 library(mmlpwrpackage)
 library(car)

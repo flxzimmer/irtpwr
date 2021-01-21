@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate_ncps.R
 \name{ncp.sim}
 \alias{ncp.sim}
-\title{Calculate simulation based ncps}
+\title{Calculate sampling based ncps (Wrapper)}
 \usage{
 ncp.sim(hyp, stat = "all", n = 1, n.pers = NULL, runs = 3)
 }
@@ -21,7 +21,7 @@ ncp.sim(hyp, stat = "all", n = 1, n.pers = NULL, runs = 3)
 numerical vector containing the ncps
 }
 \description{
-Calculate simulation based ncps
+Calculate sampling based ncps (Wrapper)
 }
 \examples{
 dat <- expand.table(LSAT7)
@@ -29,5 +29,4 @@ mirtfit <- mirt(dat,1)
 pars = coef_short(mirtfit)
 hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = pars)
 ncps <- ncp.sim(hyp=hyp)
-
 }

@@ -1,5 +1,5 @@
 ###########################################################################
-# Prepare Simulation Conditions
+# Prepare Simulation Conditions, create simsetup.Rdata
 ###########################################################################
 
 # 4 conditions: (1PLvs2PL,DIF2PL) x (10Items,50Items)
@@ -160,6 +160,5 @@ sim2 = c(sim2.a,sim2.b)
 # save all ----------------------------------------------------------------
 
 save(sim1, sim1ncp, sim2,file= "simsetup.Rdata")
-#save(sim1, sim1ncp, sim2,file= "C:/Users/felix/Google Drive/4 irt/mmlpwr/simsetup.Rdata")
 
 

@@ -1,4 +1,4 @@
-# Statistics --------------------------------------------------------------
+
 
 #' Fit restricted and unrestriced model by ML using mirt
 #'
@@ -150,7 +150,7 @@ score_obs = function(fitted) {
     if (resmod$itemtype == "3PL") {method="customFisher"} else {method = "mirtOakes"}
   }
 
-  sigma = (infmat(parsr,method=method,resmod = resmod,data=patterns)*nrow(patterns)) %>% solve()
+  sigma = (infmat(parsr,method=method,data=patterns)*nrow(patterns)) %>% solve()
 
 
   re = t(lx) %*% sigma %*% lx %>% as.numeric()
