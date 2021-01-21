@@ -22,7 +22,7 @@
 #' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = pars)
 #' ncps <- calculate_ncps(hyp=hyp)
 #'
-calculate_ncps = function(hyp,stat="all",n=1,simbased=FALSE,n.pers = NULL,runs =3) {
+calculate_ncps = function(hyp,stat="all",n=1,simbased=FALSE,n.pers = 10^4,runs =1) {
   # implement ncp.sim for other than all three stats
 
   if (stat=="all") {stat= c("Wald","LR","Score")}
@@ -63,25 +63,12 @@ calculate_ncps = function(hyp,stat="all",n=1,simbased=FALSE,n.pers = NULL,runs =
 #' pars = coef_short(mirtfit)
 #' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = pars)
 #' ncps <- ncp.sim(hyp=hyp)
-#'
 ncp.sim = function(hyp,stat="all",n=1,n.pers=NULL,runs=3) {
 
   resmod = hyp$resmod
   unresmod = hyp$unresmod
 
-  if (is.null(n.pers)){
-
-    if (resmod$n.items<=10) {
-      n.pers=100000
-      # n.pers=10000
-
-      runs=3
-    } else {
-      n.pers=10000
-      # n.pers=10000
-      runs=3
-    }
-  }
+  waldncp =  ncp.sim.wald(hyp,simbased.npers=n.pers) #  simbased.npers=n.pers*100 (previous simruns)
 
   res = list()
   for (i in 1:runs) {
@@ -89,20 +76,42 @@ ncp.sim = function(hyp,stat="all",n=1,n.pers=NULL,runs=3) {
     datasetx = setup.data(hyp,n = n.pers)
     fittedx = mml.fit(hyp, data = datasetx)
     # print("fitted, now calculating stats")
-    res[[i]] = c(wald_obs(fittedx),lr_obs(fittedx),score_obs(fittedx))
+    res[[i]] = c(lr_obs(fittedx),score_obs(fittedx))
+    # res[[i]] = c(1,score_obs(fittedx))
+
   }
   re = do.call(rbind,res) %>% apply(.,2,function(x) get_ncp(x,df=nrow(resmod$Amat))$ncp) %>% c()
   re = re/n.pers
+  re = c(waldncp,re)
   return(re*n)
 }
 
 
-ncp.wald = function(hyp,method="mirtFisher",n=1) {
+ncp.sim.wald = function(hyp,n=1,simbased.npers) {
+  resmod = hyp$resmod
+  unresmod = hyp$unresmod
+  method="mirtOakessim"
+  if (isTRUE(unresmod$multigroup)) {method="mirtOakesmultigroupsim"}
+
+  A = resmod$Amat
+  dif = A%*%unresmod$longcoef-resmod$cvec
+  # print("calculating fisher expected infmat")
+  sigma = infmat(unresmod,method=method,resmod = resmod,simbased.npers=simbased.npers) %>% solve()
+  # print("finished calculating fisher expected infmat")
+  re = t(dif) %*% solve(A%*% sigma %*% t(A)) %*% dif %>% c()
+  return(re*n)
+}
+
+
+ncp.wald = function(hyp,n=1) {
   resmod = hyp$resmod
   unresmod = hyp$unresmod
 
-  if (isTRUE(unresmod$multigroup) & method=="mirtFisher") {method="mirtFishermultigroup"}
-  if (isTRUE(unresmod$multigroup) & method=="mirtOakessim") {method="mirtOakesmultigroupsim"}
+  method="mirtFisher"
+  if (isTRUE(unresmod$multigroup)) {method="mirtFishermultigroup"}
+
+  # if (isTRUE(unresmod$multigroup) & method=="mirtFisher") {method="mirtFishermultigroup"}
+  # if (isTRUE(unresmod$multigroup) & method=="mirtOakessim") {method="mirtOakesmultigroupsim"}
 
   A = resmod$Amat
   dif = A%*%unresmod$longcoef-resmod$cvec

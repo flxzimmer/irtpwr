@@ -26,6 +26,12 @@ setup_hypothesis = function(type, altpars = NULL,nullpars = NULL) {
     if (type == "1PLvs2PL") {
       type = h_1PLvs2PL
     }
+    else if (type == "1PLvs2PLa1") {
+      type = h_1PLvs2PLa1
+    }
+    else if (type == "1PLvs2PLa2") {
+      type = h_1PLvs2PLa2
+    }
     else if (type == "DIF2PL") {
       type = h_DIF2PL
     }

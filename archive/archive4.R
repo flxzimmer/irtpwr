@@ -279,7 +279,7 @@ maximizeL = function(hyp,bootstrap.start=TRUE) {
     load.functions(pars$itemtype)
 
     if(isTRUE(bootstrap.start)) {
-      df = simdata(a = pars$a,d = pars$d,N =200000,itemtype = "2PL")
+      df = mirt::simdata(a = pars$a,d = pars$d,N =200000,itemtype = "2PL")
       mml = mirt(df,model = unresmod$model,itemtype = resmod$itemtype,technical = list(NCYCLES = 5000),verbose = FALSE)
       startval=c(coef.short(mml,"2PL")$a[1],coef.short(mml,"2PL")$d)
     }else{
@@ -388,6 +388,396 @@ ssize6 = ssize(null.hyp$df,ncp6 ,alpha=.05,power=.80)
 
 
 ```
+
+
+load("C:/Users/felix/Google Drive/4 irt/mmlpwr/results1split.Rdata")
+res1.split2 = lapply(res1.split,function(x) x[names(x)!="fits"])
+res1.split = res1.split2
+
+# glue all with the same condition together again
+res1 = lapply(sim1,function(x) {x$obs = list();x = x[names(x)!="datasets"];return(x)})
+for (i in res1.split) {
+  index = which(sapply(sim1, function(x) digest(x$condition)==digest(i$condition))) %>%as.numeric()
+  res1[[index]]$obs = c(res1[[index]]$obs,i$obs)
+}
+save(res1,file= "C:/Users/felix/Google Drive/4 irt/mmlpwr/results1.Rdata")
+
+
+# Plot the expected and observed power for all the above conditions. Add a CI-Envelope (Variance of these values is n*p*q ?)
+
+# p = .05
+# q = 1-p
+# nruns = 500
+# a = sqrt(nruns*p*q)/nruns * qnorm(.975)
+# c(p-a,p+a) %>% round(.,3)
+
+# res =c()
+# for (i in 1:100000) {
+#   runs = 500
+#   res[i] = mean((runif(runs)<=p))
+# }
+# quantile(res,c(.025,.975))
+
+
+
+# # Power - Calculate ncps  -----------------------------------------
+#
+# cl <- makeCluster(10)
+# clusterExport(cl, objects(), envir=environment())
+#
+# res2ncp =  parLapply(cl,X = sim2ncp,fun = function(x){
+#
+#   load.libraries()
+#
+#   analytical = NULL
+#
+#   # calculate ncps for the condition
+#   if (x$n.items==10) {
+#     analytical = calculate_ncps(x$hyp,simbased=FALSE,n=1)
+#   }
+#   simbased = calculate_ncps(x$hyp,simbased=TRUE,n=1,n.pers = NULL)
+#
+#   # Sim Condition without the datasets
+#   condition = x[names(x)!="datasets"]
+#
+#   re = list(condition = condition,analytical = analytical,simbased=simbased)
+#   return(re)
+#
+# })
+#
+# save(res2ncp,file= "results2ncp.Rdata")
+# stopCluster(cl)
+#
+#
+#
+# # Power - Calculate sample size -------------------------------------
+#
+# # add the number of persons and the datasets to the simulation conditions
+#
+# powerset=c(.2,.4,.6,.8)
+#
+# # calculate the sample sizes according to the ncps
+# sample_sizes = lapply(res2ncp, function(x) {
+#
+#   if (!is.null(x$analytical)) {
+#     ncps = x$analytical
+#   } else {
+#     ncps = x$simbased
+#   }
+#
+#   re = sapply(powerset,function(pw) {ssize(hyp=x$condition$hyp,ncp=ncps,power = pw,alpha=.05) %>% mean()})
+#   return(re)
+# })
+#
+# #add the sample sizes
+#
+# res2 = list()
+#
+# for (i in 1:length(sim2ncp)) {
+#
+#   ss = sample_sizes[i]
+#   a = sim2ncp[i]
+#   for (x in ss){
+#     b = a
+#     b$n.pers = x
+#     res2 = c(res2,b)
+#   }
+# }
+#
+# #add the datasets
+#
+# sim2 = lapply(sim2,function(x){
+#
+#   x$datasets = list()
+#   for (i in 1:x$simruns) {
+#     x$datasets[[i]] = setup.data(hyp = x$hyp, n = x$n.pers)
+#   }
+#   return(x)
+#
+# })
+#
+#
+# # Power - Calculate stats --------------------------------------------------
+#
+#
+# cl <- makeCluster(10)
+# clusterExport(cl, objects(), envir=environment())
+#
+#
+# res2 =  parLapply(cl,X = sim2,fun = function(x){
+#
+#   load.libraries()
+#
+#   # fit the mirt model
+#   fitted <- mml.fit(data = x$data,hyp = x$hyp)
+#   # calculate statistics
+#   stats_obs <- c(wald_obs(fitted),lr_obs(fitted),score_obs(fitted))
+#
+#   # Sim Condition without the datasets
+#   condition = x[names(x)!="datasets"]
+#
+#   re = list(condition = condition,fitted=fitted,stats_obs = stats_obs)
+#   return(re)
+#
+# })
+# save(res2,file= "results2.Rdata")
+# stopCluster(cl)
+#
+#
+#
+# # Misspecification: Calculate ncp --------------------------------------------------------
+#
+# # Builds on the Power condition 1PLvs2PL, 10 Items
+#
+# # The ncps are therefore included in "results2ncp.Rdata"
+#
+# indices = sapply(res2ncp,function(x) {
+#   re = x$condition$type = "1PLvs2PL" & x$condition$n.items = 10
+#   return(re)
+# })
+#
+# res3ncp = res2ncp[indices]
+#
+# save(res3ncp,file= "results3ncp.Rdata")
+#
+#
+# # add sample sizes to the data.
+#
+# # Setup the simulation condition - based on sim2. datasets have to be generated anew for the non-normal distributions
+#
+# indices = sapply(sim2,function(x) {
+#   re = x$condition$type = "1PLvs2PL" & x$condition$n.items = 10
+#   return(re)
+# })
+#
+# sim3 = list()
+#
+# for (x in sim2[indices]) {
+#   a = x
+#   b = x
+#
+#   a$dist.fun = unifdist
+#   b$dist.fun = skeweddist
+#
+#   sim3 = c(sim3,a,b)
+# }
+#
+#
+# sim3 = lapply(sim3,function(x){
+#
+#   x$datasets = list()
+#   for (i in 1:x$simruns) {
+#     x$datasets[[i]] = setup.data(hyp = x$hyp, n = x$n.pers,dist.type=x$dist.fun)
+#   }
+#   return(x)
+#
+# })
+#
+#
+#
+# # Misspecification: Calculate stats -----------------------------------------
+#
+#
+# cl <- makeCluster(10)
+# clusterExport(cl, objects(), envir=environment())
+#
+#
+# res3 =  parLapply(cl,X = sim3,fun = function(x){
+#
+#   load.libraries()
+#
+#   # fit the mirt model
+#   fitted <- mml.fit(data = x$data,hyp = x$hyp)
+#   # calculate statistics
+#   stats_obs <- c(wald_obs(fitted),lr_obs(fitted),score_obs(fitted))
+#
+#   # Sim Condition without the datasets
+#   condition = x[names(x)!="datasets"]
+#
+#   re = list(condition = condition,fitted=fitted,stats_obs = stats_obs)
+#   return(re)
+#
+# })
+# save(res3,file= "results3.Rdata")
+# stopCluster(cl)
+#
+#
+#
+# # save updated sim files --------------------------------------------------
+#
+# save(sim2,sim3,file= "C:/Users/felix/Google Drive/4 irt/mmlpwr/simsetup2.Rdata")
+
+
+
+# Power ------------------------------------------------------------
+
+sim2 = expand.grid(type=c("1PLvs2PL","DIF2PL"),n.items=c(10,50),esize ="",simruns = 50)
+sim2$esize[sim2$type =="1PLvs2PL"& sim2$n.items == 10] = "large"
+sim2$esize[sim2$type =="DIF2PL"& sim2$n.items == 10] = "large"
+sim2$esize[sim2$type =="1PLvs2PL"& sim2$n.items == 50] = "xsmall"
+sim2$esize[sim2$type =="DIF2PL"& sim2$n.items == 50] = "small"
+
+sim2 = sim2[order(sim2$type,sim2$n.items,sim2$esize,sim2$n.pers),]
+sim2$condition = list(type= sim2$type,n.items = sim2$n.items,esize = sim2$esize)
+sim2 = sim2  %>% split(., seq(nrow(.))) %>% lapply(.,as.list)
+
+
+# Add the hypothesis object to the list according to the specifications of the conditions.
+sim2ncp = lapply(sim2,function(x) {
+
+  n.items = x$n.items
+  esize = x$esize
+  quantiles = (1:n.items)/(n.items+1)
+  perm = sample(n.items)
+
+  if (x$type == "1PLvs2PL") {
+
+    if (esize=="large") {d = .1} else if (esize=="small") {d = .05} else if (esize=="xsmall") {d=0.03} else if (esize=="no") {d=0}
+
+    x$altpars = list(
+      a = qlnorm(quantiles,sdlog = d),
+      d = qnorm(quantiles)[perm]
+    )
+  }
+
+  if (x$type == "DIF2PL") {
+
+    if (esize=="large") {d = .4} else if (esize=="small") {d = .2} else if (esize=="no") {d=0}
+
+    group1 = group2 <- list(
+      a = qlnorm(quantiles,sdlog = .1),
+      d = qnorm(quantiles)[perm]
+    )
+    group1$a[1] = 1+d/2
+    group1$d[1] = d/2
+    group2$a[1] = 1-d/2
+    group2$d[1] = -d/2
+
+    x$altpars <- list(group1,group2)
+
+  }
+
+  x$hyp = setup_hypothesis(type = x$type, altpars = x$altpars)
+
+  return(x)
+})
+
+
+
+# h_1PLvs2PL --------------------------------------------------------------
+
+# Alternative A matrix to test for invariance - Item 1 minus all other
+
+
+h_1PLvs2PLa = list(
+
+  res = function(altpars,nullpars = NULL) {
+
+    n.items = length(altpars[[1]])
+
+    init = matrix(0,n.items-1,n.items*2)
+    init[,1] = 1
+    s = seq(3,n.items*2-1,2)
+    for ( i in 1:nrow(init)) {
+      init[i,s[i]] = -1
+    }
+    Amat = init
+
+    re = list(
+      n.items = n.items,
+      itemtype = "2PL",
+      Amat = Amat,
+      cvec = 0,
+      model = mirt::mirt.model(paste('F = 1-',n.items,'
+                           CONSTRAIN = (1-',n.items,', a1)'))
+    )
+    return(re)
+  },
+
+  unres = function(altpars) {
+
+    if (!is.null(altpars)) {
+      re = altpars
+      re$model = 1
+      re$itemtype = "2PL"
+    }
+
+    re$longcoef = coef.long(shortcoef = re,itemtype=re$itemtype) # check if this is really needed.
+    return(re)
+  },
+
+  maximizeL = function(hyp,bootstrap.start=TRUE) {
+    # Hypothesis-specific algorithm to find the maximum likelihood restricted parameter set
+
+    resmod = hyp$resmod
+    unresmod = hyp$unresmod
+
+    pars = unresmod
+    load.functions(pars$itemtype)
+
+    if(isTRUE(bootstrap.start)) {
+      set.seed(1234)
+      df = mirt::simdata(a = pars$a,d = pars$d,N =200000,itemtype = "2PL")
+      mml = mirt(df,model = unresmod$model,itemtype = resmod$itemtype,technical = list(NCYCLES = 5000),verbose = FALSE)
+      startval=c(coef_short(mml,"2PL")$a[1],coef_short(mml,"2PL")$d)
+    }else{
+      startval = c(mean(pars$a),as.numeric(pars$d))
+    }
+
+    maxl2pre = maxl2preload(pars)
+    optpar = optim(startval,function(x) {maxl2(x,pars,maxl2pre)})
+    re = pars
+    re$a = rep(optpar$par[1],length(pars$a))
+    re$d = optpar$par[2:length(optpar$par)]
+
+    return(re)
+  }
+)
+
+
+# Thissen Mat
+
+ft = function(th,a,d,x) log(f(th,a,d,x))
+ftd = Deriv::Deriv(ft,c("a","d"),nderiv=2)
+
+
+tmat = function(pars) {
+  res = list()
+  for (i in 1:length(pars$a)) {
+    res[[i]] = spatstat::gauss.hermite(function(th) {
+      -matrix(ftd(th,pars$a[i],pars$d[i],0),2,2)
+      # -matrix(ftd(th,pars$a[i],pars$d[i],p(th,pars$a[i],pars$d[i])),2,2)
+    },order=30)
+  }
+  as.matrix(do.call(bdiag,res))
+}
+
+
+
+We can test it:
+  ```{r}
+altpars <- list(
+  a = rlnorm(6,sdlog = .4),
+  d = rnorm(6)
+)
+
+hyp <- setup_hypothesis(type = h_1PLvs2PL, altpars = altpars)
+
+ptm <- proc.time() #start timer
+ncps <- calculate_ncps(hyp=hyp)
+time = proc.time() - ptm #stop timer
+
+time = as.numeric(time[1])
+time
+
+```
+
+
+# New facet label names for supp variable
+# esize.labs <- c(expression("H"[0]*": No effect"), expression("H"[1]*": Small effect"),expression("H"[1]*": Large effect"))
+# esize.labs <- function(st) {
+#   c(expression("H"[0]*": No effect"), expression("H"[1]*": Small effect"),expression("H"[1]*": Large effect"))  }
+
 
 
 

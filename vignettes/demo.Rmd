@@ -7,6 +7,11 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
+```{r include=FALSE}
+knitr::opts_chunk$set(eval=FALSE)
+```
+
+
 
 ```{r message=FALSE}
 library(mmlpwrpackage)
@@ -16,18 +21,15 @@ library(dplyr)
 
 ```{r eval=FALSE, include=FALSE}
 
-## TODOS
-
-# Setup the Rscript for the paper analyses - Export Missing - Rerun the sim with some improvements.
-
-# Implement everything that has been working before - Other hypothesis.
-
-
-## IMPROVEMENTS
-
-# Move simplified ncp.wald to ncp.sim
-
 # Benchmark Feature: Estimating the Time needed for Analytical Approach
+
+
+# Ich würde ganz am Anfang erklären, an welche User sich die Vignette richtet. Anfänger, oder brauchen die Leute Erfahrung in mirt…?
+# Ich würde auch jeden Chunk erklären, was da jeweils passiert.
+# Für den Aufbau empfehle ich, dass du zuerst eine Einleitung mit Überblick bringst, dann ein Tutorial, wo du die Anwendung vorzeigst, und am Ende mögliche Erweiterungen.
+# Welche Möglichkeiten für jedes Argument?
+# Bessere Bezeichnungen, z.b. nicht ncps.
+
 
 ```
 
@@ -126,7 +128,7 @@ The Rasch against 2PL hypothesis is presented above. We will provide some exampl
 
 ```{r}
 group1 = group2 <- list(
-        a = rlnorm(5,sdlog = .4),
+        a = rlnorm(5,sdlog = .2),
         d = rnorm(5)
         )
 
@@ -144,6 +146,14 @@ hyp <- setup_hypothesis(type = "DIF2PL", altpars = altpars)
 ncps <- calculate_ncps(hyp=hyp)
 power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
 ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
+
+
+# experimental stuff:
+# ncps2 <- calculate_ncps(hyp=hyp,simbased=TRUE,n.pers = 100000)
+# 
+# power(hyp=hyp,ncp=ncps2,alpha=.05,ssize=500)
+# ssize(hyp=hyp,ncp=ncps2,alpha=.05,power=.80)
+
 
 ```
 
@@ -178,6 +188,19 @@ From the results, we can calculate the observed statistics and p-values.
 ```{r}
 stats_obs <- c(wald_obs(fitted),lr_obs(fitted),score_obs(fitted))
 pvals <- pchisq(stats_obs,df=nrow(hyp$resmod$Amat),ncp=0,lower.tail=FALSE)
+```
+
+
+## Estimating the time needed for the analytical approach
+
+We can estimate the time needed for the 1PL vs 2PL hypothesis and 10 items in seconds.
+```{r}
+h_1PLvs2PL$calctime(10)
+```
+
+Analogous calculation for the DIF hypothesis:
+```{r}
+h_DIF2PL$calctime(10)
 ```
 
 

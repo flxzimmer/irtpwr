@@ -2,7 +2,7 @@
 # Export simulation results
 ###########################################################################
 
-source('C:/Users/admin/Google Drive/4 irt/mmlpwrpackage/paper/additional_functions.R')
+source('C:/Users/felix/Google Drive/4 irt/mmlpwrpackage/paper/additional_functions.R')
 
 library(mmlpwrpackage)
 library(car)
@@ -12,10 +12,8 @@ library(ggplot2)
 library(grid)
 library(xtable)
 
-load(file= "C:/Users/admin/Google Drive/4 irt/mmlpwr/results1.Rdata")
-load(file= "C:/Users/admin/Google Drive/4 irt/mmlpwr/results1ncp.Rdata")
-load(file= "C:/Users/admin/Google Drive/4 irt/mmlpwr/results2.Rdata")
-#load(file= "C:/Users/felix/Google Drive/4 irt/mmlpwr/results2temp.Rdata")
+load(file= "C:/Users/felix/Google Drive/4 irt/mmlpwr/results1a.Rdata")
+load(file= "C:/Users/felix/Google Drive/4 irt/mmlpwr/results1ncpa.Rdata")
 
 # merge stats and ncps ----------------------------------------------------
 
@@ -40,41 +38,15 @@ res.merged = lapply(res1, function(x) {
 res = res.merged
 
 
-res.merged2 = lapply(res2, function(x) {
-
-   index = which(sapply(res1ncp, function(y) digest(y$condition[c("type","n.items","esize")])==digest(x$condition[c("type","n.items","esize")]))) %>% as.numeric()
-
-   if (length(index)>0) {
-      x$ncp.analytical = res1ncp[[index]]$analytical * x$condition$n.pers
-      x$ncp.simbased = res1ncp[[index]]$simbased * x$condition$n.pers
-   } else {
-      x$ncp.analytical = c(0,0,0)
-      x$ncp.simbased = c(0,0,0)
-   }
-   x$obs = do.call(rbind,x$obs)
-   return(x)
-})
-
-
-
 # qqplots -------------------------------------------------------------------
 
-p1 = qq.plot(res = res.merged,type="1PLvs2PL",n.items=10,analytical = TRUE)
-p2 = qq.plot(res = res.merged,type="1PLvs2PL",n.items=10,analytical = FALSE)
-p3= qq.plot(res = res.merged,type="1PLvs2PL",n.items=50,analytical = FALSE)
-p4 = qq.plot(res = res.merged,type="DIF2PL",n.items=10,analytical = TRUE)
-p5 = qq.plot(res = res.merged,type="DIF2PL",n.items=10,analytical = FALSE)
-p6 = qq.plot(res = res.merged,type="DIF2PL",n.items=50,analytical = FALSE)
+p1= qq.plot(res = res.merged,type="1PLvs2PLa1",n.items=50,analytical = FALSE)
+p2= qq.plot(res = res.merged,type="1PLvs2PLa2",n.items=50,analytical = FALSE)
 
-p1;p2;p3;p4;p5;p6
+p1;p2
 
-
-pdf("1PLvs2PL_qq_10_analytical.pdf");p1;dev.off()
-pdf("1PLvs2PL_qq_10_simbased.pdf");p2;dev.off()
-pdf("1PLvs2PL_qq_50_simbased.pdf");p3;dev.off()
-pdf("DIF2PL_qq_10_analytical.pdf");p4;dev.off()
-pdf("DIF2PL_qq_10_simbased.pdf");p5;dev.off()
-pdf("DIF2PL_qq_50_simbased.pdf");p6;dev.off()
+pdf("1PLvs2PL_qq_50_simbaseda1.pdf");p1;dev.off()
+pdf("1PLvs2PL_qq_50_simbaseda2.pdf");p2;dev.off()
 
 
 # powerplots --------------------------------------------------------------

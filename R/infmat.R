@@ -4,8 +4,7 @@
 # Drop resmod argument, it's only needed for the number of items.
 
 
-infmat = function(pars,method = "mirtFisher",resmod=NULL,n.pers = 100000,data=NULL) {
-
+infmat = function(pars,method = "mirtFisher",resmod=NULL,simbased.npers = 200000,data=NULL) {
   if(is.null(pars$g)) {pars$g = rep(0,length(pars$a))}
 
   if (method=="mirtFishermultigroup") {
@@ -16,22 +15,21 @@ infmat = function(pars,method = "mirtFisher",resmod=NULL,n.pers = 100000,data=NU
     # Fisher Approach
     pars1 = pars[[1]][[1]]
     pars2 = pars[[1]][[2]]
-    n.pers = 5000
-    df1 = simdata(a = pars1$a, d = pars1$d, N = n.pers, itemtype = pars1$itemtype)
-    df2 = simdata(a = pars2$a, d = pars2$d, N = n.pers, itemtype = pars2$itemtype)
+    df1 = mirt::simdata(a = pars1$a, d = pars1$d, N = 5000, itemtype = pars1$itemtype)
+    df2 = mirt::simdata(a = pars2$a, d = pars2$d, N = 5000, itemtype = pars2$itemtype)
 
-    synt = mirt(df1,1,itemtype = c(pars$itemtype),technical = list(NCYCLES = 1),pars="values")
+    synt = mirt::mirt(df1,1,itemtype = c(pars$itemtype),technical = list(NCYCLES = 1),pars="values")
     apars = which(synt$name=="a1")
     dpars = which(synt$name=="d")
     synt$lbound[apars] =  synt$ubound[apars] = pars1$a
     synt$lbound[dpars] = synt$ubound[dpars] = pars1$d
-    mml = mirt(df1,1,itemtype = c(pars$itemtype),SE = TRUE,SE.type = "Fisher",technical = list(NCYCLES = 1000),verbose = FALSE,pars=synt)
-    re1 = solve(vcov(mml))/nrow(df1)
+    mml = mirt::mirt(df1,1,itemtype = c(pars$itemtype),SE = TRUE,SE.type = "Fisher",technical = list(NCYCLES = 5000),verbose = FALSE,pars=synt)
+    re1 = solve(mirt::vcov(mml))/nrow(df1)
 
     synt$lbound[apars] =  synt$ubound[apars] = pars2$a
     synt$lbound[dpars] = synt$ubound[dpars] = pars2$d
-    mml = mirt(df2,1,itemtype = c(pars$itemtype),SE = TRUE,SE.type = "Fisher",technical = list(NCYCLES = 1000),verbose = FALSE,pars=synt)
-    re2 = solve(vcov(mml))/nrow(df2)
+    mml = mirt::mirt(df2,1,itemtype = c(pars$itemtype),SE = TRUE,SE.type = "Fisher",technical = list(NCYCLES = 5000),verbose = FALSE,pars=synt)
+    re2 = solve(mirt::vcov(mml))/nrow(df2)
 
     re = matrix(0,nrow=nrow(re1)+2,ncol=ncol(re1)+2)
     re[1:nrow(re1),1:nrow(re1)]=re1
@@ -54,18 +52,18 @@ infmat = function(pars,method = "mirtFisher",resmod=NULL,n.pers = 100000,data=NU
     pars2 = pars[[1]][[2]]
 
     if(method=="mirtOakesmultigroupsim"){
-      df1 = simdata(a = pars1$a, d = pars1$d, N = n.pers, itemtype = pars1$itemtype)
-      df2 = simdata(a = pars2$a, d = pars2$d, N = n.pers, itemtype = pars2$itemtype)
+      df1 = mirt::simdata(a = pars1$a, d = pars1$d, N = simbased.npers/2, itemtype = pars1$itemtype)
+      df2 = mirt::simdata(a = pars2$a, d = pars2$d, N = simbased.npers/2, itemtype = pars2$itemtype)
     } else {
       df1 = data[1:(nrow(data)/2),]
       df2 = data[(nrow(data)/2+1):nrow(data),]
     }
 
-    mml = mirt(df1,1,itemtype = c(pars$itemtype),SE = TRUE,SE.type = "Oakes",technical = list(NCYCLES = 1000),verbose = FALSE)
-    re1 = solve(vcov(mml))/nrow(df1)
+    mml = mirt::mirt(df1,1,itemtype = c(pars$itemtype),SE = TRUE,SE.type = "Oakes",technical = list(NCYCLES = 5000),verbose = FALSE)
+    re1 = solve(mirt::vcov(mml))/nrow(df1)
 
-    mml = mirt(df2,1,itemtype = c(pars$itemtype),SE = TRUE,SE.type = "Oakes",technical = list(NCYCLES = 1000),verbose = FALSE)
-    re2 = solve(vcov(mml))/nrow(df2)
+    mml = mirt::mirt(df2,1,itemtype = c(pars$itemtype),SE = TRUE,SE.type = "Oakes",technical = list(NCYCLES = 5000),verbose = FALSE)
+    re2 = solve(mirt::vcov(mml))/nrow(df2)
 
     re = matrix(0,nrow=nrow(re1)+2,ncol=ncol(re1)+2)
     re[1:nrow(re1),1:nrow(re1)]=re1
@@ -79,16 +77,16 @@ infmat = function(pars,method = "mirtFisher",resmod=NULL,n.pers = 100000,data=NU
   }
 
   if (method=="mirtFisher") {
-    df = simdata(a = pars$a,d = pars$d,guess=pars$g,N =1000,itemtype = pars$itemtype)
-    synt = mirt(df,1,itemtype = c(pars$itemtype),technical = list(NCYCLES = 1),pars="values")
+    df = mirt::simdata(a = pars$a,d = pars$d,guess=pars$g,N =1000,itemtype = pars$itemtype)
+    synt = mirt::mirt(df,1,itemtype = c(pars$itemtype),technical = list(NCYCLES = 1),pars="values")
     apars = which(synt$name=="a1")
     synt$lbound[apars] =  synt$ubound[apars] = pars$a
     dpars = which(synt$name=="d")
     synt$lbound[dpars] = synt$ubound[dpars] = pars$d
     gpars = which(synt$name=="g")
     synt$lbound[gpars] = synt$ubound[gpars] = pars$g
-    mml = mirt(df,1,itemtype = c(pars$itemtype),SE = TRUE,SE.type = "Fisher",technical = list(NCYCLES = 1000),verbose = FALSE,pars=synt)
-    re = solve(vcov(mml))/nrow(df)
+    mml = mirt::mirt(df,1,itemtype = c(pars$itemtype),SE = TRUE,SE.type = "Fisher",technical = list(NCYCLES = 5000),verbose = FALSE,pars=synt)
+    re = solve(mirt::vcov(mml))/nrow(df)
 
   }
 
@@ -107,15 +105,14 @@ infmat = function(pars,method = "mirtFisher",resmod=NULL,n.pers = 100000,data=NU
 
 
   if (method%in%c("mirtOakessim","mirtOakes")) {
-    if(method=="mirtOakessim"){df = simdata(a = pars$a,d = pars$d,guess=pars$g,N =n.pers,itemtype = pars$itemtype)} else {df = data}
-    mml = mirt(df,1,itemtype = c(pars$itemtype),SE = TRUE,SE.type = "Oakes",technical = list(NCYCLES = 1000),verbose = FALSE)
-    re = solve(vcov(mml))/nrow(df)
+    if(method=="mirtOakessim"){df = mirt::simdata(a = pars$a,d = pars$d,guess=pars$g,N =simbased.npers,itemtype = pars$itemtype)} else {df = data}
+    mml = mirt::mirt(df,1,itemtype = c(pars$itemtype),SE = TRUE,SE.type = "Oakes",technical = list(NCYCLES = 5000),verbose = FALSE)
+    re = solve(mirt::vcov(mml))/nrow(df)
   }
 
   if (method=="Thissen") {
     load.functions(pars$itemtype)
     re =  tmat(pars)
   }
-
   return(re)
 }

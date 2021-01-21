@@ -102,7 +102,7 @@ maximizeL = function(null.hypothesis,alternative.hypothesis,bootstrap.start=TRUE
     load.functions(pars$itemtype)
 
     if(isTRUE(bootstrap.start)) {
-      df = simdata(a = pars$a,d = pars$d,N =200000,itemtype = "2PL")
+      df = mirt::simdata(a = pars$a,d = pars$d,N =200000,itemtype = "2PL")
       mml = mirt(df,model = alternative.hypothesis$model,itemtype = null.hypothesis$itemtype,technical = list(NCYCLES = 5000),verbose = FALSE)
       startval=c(coef.short(mml,"2PL")$a[1],coef.short(mml,"2PL")$d)
     }else{
@@ -384,12 +384,12 @@ setup.data = function(null.hypothesis, alternative.hypothesis, n,dist.type="norm
   group = rep("A",n)
 
     if (isTRUE(null.hypothesis$multigroup)) {
-      df = lapply(alternative.hypothesis$parsets,function(pars) simdata(a = pars$a,d = pars$d,Theta = distfun(n/2),itemtype = null.hypothesis$itemtype)) %>% do.call(rbind,.)
+      df = lapply(alternative.hypothesis$parsets,function(pars) mirt::simdata(a = pars$a,d = pars$d,Theta = distfun(n/2),itemtype = null.hypothesis$itemtype)) %>% do.call(rbind,.)
       group=rep(c("A","B"),each=n/2)
     } else if (null.hypothesis$itemtype %in% c("2PL","gpcm")) {
-      df = simdata(a = alternative.hypothesis$a,d = alternative.hypothesis$d,Theta = distfun(n),itemtype = null.hypothesis$itemtype)
+      df = mirt::simdata(a = alternative.hypothesis$a,d = alternative.hypothesis$d,Theta = distfun(n),itemtype = null.hypothesis$itemtype)
     } else if (null.hypothesis$itemtype=="3PL") {
-      df = simdata(a = alternative.hypothesis$a,d = alternative.hypothesis$d,guess=alternative.hypothesis$g,Theta = distfun(n),itemtype = null.hypothesis$itemtype)
+      df = mirt::simdata(a = alternative.hypothesis$a,d = alternative.hypothesis$d,guess=alternative.hypothesis$g,Theta = distfun(n),itemtype = null.hypothesis$itemtype)
     }
 
   re=list(data = df,group=group)
@@ -538,8 +538,8 @@ infmat = function(pars,method = "mirtFisher",null.hypothesis=NULL,n.pers = 10000
       pars1 = pars[[1]][[1]]
       pars2 = pars[[1]][[2]]
       n.pers = 5000
-      df1 = simdata(a = pars1$a, d = pars1$d, N = n.pers, itemtype = pars1$itemtype)
-      df2 = simdata(a = pars2$a, d = pars2$d, N = n.pers, itemtype = pars2$itemtype)
+      df1 = mirt::simdata(a = pars1$a, d = pars1$d, N = n.pers, itemtype = pars1$itemtype)
+      df2 = mirt::simdata(a = pars2$a, d = pars2$d, N = n.pers, itemtype = pars2$itemtype)
 
       synt = mirt(df1,1,itemtype = c(pars$itemtype),technical = list(NCYCLES = 1),pars="values")
       apars = which(synt$name=="a1")
@@ -575,8 +575,8 @@ infmat = function(pars,method = "mirtFisher",null.hypothesis=NULL,n.pers = 10000
     pars2 = pars[[1]][[2]]
 
     if(method=="mirtOakesmultigroupsim"){
-      df1 = simdata(a = pars1$a, d = pars1$d, N = n.pers, itemtype = pars1$itemtype)
-      df2 = simdata(a = pars2$a, d = pars2$d, N = n.pers, itemtype = pars2$itemtype)
+      df1 = mirt::simdata(a = pars1$a, d = pars1$d, N = n.pers, itemtype = pars1$itemtype)
+      df2 = mirt::simdata(a = pars2$a, d = pars2$d, N = n.pers, itemtype = pars2$itemtype)
     } else {
       df1 = data[1:(nrow(data)/2),]
       df2 = data[(nrow(data)/2+1):nrow(data),]
@@ -601,7 +601,7 @@ infmat = function(pars,method = "mirtFisher",null.hypothesis=NULL,n.pers = 10000
 
   if (method=="mirtFisher") {
 
-    df = simdata(a = pars$a,d = pars$d,guess=pars$g,N =1000,itemtype = pars$itemtype)
+    df = mirt::simdata(a = pars$a,d = pars$d,guess=pars$g,N =1000,itemtype = pars$itemtype)
     synt = mirt(df,1,itemtype = c(pars$itemtype),technical = list(NCYCLES = 1),pars="values")
     apars = which(synt$name=="a1")
     synt$lbound[apars] =  synt$ubound[apars] = pars$a
@@ -629,7 +629,7 @@ infmat = function(pars,method = "mirtFisher",null.hypothesis=NULL,n.pers = 10000
 
 
   if (method%in%c("mirtOakessim","mirtOakes")) {
-    if(method=="mirtOakessim"){df = simdata(a = pars$a,d = pars$d,guess=pars$g,N =n.pers,itemtype = pars$itemtype)} else {df = data}
+    if(method=="mirtOakessim"){df = mirt::simdata(a = pars$a,d = pars$d,guess=pars$g,N =n.pers,itemtype = pars$itemtype)} else {df = data}
     mml = mirt(df,1,itemtype = c(pars$itemtype),SE = TRUE,SE.type = "Oakes",technical = list(NCYCLES = 1000),verbose = FALSE)
     re = solve(vcov(mml))/nrow(df)
   }

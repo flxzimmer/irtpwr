@@ -18,9 +18,9 @@
 #' data <- setup.data(hyp=hyp,n=500)
 #' fitted <- mml.fit(data = data,hyp = hyp)
 #'
-mml.fit = function(hyp,data,infmat.method = "Oakes") {
+mml.fit = function(hyp,data,infmat.method = "Oakes",free_mean = FALSE) {
 
-  if (is.data.frame(data)) {
+      if (is.data.frame(data)) {
 
   } else {
     group = data$group
@@ -28,17 +28,18 @@ mml.fit = function(hyp,data,infmat.method = "Oakes") {
   }
 
 
+  if (isTRUE(free_mean)) {invariance = "free_mean"} else {invariance = ""}
 
   if (isTRUE(hyp$unresmod$multigroup)) { # Use a different function for multigroup models
-    unres = multipleGroup(data,model = hyp$unresmod$model,itemtype = hyp$unresmod$itemtype,SE = TRUE,SE.type = infmat.method,technical = list(NCYCLES = 5000),verbose = FALSE,group=group)
+    unres = mirt::multipleGroup(data,model = hyp$unresmod$model,itemtype = hyp$unresmod$itemtype,SE = TRUE,SE.type = infmat.method,technical = list(NCYCLES = 5000),verbose = FALSE,group=group,invariance=invariance)
   } else {
-    unres =  mirt(data,model = hyp$unresmod$model,itemtype = hyp$unresmod$itemtype,SE = TRUE,SE.type = infmat.method,technical = list(NCYCLES = 5000),verbose = FALSE)
+    unres =  mirt::mirt(data,model = hyp$unresmod$model,itemtype = hyp$unresmod$itemtype,SE = TRUE,SE.type = infmat.method,technical = list(NCYCLES = 5000),verbose = FALSE)
   }
 
   if (isTRUE(hyp$resmod$multigroup)) {
-    res = multipleGroup(data,model = hyp$resmod$model,itemtype = hyp$resmod$itemtype,technical = list(NCYCLES = 5000),verbose = FALSE,group=group)
+    res = mirt::multipleGroup(data,model = hyp$resmod$model,itemtype = hyp$resmod$itemtype,technical = list(NCYCLES = 5000),verbose = FALSE,group=group,invariance=invariance)
   } else {
-    res =  mirt(data,model = hyp$resmod$model,itemtype = hyp$resmod$itemtype,technical = list(NCYCLES = 5000),verbose = FALSE)
+    res =  mirt::mirt(data,model = hyp$resmod$model,itemtype = hyp$resmod$itemtype,technical = list(NCYCLES = 5000),verbose = FALSE)
   }
 
     re = list(unres=unres,res=res,hyp=hyp)
@@ -67,9 +68,10 @@ wald_obs = function(fitted) {
   resmod = fitted$hyp$resmod
   pars=coef.long(mirtfit = fitted$unres,itemtype = resmod$itemtype)
   A = resmod$Amat
-  # browser()
+
   dif = A%*%pars-resmod$cvec
   sigma=mirt::vcov(fitted$unres)
+  browser()
   re = t(dif) %*% solve(A%*% sigma %*% t(A)) %*% dif %>% as.numeric()
   return(re)
 }
@@ -92,7 +94,7 @@ wald_obs = function(fitted) {
 #' lr_obs(fitted)
 #'
 lr_obs = function(fitted) {
-  re = 2*(logLik(fitted$unres)-logLik(fitted$res))
+  re = 2*(mirt::logLik(fitted$unres)-mirt::logLik(fitted$res))
   return(re)
 }
 
@@ -115,7 +117,9 @@ lr_obs = function(fitted) {
 #' score_obs(fitted)
 #'
 score_obs = function(fitted) {
+
   resmod = fitted$hyp$resmod
+  unresmod = fitted$hyp$unresmod
   parsr = coef_short(fitted$res,itemtype = resmod$itemtype)
   load.functions(resmod$itemtype)
   patterns = fitted$res@Data$data
@@ -124,7 +128,7 @@ score_obs = function(fitted) {
   up = unique(patterns)
   freq = table(hashs)
 
-  if (isTRUE(resmod$multigroup))  {
+  if (isTRUE(unresmod$multigroup))  {
 
     freq1 = table(hashs[1:(nrow(patterns)/2)])
     freq2 = table(hashs[(nrow(patterns)/2+1):nrow(patterns)])

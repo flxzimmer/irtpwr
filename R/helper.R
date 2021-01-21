@@ -1,18 +1,20 @@
 # helper ------------------------------------------------------------------
 
+
+
 coef.long = function(mirtfit=NULL,itemtype=NULL,shortcoef=NULL) {
   # extracts coefs from mml coef output
   if (is.null(shortcoef)) {
-    if (itemtype=="2PL"& mirtfit@Call[[1]]=="multipleGroup") {
-      pars = lapply(coef(mirtfit,simplify=TRUE),function(x) x$items[,1:2] %>% t() %>% as.numeric())
+    if (itemtype=="2PL"& mirtfit@Call[[1]]=="mirt::multipleGroup") {
+      pars = lapply(mirt::coef(mirtfit,simplify=TRUE),function(x) x$items[,1:2] %>% t() %>% as.numeric())
       re = c(pars$A,pars$B[1:2])
     } else if (itemtype=="2PL") {
-      re = coef(mirtfit,simplify=TRUE)$items[,1:2] %>% t() %>% as.numeric()
+      re = mirt::coef(mirtfit,simplify=TRUE)$items[,1:2] %>% t() %>% as.numeric()
     } else if (itemtype=="3PL") {
-      re = coef(mirtfit,simplify=TRUE)$items[,1:3] %>% t() %>% as.numeric()
+      re = mirt::coef(mirtfit,simplify=TRUE)$items[,1:3] %>% t() %>% as.numeric()
     } else if (itemtype=="gpcm") {
       nkatx = max(mirtfit@Data$data)
-      a1 = coef(mirtfit,simplify=TRUE)$items
+      a1 = mirt::coef(mirtfit,simplify=TRUE)$items
       re =  a1[,c(1,(ncol(a1)-nkatx+1):ncol(a1))] %>% t() %>% as.numeric()
     }
   } else {
@@ -48,7 +50,7 @@ coef_short = function(mirtfit,itemtype=NULL) {
 
   #don't output g parameter if they are all zero?
 
-  a = as.data.frame(coef(mirtfit,simplify=TRUE)$items)
+  a = as.data.frame(mirt::coef(mirtfit,simplify=TRUE)$items)
   if (is.null(itemtype)) {
     itemtype=mirtfit@Model$itemtype[1]
   }
@@ -67,11 +69,20 @@ get_ncp = function(chii,df) {
   ncp_x = mean(chii)-df
   chii[chii<=0] = .00000001
   if (ncp_x<0) {return(list(ncp=0,sd = NA))}
-  chi_ncp <- MASS::fitdistr(chii,"chi-squared",start=list(ncp=0),
-                      method="Brent",df=df,lower=0,upper=10000)
-  return(list(ncp=chi_ncp$estimate,sd = chi_ncp$sd))
+  # chi_ncp <- MASS::fitdistr(chii,"chi-squared",start=list(ncp=0),
+  #                     method="Brent",df=df,lower=0,upper=10000000)
+  # return(list(ncp=chi_ncp$estimate,sd = chi_ncp$sd))
+  return(list(ncp=ncp_x))
 }
 
+# get_ncp = function(chii,df) {
+#   ncp_x = mean(chii)-df
+#   chii[chii<=0] = .00000001
+#   if (ncp_x<0) {return(list(ncp=0,sd = NA))}
+#   chi_ncp <- MASS::fitdistr(chii,"chi-squared",start=list(ncp=0),
+#                       method="Brent",df=df,lower=0,upper=10000000)
+#    return(list(ncp=chi_ncp$estimate,sd = chi_ncp$sd))
+# }
 
 #' Calculate sample size
 #'
