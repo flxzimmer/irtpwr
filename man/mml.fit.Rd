@@ -18,7 +18,13 @@ mml.fit(
 
 \item{data}{dataframe with data to be fitted}
 
-\item{infmat.method}{Method used for calculating the infmat used for the variance-covariance matrix, e.g. "Oakes" (default)}
+\item{infmat.unres}{String, type of the information matrix for the unrestricted model, "Fisher" or "ApproxFisher" are currently implemented}
+
+\item{infmat.res}{String, type of the information matrix for the restricted model, "Fisher" or "ApproxFisher" are currently implemented}
+
+\item{free_mean}{boolean, option to estimate free means between groups}
+
+\item{approx.npers}{integer, sample size for approximating the Fisher expected information matrix}
 }
 \value{
 

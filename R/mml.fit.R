@@ -3,8 +3,11 @@
 #' Fit restricted and unrestriced model by ML using mirt
 #'
 #' @param hyp Hypothesis Object created from the setup_hypothesis function
+#' @param infmat.unres String, type of the information matrix for the unrestricted model, "Fisher" or "ApproxFisher" are currently implemented
+#' @param infmat.res String, type of the information matrix for the restricted model, "Fisher" or "ApproxFisher" are currently implemented
+#' @param free_mean boolean, option to estimate free means between groups
+#' @param approx.npers integer, sample size for approximating the Fisher expected information matrix
 #' @param data dataframe with data to be fitted
-#' @param infmat.method Method used for calculating the infmat used for the variance-covariance matrix, e.g. "Oakes" (default)
 #'
 #' @return
 #' @export
@@ -19,9 +22,6 @@
 #' fitted <- mml.fit(data = data,hyp = hyp)
 #'
 mml.fit = function(hyp,data,infmat.unres = "Fisher",infmat.res="Fisher",free_mean = FALSE,approx.npers=10^6) {
-  # For the unrestricted model, you have the choice between observed and expected infomat
-  # Currently, only expected infmats are implemented for the unrestricted models, these are more accurate and can also be calculated for large numbers of items (ApproxFisher)
-  # For the restricted model, usually only the expected infmat makes sense since it has a special form depending on the unrestricted model and is therefore calculated seperately
 
   if (!is.data.frame(data)) {
     group = data$group
@@ -32,14 +32,6 @@ mml.fit = function(hyp,data,infmat.unres = "Fisher",infmat.res="Fisher",free_mea
   multigroup.res = isTRUE(hyp$resmod$multigroup)
 
   if (isTRUE(free_mean)) {invariance = "free_mean"} else {invariance = ""}
-
-  # if (infmat.unres == "ApproxFisher") { # Then Infmat for the unrestricted model is NOT calculated by mirt
-  #   SE.calc = FALSE
-  #   SE.type = "Fisher" # placeholder to avoid error
-  # } else { #Infmat for the unrestricted model is calculated by mirt (Oakes or Fisher)
-  #   SE.calc = TRUE
-  #   SE.type = infmat.unres
-  # }
 
   if (multigroup.unres) {
     unres = mirt::multipleGroup(data,model = hyp$unresmod$model,itemtype = hyp$unresmod$itemtype,technical = list(NCYCLES = 5000),verbose = FALSE,group=group,invariance=invariance)
@@ -72,9 +64,9 @@ mml.fit = function(hyp,data,infmat.unres = "Fisher",infmat.res="Fisher",free_mea
 }
 
 
-#' Title
+#' Calculate statistics from fitted mirt models
 #'
-#' @param fitted
+#' @param fitted Object created by mml.fit function.
 #'
 #' @return
 #' @export
@@ -102,23 +94,6 @@ stat_obs = function(fitted,stat=c("Wald","LR","Score","Gradient")) {
 }
 
 
-#' Calculate Wald statistic
-#'
-#' @param fitted Object created from mml.fit
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-#' altpars <- list(
-#' a = rlnorm(5,sdlog = .4),
-#' d = rnorm(5))
-#' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
-#' data <- setup.data(hyp=hyp,n=500)
-#' fitted <- mml.fit(data = data,hyp = hyp)
-#' wald_obs(fitted)
-#'
 wald_obs = function(fitted) {
   resmod = fitted$hyp$resmod
   pars=pars.long(pars = fitted$unres,itemtype = resmod$itemtype,from.mirt=TRUE)
@@ -130,46 +105,12 @@ wald_obs = function(fitted) {
   return(re)
 }
 
-#' Calculate LR statistic
-#'
-#' @param fitted Object created from mml.fit
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-#' altpars <- list(
-#' a = rlnorm(5,sdlog = .4),
-#' d = rnorm(5))
-#' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
-#' data <- setup.data(hyp=hyp,n=500)
-#' fitted <- mml.fit(data = data,hyp = hyp)
-#' lr_obs(fitted)
-#'
 lr_obs = function(fitted) {
   re = 2*(mirt::logLik(fitted$unres)-mirt::logLik(fitted$res))
   return(re)
 }
 
 
-#' Calculate Score statistic
-#'
-#' @param fitted Object created from mml.fit
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-#' altpars <- list(
-#' a = rlnorm(5,sdlog = .4),
-#' d = rnorm(5))
-#' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
-#' data <- setup.data(hyp=hyp,n=500)
-#' fitted <- mml.fit(data = data,hyp = hyp)
-#' score_obs(fitted)
-#'
 score_obs = function(fitted,export.lx=FALSE) {
 
   resmod = fitted$hyp$resmod
@@ -211,37 +152,9 @@ score_obs = function(fitted,export.lx=FALSE) {
     re = list(stat=re,lx=lx)
   }
 
-#   #alternative expression of score statistic
-#   A = resmod$Amat
-#   lambda1= findlambda(lx,A,v=1)
-#   lambda2 = findlambda(lx,A,v=2)
-#   re1 =  t(lambda1) %*% (A %*% sigma %*% t(A)) %*% lambda1 %>% as.numeric()
-#   re2 =  t(lambda2) %*% (A %*% sigma %*% t(A)) %*% lambda2 %>% as.numeric()
-#   re;re1;re2
-# browser()
-
   return(re)
 }
 
-
-
-#' Calculate Gradient statistic
-#'
-#' @param fitted Object created from mml.fit
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-#' altpars <- list(
-#' a = rlnorm(5,sdlog = .4),
-#' d = rnorm(5))
-#' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
-#' data <- setup.data(hyp=hyp,n=500)
-#' fitted <- mml.fit(data = data,hyp = hyp)
-#' grad_obs(fitted)
-#'
 grad_obs = function(fitted,lx=NULL) {
 
   resmod = fitted$hyp$resmod
@@ -283,16 +196,8 @@ grad_obs = function(fitted,lx=NULL) {
 
   lambda = findlambda(lx,A)
 
-  # fn = function(lambda) {sum((lx + t(A)%*%lambda)^2)}
-  # lambda = optim(rep(0,nrow(A)),fn)$par
-
   re = t(lambda) %*% dif %>% as.numeric() %>% abs()
 
-  # fn = function(lambda) {sum(abs(lx + t(A)%*%lambda))}
-  # lambda = optim(rep(0,nrow(A)),fn)$par
-  #
-  # re = t(lambda) %*% dif %>% as.numeric() %>% abs()
-  # re
   return(re)
 }
 

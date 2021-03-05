@@ -1,4 +1,4 @@
 library(testthat)
-library(mmlpwrpackage)
+library(pwrml)
 
-test_check("mmlpwrpackage")
+test_check("pwrml")

@@ -4,7 +4,7 @@
 \alias{setup.data}
 \title{Create artificial dataset from alternative hypothesis}
 \usage{
-setup.data(hyp, n, dist.fun = rnorm, gmisspec = FALSE)
+setup.data(hyp, n, dist.fun = rnorm)
 }
 \arguments{
 \item{hyp}{Hypothesis Object created from the setup_hypothesis function}
@@ -26,6 +26,5 @@ a = rlnorm(5,sdlog = .4),
 d = rnorm(5))
 hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
 data <- setup.data(hyp=hyp,n=500)
-
 
 }

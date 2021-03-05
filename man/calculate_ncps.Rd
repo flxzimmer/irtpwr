@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate_ncps.R
 \name{calculate_ncps}
 \alias{calculate_ncps}
-\title{Calculate ncps (analytical/sampling based, Wald/LR/Score)}
+\title{Calculate noncentrality parameters}
 \usage{
 calculate_ncps(
   hyp,
@@ -14,27 +14,28 @@ calculate_ncps(
 )
 }
 \arguments{
-\item{hyp}{Hypothesis Object created from the setup_hypothesis function}
+\item{hyp}{Hypothesis Object created by the setup_hypothesis function}
 
-\item{stat}{character vector containing the statistics to be calculated. Options are "Wald","LR","Score". Also, "all" (default) for all three.}
+\item{stat}{character vector containing the statistics to be calculated. Options are "Wald","LR","Score", and "Gradient". All statistics are included by default.}
 
-\item{n}{integer, number of persons that the ncp refers to (default 1)}
+\item{n}{integer, number of persons that the noncentrality parameters refer to (default is 1)}
 
-\item{sampling}{boolean, TRUE gives the simulation based statistics instead of the analytical}
+\item{sampling}{boolean, TRUE gives the sampling-based estimate instead of the analytical, recommended for larger itemsets}
 
-\item{n.pers}{passed to the ncp.sim function}
+\item{sampling.npers}{integer, sample size for the sampling-based approach}
+
+\item{approx.npers}{integer, sample size for approximating the Fisher expected information matrix in the sampling-based approach}
 }
 \value{
-numerical vector containing the ncps
+numerical vector containing the noncentrality parameters
 }
 \description{
-Wrapper function for the different ncp functions
+#' Wrapper function for the different analytical and sampling-based functions
 }
 \examples{
 dat <- expand.table(LSAT7)
-mirtfit <- mirt(dat,1)
-pars = coef_short(mirtfit)
-hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = pars)
+mirtfit <- mirt(dat,1,verbose = FALSE)
+hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = mirtfit)
 ncps <- calculate_ncps(hyp=hyp)
 
 }

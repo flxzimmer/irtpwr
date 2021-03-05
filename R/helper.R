@@ -1,6 +1,14 @@
 
 
-
+#' Calculate the time needed
+#'
+#' @param hyp
+#' @param n.items
+#'
+#' @return
+#' @export
+#'
+#' @examples
 calctime = function(hyp,n.items) {
 
   n.items.ex = length(hyp$unresmod$parsets$d)
@@ -28,8 +36,6 @@ findlambda = function(lx,A,v=2) {
     fn = function(lambda) {sum((lx + t(A)%*%lambda)^v)}
   }
   lambda = optim(rep(0,nrow(A)),fn,method="BFGS")$par
-  # lambda = optim(rep(0,nrow(A)),fn,method="Nelder-Mead")$par
-  # t(lambda) %*% (A %*% sigma %*% t(A)) %*% lambda %>% as.numeric()
 
   return(lambda)
 }
@@ -86,32 +92,15 @@ coef_short = function(mirtfit,itemtype=NULL) {
     }
   }
 
-  # if (length(re)==1) {   # shorten if possible
-  #   re = re[[1]]
-  # }
-
-
   return(re)
-
-  # a = as.data.frame(mirt::coef(mirtfit,simplify=TRUE)$items)
-  # if (is.null(itemtype)) {
-  #   itemtype=mirtfit@Model$itemtype[1]
-  # }
-  #
-  # re =  list(a = a$a1, d  = a$d,g = a$g,itemtype=itemtype)
-  # if (itemtype=="gpcm") {
-  #   re =  list(a = a$a1, d=cbind(rep(0,length(a$a1)),a$d1,a$d2),g = rep(0,length(a$a1)),itemtype=itemtype)
-  # }
-  #
-  # return(re)
 }
 
 
 #' extract coefs from mirtfit or element created by shortcoef
 #'
-#' @param mirtfit object created from mirt
+#' @param pars Parameter Set
+#' @param from.mirt Boolean, is the parameter set a mirt model?
 #' @param itemtype optional, itemtype as string
-#' @param shortcoef alternative, object created from shortcoef
 #'
 #' @return
 #' @export
@@ -185,9 +174,8 @@ get_ncp = function(chii,df) {
 #' @examples
 #'
 #' dat <- expand.table(LSAT7)
-#' mirtfit <- mirt(dat,1)
-#' pars = coef_short(mirtfit)
-#' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = pars)
+#' mirtfit <- mirt(dat,1,verbose = FALSE)
+#' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = mirtfit)
 #' ncps <- calculate_ncps(hyp=hyp)
 #' ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
 #'
@@ -225,9 +213,8 @@ ssize = function(hyp,ncp,power=.8,alpha=.05) {
 #' @examples
 #'
 #' dat <- expand.table(LSAT7)
-#' mirtfit <- mirt(dat,1)
-#' pars = coef_short(mirtfit)
-#' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = pars)
+#' mirtfit <- mirt(dat,1,verbose = FALSE)
+#' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = mirtfit)
 #' ncps <- calculate_ncps(hyp=hyp)
 #' power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
 #'

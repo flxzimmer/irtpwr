@@ -3,9 +3,12 @@
 #' Calculate information matrix (expected / observed)
 #'
 #' @param pars Parameter Set
-#' @param method string, method to be used, e.g. "Fisher" for the Fisher-expected information matrix calculated using the mirt package
+#' @param method string, method to be used, e.g. "Fisher" for the Fisher-expected information matrix calculated using the mirt package or "ApproxFisher" for its approximation
 #' @param approx.npers integer, number of persons in the sampling based approach
 #' @param data dataset for observed matrix methods
+#' @param multigroup Boolean, multigroup model?
+#' @param model Specific mirt model
+#' @param itemtype String, itemtype
 #'
 #' @return
 #' @export
@@ -15,11 +18,6 @@ infmat = function(pars,method = "Fisher",approx.npers = 10^6,data=NULL,multigrou
 
   if(is.null(pars$g)) {pars$g = rep(0,length(pars$a))}
 
-  # j=0
-  # success=FALSE
-  # while((!success) & (j<10)) {
-  #   j=j+1
-  #   if(j>1) {print(paste("retry #",j-1))}
 
   if (method=="Fisher" & !multigroup) {
     dat = mirt::simdata(a = pars$a,d = pars$d,guess=pars$g,N =1000,itemtype = itemtype)
@@ -82,34 +80,7 @@ infmat = function(pars,method = "Fisher",approx.npers = 10^6,data=NULL,multigrou
 
   }
 
-# delete/rework:
-
-#   if (method=="customFisher") {
-# # Fisher expected for the 3PL model.
-#
-#     patterns = as.matrix(expand.grid(lapply(1:length(pars$d),function(x) 0:1)))
-#     load.functions(pars$itemtype)
-#
-#     res  = list()
-#     for (i in 1:nrow(patterns)) {
-#       l = ldot(patterns[i,],pars)
-#       res[[i]] = l %*% t(l) * g(patterns[i,],pars)
-#     }
-#     re = Reduce('+', res)
-#   }
-#
-#   if (method%in%c("mirtOakessim","mirtOakes")) {
-#     if(method=="mirtOakessim"){df = mirt::simdata(a = pars$a,d = pars$d,guess=pars$g,N =simbased.npers,itemtype = itemtype)} else {df = data}
-#
-#     mml = mirt::mirt(df,1,itemtype = itemtype,SE = TRUE,SE.type = "Oakes",technical = list(NCYCLES = 5000),verbose = FALSE)
-#     re = solve(mirt::vcov(mml))/nrow(df)
-#   }
     re = solve(mirt::vcov(mml))/nrow(dat)
-  #   success = !is.na(re[1,1])
-  # }
-  # if(j==2) {
-  #   errorstring = paste(pars,method,multigroup,model)
-  #   stop(errorstring)}
 
   return(re)
 }

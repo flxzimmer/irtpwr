@@ -2,14 +2,14 @@
 % Please edit documentation in R/calculate_ncps.R
 \name{ncp.lr}
 \alias{ncp.lr}
-\title{Analytical ncp for the LR statistic}
+\title{Analytical noncentrality parameter for the LR statistic}
 \usage{
 ncp.lr(hyp, n = 1, parsr = NULL)
 }
 \arguments{
-\item{hyp}{Hypothesis Object created from the setup_hypothesis function}
+\item{hyp}{Hypothesis Object created by the setup_hypothesis function}
 
-\item{n}{integer, number of persons that the ncp refers to (default 1)}
+\item{n}{integer, number of persons that the noncentrality parameters refer to (default is 1)}
 
 \item{parsr}{Restricted parameters}
 }
@@ -17,5 +17,5 @@ ncp.lr(hyp, n = 1, parsr = NULL)
 
 }
 \description{
-Analytical ncp for the LR statistic
+Analytical noncentrality parameter for the LR statistic
 }

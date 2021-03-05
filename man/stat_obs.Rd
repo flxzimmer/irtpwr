@@ -2,16 +2,16 @@
 % Please edit documentation in R/mml.fit.R
 \name{stat_obs}
 \alias{stat_obs}
-\title{Title}
+\title{Calculate statistics from fitted mirt models}
 \usage{
 stat_obs(fitted, stat = c("Wald", "LR", "Score", "Gradient"))
 }
 \arguments{
-\item{fitted}{}
+\item{fitted}{Object created by mml.fit function.}
 }
 \value{
 
 }
 \description{
-Title
+Calculate statistics from fitted mirt models
 }

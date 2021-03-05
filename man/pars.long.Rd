@@ -7,11 +7,11 @@
 pars.long(pars, itemtype, from.mirt = FALSE)
 }
 \arguments{
+\item{pars}{Parameter Set}
+
 \item{itemtype}{optional, itemtype as string}
 
-\item{mirtfit}{object created from mirt}
-
-\item{shortcoef}{alternative, object created from shortcoef}
+\item{from.mirt}{Boolean, is the parameter set a mirt model?}
 }
 \value{
 

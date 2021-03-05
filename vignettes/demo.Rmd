@@ -8,14 +8,15 @@ vignette: >
 ---
 
 ```{r include=FALSE}
-knitr::opts_chunk$set(eval=FALSE)
+knitr::opts_chunk$set(eval=TRUE)
 ```
 
 ```{r message=FALSE}
-library(mmlpwrpackage)
+library(pwrml)
 library(mirt)
+library(dplyr)
 
-# To install the most recent mirt version (results may otherwise be flawed):
+# To install the most recent mirt version (currently, some matrices may otherwise not be calculated correctly):
 # library(devtools)
 # install_github('philchalmers/mirt')
 ```

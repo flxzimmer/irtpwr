@@ -2,14 +2,14 @@
 % Please edit documentation in R/calculate_ncps.R
 \name{ncp.score}
 \alias{ncp.score}
-\title{Analytical ncp for the Score statistic}
+\title{Analytical noncentrality parameter for the Score statistic}
 \usage{
 ncp.score(hyp, n = 1, parsr = NULL)
 }
 \arguments{
-\item{hyp}{Hypothesis Object created from the setup_hypothesis function}
+\item{hyp}{Hypothesis Object created by the setup_hypothesis function}
 
-\item{n}{integer, number of persons that the ncp refers to (default 1)}
+\item{n}{integer, number of persons that the noncentrality parameters refer to (default is 1)}
 
 \item{parsr}{Restricted parameters}
 }
@@ -17,5 +17,5 @@ ncp.score(hyp, n = 1, parsr = NULL)
 
 }
 \description{
-Analytical ncp for the Score statistic
+Analytical noncentrality parameter for the Score statistic
 }

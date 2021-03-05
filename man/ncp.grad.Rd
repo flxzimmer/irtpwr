@@ -2,20 +2,22 @@
 % Please edit documentation in R/calculate_ncps.R
 \name{ncp.grad}
 \alias{ncp.grad}
-\title{Analytical ncp for the Score statistic}
+\title{Analytical noncentrality parameter for the Score statistic}
 \usage{
 ncp.grad(hyp, n = 1, parsr = NULL, lx = NULL)
 }
 \arguments{
-\item{hyp}{Hypothesis Object created from the setup_hypothesis function}
+\item{hyp}{Hypothesis Object created by the setup_hypothesis function}
 
-\item{n}{integer, number of persons that the ncp refers to (default 1)}
+\item{n}{integer, number of persons that the noncentrality parameters refer to (default is 1)}
 
 \item{parsr}{Restricted parameters}
+
+\item{lx}{Score-vector, optional, can be used from the output of ncp.score.}
 }
 \value{
 
 }
 \description{
-Analytical ncp for the Score statistic
+Analytical noncentrality parameter for the Score statistic
 }

@@ -2,18 +2,18 @@
 % Please edit documentation in R/calculate_ncps.R
 \name{ncp.wald}
 \alias{ncp.wald}
-\title{Analytical ncp for the Wald statistic}
+\title{Analytical noncentrality parameter for the Wald statistic}
 \usage{
 ncp.wald(hyp, n = 1)
 }
 \arguments{
-\item{hyp}{Hypothesis Object created from the setup_hypothesis function}
+\item{hyp}{Hypothesis Object created by the setup_hypothesis function}
 
-\item{n}{integer, number of persons that the ncp refers to (default 1)}
+\item{n}{integer, number of persons that the noncentrality parameters refer to (default is 1)}
 }
 \value{
 
 }
 \description{
-Analytical ncp for the Wald statistic
+Analytical noncentrality parameter for the Wald statistic
 }

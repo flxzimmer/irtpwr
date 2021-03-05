@@ -17,11 +17,17 @@ infmat(
 \arguments{
 \item{pars}{Parameter Set}
 
-\item{method}{string, method to be used, e.g. "Fisher" for the Fisher-expected information matrix calculated using the mirt package}
+\item{method}{string, method to be used, e.g. "Fisher" for the Fisher-expected information matrix calculated using the mirt package or "ApproxFisher" for its approximation}
 
 \item{approx.npers}{integer, number of persons in the sampling based approach}
 
 \item{data}{dataset for observed matrix methods}
+
+\item{multigroup}{Boolean, multigroup model?}
+
+\item{model}{Specific mirt model}
+
+\item{itemtype}{String, itemtype}
 }
 \value{
 

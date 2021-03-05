@@ -17,8 +17,7 @@
 #' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
 #' data <- setup.data(hyp=hyp,n=500)
 #'
-#'
-setup.data = function(hyp, n,dist.fun=rnorm,gmisspec=FALSE) {
+setup.data = function(hyp, n,dist.fun=rnorm) {
 
   distfun = function(x) {dist.fun(x) %>% matrix(.,ncol=1)}
 
@@ -35,19 +34,6 @@ setup.data = function(hyp, n,dist.fun=rnorm,gmisspec=FALSE) {
     df = mirt::simdata(a = pars$a,d = pars$d,guess=pars$g,Theta = distfun(n),itemtype = hyp$unresmod$itemtype)
     re=list(data = df)
   }
-
-  # Extra Stuff for guessing parameter - needs updating and integration.
-
-  #   if (isTRUE(hyp$unresmod$multigroup)) {
-  #     df = lapply(hyp$unresmod$parsets,function(pars) mirt::simdata(a = pars$a,d = pars$d,guess=.1,Theta = distfun(n/2),itemtype = hyp$unresmod$itemtype)) %>% do.call(rbind,.)
-  #     group=rep(c("A","B"),each=n/2)
-  #     re=list(data = df,group=group)
-  #   } else {
-  #     if (is.null(hyp$unresmod$g)) {hyp$unresmod$g = 0}
-  #     df = mirt::simdata(a = hyp$unresmod$a,d = hyp$unresmod$d,guess=.1,Theta = distfun(n),itemtype = hyp$unresmod$itemtype)
-  #     re=list(data = df)
-  #   }
-  #
 
     return(re)
 }

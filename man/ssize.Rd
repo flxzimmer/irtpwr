@@ -24,9 +24,8 @@ Calculate sample size
 \examples{
 
 dat <- expand.table(LSAT7)
-mirtfit <- mirt(dat,1)
-pars = coef_short(mirtfit)
-hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = pars)
+mirtfit <- mirt(dat,1,verbose = FALSE)
+hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = mirtfit)
 ncps <- calculate_ncps(hyp=hyp)
 ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
 

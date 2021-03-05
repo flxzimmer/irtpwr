@@ -1,29 +1,27 @@
 
 
-#' Calculate ncps (analytical/sampling based, Wald/LR/Score)
+#' Calculate noncentrality parameters
 #'
-#' Wrapper function for the different ncp functions
+#' #' Wrapper function for the different analytical and sampling-based functions
 #'
-#' @param hyp Hypothesis Object created from the setup_hypothesis function
-#' @param stat character vector containing the statistics to be calculated. Options are "Wald","LR","Score". Also, "all" (default) for all three.
-#' @param n integer, number of persons that the ncp refers to (default 1)
-#' @param sampling boolean, TRUE gives the simulation based statistics instead of the analytical
-#' @param n.pers passed to the ncp.sim function
+#' @param hyp Hypothesis Object created by the setup_hypothesis function
+#' @param stat character vector containing the statistics to be calculated. Options are "Wald","LR","Score", and "Gradient". All statistics are included by default.
+#' @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
+#' @param sampling.npers integer, sample size for the sampling-based approach
+#' @param approx.npers integer, sample size for approximating the Fisher expected information matrix in the sampling-based approach
+#' @param sampling boolean, TRUE gives the sampling-based estimate instead of the analytical, recommended for larger itemsets
 #'
-#' @return numerical vector containing the ncps
+#' @return numerical vector containing the noncentrality parameters
 #' @export
 #'
 #' @examples
 #' dat <- expand.table(LSAT7)
-#' mirtfit <- mirt(dat,1)
-#' pars = coef_short(mirtfit)
-#' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = pars)
+#' mirtfit <- mirt(dat,1,verbose = FALSE)
+#' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = mirtfit)
 #' ncps <- calculate_ncps(hyp=hyp)
 #'
 calculate_ncps = function(hyp,stat=c("Wald","LR","Score","Gradient"),n=1,sampling=FALSE,sampling.npers = 10^4,approx.npers=10^4) {
   # implement ncp.sim for other than all three stats
-
-  # if (stat[1]=="all") {stat= c("Wald","LR","Score","Gradient")}
 
   if (sampling) {
     data = setup.data(hyp,n = sampling.npers)
@@ -59,10 +57,10 @@ calculate_ncps = function(hyp,stat=c("Wald","LR","Score","Gradient"),n=1,samplin
 
 
 
-#' Analytical ncp for the Wald statistic
+#' Analytical noncentrality parameter for the Wald statistic
 #'
-#' @param hyp Hypothesis Object created from the setup_hypothesis function
-#' @param n integer, number of persons that the ncp refers to (default 1)
+#' @param hyp Hypothesis Object created by the setup_hypothesis function
+#' @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
 #'
 #' @return
 #' @export
@@ -86,10 +84,10 @@ ncp.wald = function(hyp,n=1) {
 }
 
 
-#' Analytical ncp for the LR statistic
+#' Analytical noncentrality parameter for the LR statistic
 #'
-#' @param hyp Hypothesis Object created from the setup_hypothesis function
-#' @param n integer, number of persons that the ncp refers to (default 1)
+#' @param hyp Hypothesis Object created by the setup_hypothesis function
+#' @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
 #' @param parsr Restricted parameters
 #'
 #' @return
@@ -148,10 +146,10 @@ ncp.lr = function(hyp,n=1,parsr= NULL) {
 }
 
 
-#' Analytical ncp for the Score statistic
+#' Analytical noncentrality parameter for the Score statistic
 #'
-#' @param hyp Hypothesis Object created from the setup_hypothesis function
-#' @param n integer, number of persons that the ncp refers to (default 1)
+#' @param hyp Hypothesis Object created by the setup_hypothesis function
+#' @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
 #' @param parsr Restricted parameters
 #'
 #' @return
@@ -170,7 +168,6 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
   multigroup = isTRUE(unresmod$multigroup)
 
   # Fisher implementation is currently flawed in mirt:
-  # if (multigroup) {method = "ApproxFisher"} else {method = "Fisher"}
   method = "Fisher"
 
   if (multigroup) { # Multigroup Model
@@ -183,20 +180,18 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
     freq12 = lapply(patterns,function(x) c(g(x,pars1)/2,g(x,pars2)/2)) %>% do.call(rbind,.)
     freq = cbind(rowSums(freq12),freq12)
     ly = lapply(1:length(patterns),function(i) {
-      # paste(100*i/length(patterns)%>%round(.,1),"% finished") %>% print()
+
       l = ldot(patterns[[i]],parsr); list(freq[i,1] * l,freq[i,2] * l,freq[i,3] * l)} )
-    lx = lapply(ly,function(x) x[[1]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
-    lx1 = lapply(ly,function(x) x[[2]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
-    lx2 = lapply(ly,function(x) x[[3]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
+      lx = lapply(ly,function(x) x[[1]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
+      lx1 = lapply(ly,function(x) x[[2]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
+      lx2 = lapply(ly,function(x) x[[3]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
 
-    lx = c(lx1[1:2,],lx[3:length(lx),],lx2[1:2,]) %>% array(.,dim=c(length(.),1))
+      lx = c(lx1[1:2,],lx[3:length(lx),],lx2[1:2,]) %>% array(.,dim=c(length(.),1))
 
-    # transform restricted pars for infmat calculation
-    parsr = list(parsr,parsr)
+      # transform restricted pars for infmat calculation
+      parsr = list(parsr,parsr)
 
   } else { # Single Group Model
-
-    # if(resmod$itemtype == "3PL") {method="customFisher"}
 
     pars = unresmod$parsets
     n.kat = max(ncol(pars$d),2)
@@ -215,11 +210,12 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
   return(re)
 }
 
-#' Analytical ncp for the Score statistic
+#' Analytical noncentrality parameter for the Score statistic
 #'
-#' @param hyp Hypothesis Object created from the setup_hypothesis function
-#' @param n integer, number of persons that the ncp refers to (default 1)
+#' @param hyp Hypothesis Object created by the setup_hypothesis function
+#' @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
 #' @param parsr Restricted parameters
+#' @param lx Score-vector, optional, can be used from the output of ncp.score.
 #'
 #' @return
 #' @export
@@ -246,16 +242,16 @@ ncp.grad = function(hyp,n=1,parsr=NULL,lx=NULL) {
     freq12 = lapply(patterns,function(x) c(g(x,pars1)/2,g(x,pars2)/2)) %>% do.call(rbind,.)
     freq = cbind(rowSums(freq12),freq12)
     ly = lapply(1:length(patterns),function(i) {
-      # paste(100*i/length(patterns)%>%round(.,1),"% finished") %>% print()
+
       l = ldot(patterns[[i]],parsr); list(freq[i,1] * l,freq[i,2] * l,freq[i,3] * l)} )
-    lx = lapply(ly,function(x) x[[1]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
-    lx1 = lapply(ly,function(x) x[[2]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
-    lx2 = lapply(ly,function(x) x[[3]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
+      lx = lapply(ly,function(x) x[[1]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
+      lx1 = lapply(ly,function(x) x[[2]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
+      lx2 = lapply(ly,function(x) x[[3]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
 
-    lx = c(lx1[1:2,],lx[3:length(lx),],lx2[1:2,]) %>% array(.,dim=c(length(.),1))
+      lx = c(lx1[1:2,],lx[3:length(lx),],lx2[1:2,]) %>% array(.,dim=c(length(.),1))
 
-    # transform restricted pars for infmat calculation
-    parsr = list(parsr,parsr)
+      # transform restricted pars for infmat calculation
+      parsr = list(parsr,parsr)
 
   }
 
@@ -273,9 +269,6 @@ ncp.grad = function(hyp,n=1,parsr=NULL,lx=NULL) {
   dif = A%*%unresmod$longpars-resmod$cvec
 
   lambda = findlambda(lx,A)
-
-  # fn = function(lambda) {sum(abs(lx + t(A)%*%lambda))}
-  # lambda = optim(rep(0,nrow(A)),fn)$par
 
   re = t(lambda) %*% dif %>% as.numeric() %>% abs()
 
