@@ -11,61 +11,66 @@ vignette: >
 knitr::opts_chunk$set(eval=FALSE)
 ```
 
-
 ```{r message=FALSE}
 library(mmlpwrpackage)
 library(mirt)
-library(dplyr)
-```
 
-```{r eval=FALSE, include=FALSE}
-
-# Benchmark Feature: Estimating the Time needed for Analytical Approach
-
-
-# Ich würde ganz am Anfang erklären, an welche User sich die Vignette richtet. Anfänger, oder brauchen die Leute Erfahrung in mirt…?
-# Ich würde auch jeden Chunk erklären, was da jeweils passiert.
-# Für den Aufbau empfehle ich, dass du zuerst eine Einleitung mit Überblick bringst, dann ein Tutorial, wo du die Anwendung vorzeigst, und am Ende mögliche Erweiterungen.
-# Welche Möglichkeiten für jedes Argument?
-# Bessere Bezeichnungen, z.b. nicht ncps.
-
-
+# To install the most recent mirt version (results may otherwise be flawed):
+# library(devtools)
+# install_github('philchalmers/mirt')
 ```
 
 
-# Basic Features
+# Introduction
 
-## Usage with observed data
+This vignette introduces the implementation of a power analysis for the Wald, LR, score and gradient test for linear hypothesis. It uses some IRT examples and treats basic as well as additional features of the package. It is directed towards beginner to intermediate level R users. Previous experience with the mirt package may be helpful. In the following we will cover the three-step workflow in detail:
 
-We want to know the power and required sample size for a test of the Rasch vs 2PL model. We use the LSAT 6 Dataset from the mirt package.
+* Setup Hypotheses (setup_hypothesis)
+* Calculate Noncentrality Parameters (calculate_ncps)
+* Calculate Power or Sample Size (power, ssize)
+
+As additional features, we cover:
+
+* Generate artificial datasets
+* Performing hypothesis tests
+* Estimating the time needed
 
 
-As a first step, we load the dataset and fit a 2PL model. The 2PL parameters are then used as parameters for the alternative hypothesis in our hypothesis definition. We do not have to provide the parameters under the null hypothesis here, because they are implicitly defined as the maximum likelihood parameters when slopes are equal. These maximum likelihood restricted parameters are calculated by the setup_hypothesis function.
+# Workflow example
 
+We want to know the power and required sample size for a test of the Rasch vs 2PL model. We use the LSAT 7 Dataset from the mirt package.
+
+As a first step, we load the dataset and fit a 2PL model.
 
 ```{r}
 dat <- expand.table(LSAT7)
 mirtfit <- mirt(dat,1,verbose = FALSE)
-pars = coef_short(mirtfit)
-pars
 ```
 
+The 2PL parameters are then used as parameters for the alternative hypothesis in our hypothesis definition.
 ```{r}
-hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = pars)
+hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = mirtfit)
 ```
 
-
-For this hypothesis, we can estimate the power and required sample size.
+We can now calculate the noncentrality parameters.
 ```{r}
 ncps <- calculate_ncps(hyp=hyp)
+```
+
+From the noncentrality parameters, we can estimate the power or required sample size.
+```{r}
 power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
 ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
 ```
 
 
-## Usage without data
+# Functions in detail
 
-To apply a power analysis without data, we first setup the parameters that take the place of the estimated parameters in the application with data
+We will present all included functions and their arguments in more detail.
+
+## Setup Hypotheses (setup_hypothesis)
+
+We can either use a fitted mirt model or specify alternative parameters directly. An example of the letter would be:
 
 ```{r}
 altpars <- list(
@@ -73,57 +78,16 @@ altpars <- list(
         d = rnorm(5)
         )
 altpars
-```
-
-We can estimate the power and sample size as above.
-```{r}
 hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
 
-ncps <- calculate_ncps(hyp=hyp)
-power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
-ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
 ```
 
-
-## Larger numbers of items: Simulated Ncp
-
-Applying on same data as above. 
-```{r}
-
-ncps <- calculate_ncps(hyp=hyp,simbased = TRUE,n.pers = 10^5)
-power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
-ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
-
-```
-
-New data with 50 items:
-
-```{r}
-altpars <- list(
-        a = rlnorm(50,sdlog = .1),
-        d = rnorm(50)
-        )
-
-hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
-
-ncps <- calculate_ncps(hyp=hyp,simbased = TRUE,n.pers = 10^3)
-power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
-ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
-
-```
-
-
-# Implemented Hypotheses
-
-The following hypothesis are currently implemented.
+The following alternative hypotheses are currently implemented.
 
 * Rasch against 2PL
 * DIF in 2PL
 
-The Rasch against 2PL hypothesis is presented above. We will provide some examples for the other hypotheses. To implement custom hypothesis, see the section for package extensions. 
-
-
-## DIF in 2PL
+The Rasch against 2PL hypothesis is presented above. The procedure for the DIF in 2PL hypothesis is analogous, yet is a bit more complicated since we need to define different groups:
 
 ```{r}
 group1 = group2 <- list(
@@ -137,29 +101,42 @@ group2$d[1] = group2$d[1] + .5
 altpars <- list(group1,group2)
 
 altpars
+
+hyp <- setup_hypothesis(type = "DIF2PL", altpars = altpars)
+
+```
+
+To implement custom hypotheses, please refer to the respective vignette. Note that for both hypothesis types, we do not have to provide the parameters under the null hypothesis here, because they are implicitly defined by the hypotheses. The setup_hypothesis function, however, also takes a nullpars argument for cases in which the parmaters under the null hypothesis are not identified by the parameters under the alternative.
+
+
+## Calculate Noncentrality Parameters (calculate_ncps)
+
+The calculation of noncentrality parameters is straightforward. 
+```{r}
+ncps <- calculate_ncps(hyp=hyp)
+```
+
+To use the sampling-based parameters, one may use sampling=TRUE. The sample size of the sampling-based approach and the approximation of the Fisher expected matrix may be tweaked or left at their default values.
+
+```{r}
+ncps <- calculate_ncps(hyp=hyp,sampling=TRUE,sampling.npers = 10^4,approx.npers=10^4)
 ```
 
 
+## Calculate Power or Sample Size (power, ssize)
+
+The functions to calculate power and sample size are straightforward. One may use them to plot a power curve.
 ```{r}
-hyp <- setup_hypothesis(type = "DIF2PL", altpars = altpars)
-ncps <- calculate_ncps(hyp=hyp)
-power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
-ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
-
-
-# experimental stuff:
-# ncps2 <- calculate_ncps(hyp=hyp,simbased=TRUE,n.pers = 100000)
-# 
-# power(hyp=hyp,ncp=ncps2,alpha=.05,ssize=500)
-# ssize(hyp=hyp,ncp=ncps2,alpha=.05,power=.80)
-
-
+n = seq(100,2000)
+pow = power(hyp=hyp,ncp=ncps["Gradient"],alpha=.05,ssize=n)
+plot(n,pow)
 ```
 
 
 
 # Additional Features
 
+We will take a look at some additional features.
 
 ## Generate artificial datasets
 
@@ -178,38 +155,55 @@ data <- setup.data(hyp=hyp,n=500)
 
 ## Performing Hypothesis Tests
 
+One can also perform hypothesis tests on observed data. This is done in two steps, model fitting (mml.fit) and calculation of the statitics (stat_obs). To fit both an unrestricted and restricted model in one go, we specify the data and the hypothesis.
+
 ```{r}
 fitted <- mml.fit(data = data,hyp = hyp)
+```
+
+One may also use an approximation of the Fisher expected matrix, e.g. for larger item sets.
+```{r}
+fitted <- mml.fit(data = data,hyp = hyp,infmat.unres = "ApproxFisher",infmat.res="ApproxFisher",approx.npers = 10^4)
 ```
 
 From the results, we can calculate the observed statistics and p-values.
 
 ```{r}
-stats_obs <- c(wald_obs(fitted),lr_obs(fitted),score_obs(fitted))
+stats_obs <- stat_obs(fitted)
+stats_obs
 pvals <- pchisq(stats_obs,df=nrow(hyp$resmod$Amat),ncp=0,lower.tail=FALSE)
+pvals
 ```
 
 
 ## Estimating the time needed for the analytical approach
 
-We can estimate the time needed for the 1PL vs 2PL hypothesis and 10 items in seconds.
+We can calculate the approximate time needed to calculate the analytical noncentrality parameters using a larger numbers of items.
+
 ```{r}
-h_1PLvs2PL$calctime(10)
+altpars <- list(
+        a = rlnorm(5,sdlog = .4),
+        d = rnorm(5)
+        )
+
+hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
+
+calctime(hyp,n.items=7)
 ```
 
-Analogous calculation for the DIF hypothesis:
+Measuring the actual time for comparison:
+
 ```{r}
-h_DIF2PL$calctime(10)
+altpars <- list(
+        a = rlnorm(7,sdlog = .4),
+        d = rnorm(7)
+        )
+
+hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
+
+calctime(hyp,n.items=7)
+
 ```
 
-
-## Extending the package
-
-
-Present other hypotheses, their inner workings and make an example for an extension.
-
-
-
-
-
+The time measuring method is currently not very accurate. As a result from my test runs, I suggest to expect +80% as a worst case scenario.
 

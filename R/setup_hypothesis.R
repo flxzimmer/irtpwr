@@ -19,7 +19,11 @@
 setup_hypothesis = function(type, altpars = NULL,nullpars = NULL) {
 # setup a null and alternative hypothesis according to a given type
 
-  # altpars is in a coef_short format
+  if (!is.null(attr(class(altpars),"package"))) {
+    altpars = coef_short(altpars)
+  }
+
+      # altpars is in a coef_short format
 
   if (!is.list(type)) {
 
@@ -34,6 +38,9 @@ setup_hypothesis = function(type, altpars = NULL,nullpars = NULL) {
     }
     else if (type == "DIF2PL") {
       type = h_DIF2PL
+    }
+    else if (type == "basic") {
+      type = h_basic
     }
     else {print("error..")}
   }

@@ -6,11 +6,11 @@
 \usage{
 calculate_ncps(
   hyp,
-  stat = "all",
+  stat = c("Wald", "LR", "Score", "Gradient"),
   n = 1,
-  simbased = FALSE,
-  n.pers = 10^4,
-  runs = 1
+  sampling = FALSE,
+  sampling.npers = 10^4,
+  approx.npers = 10^4
 )
 }
 \arguments{
@@ -20,11 +20,9 @@ calculate_ncps(
 
 \item{n}{integer, number of persons that the ncp refers to (default 1)}
 
-\item{simbased}{boolean, TRUE gives the simulation based statistics instead of the analytical}
+\item{sampling}{boolean, TRUE gives the simulation based statistics instead of the analytical}
 
 \item{n.pers}{passed to the ncp.sim function}
-
-\item{runs}{passed to the ncp.sim function}
 }
 \value{
 numerical vector containing the ncps

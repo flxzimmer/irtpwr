@@ -13,17 +13,21 @@ knitr::opts_chunk$set(
 )
 ```
 
-# mmlpwrpackage
+# pwrml
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-R Package to the paper ...
+R Package to the paper "Power analysis for the Wald, LR, score, and gradient tests in a marginal maximum likelihood framework: Applications in IRT"
+
+it can be installed using:
+
+```{r}
+# library(devtools)
+# install_github('anonymized')
+```
 
 
 current todos:
 
-- rework infmat function: drop currently unused methods, generalize method for multigroup (seems to be for 2PL DIF specifically)
-
-- Create Tutorial Vignette: How to create new presets
-- Rework the Demo Vignette: Basic Functions (more readable)
+- speed up calculation of score statistic using internals from the mirt functions, e.g. attributes(fitted$res)$Internals

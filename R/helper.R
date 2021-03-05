@@ -1,4 +1,39 @@
 
+
+
+calctime = function(hyp,n.items) {
+
+  n.items.ex = length(hyp$unresmod$parsets$d)
+
+  ptm <- proc.time() #start timer
+  ncps <- calculate_ncps(hyp=hyp)
+  time = proc.time() - ptm #stop timer
+
+  time = as.numeric(time[3])
+
+  # time is t * 2^3
+  re = time *2^(n.items-n.items.ex)
+
+  return(re)
+}
+
+
+
+findlambda = function(lx,A,v=2) {
+
+  if (v==1) {
+  fn = function(lambda) {sum(abs(lx + t(A)%*%lambda))}
+  }
+  if (v>=2) {
+    fn = function(lambda) {sum((lx + t(A)%*%lambda)^v)}
+  }
+  lambda = optim(rep(0,nrow(A)),fn,method="BFGS")$par
+  # lambda = optim(rep(0,nrow(A)),fn,method="Nelder-Mead")$par
+  # t(lambda) %*% (A %*% sigma %*% t(A)) %*% lambda %>% as.numeric()
+
+  return(lambda)
+}
+
 #' extract coefs from mirtfit
 #'
 #' @param mirtfit object created from mirt()
@@ -16,19 +51,59 @@
 coef_short = function(mirtfit,itemtype=NULL) {
   # extracts coefs from mml coef output
 
-  #don't output g parameter if they are all zero?
-
-  a = as.data.frame(mirt::coef(mirtfit,simplify=TRUE)$items)
   if (is.null(itemtype)) {
     itemtype=mirtfit@Model$itemtype[1]
   }
 
-  re =  list(a = a$a1, d  = a$d,g = a$g,itemtype=itemtype)
-  if (itemtype=="gpcm") {
-    re =  list(a = a$a1, d=cbind(rep(0,length(a$a1)),a$d1,a$d2),g = rep(0,length(a$a1)),itemtype=itemtype)
+  coefs = mirt::coef(mirtfit,simplify=TRUE)
+
+  if (mirtfit@Data$ngroups==1) {
+
+    a = as.data.frame(coefs$items)
+
+    if (itemtype=="gpcm") { # Other Form for GPCM
+      re =  list(a = a$a1, d=cbind(rep(0,length(a$a1)),a$d1,a$d2),g = rep(0,length(a$a1)),itemtype=itemtype)
+
+    } else { # default form
+      re =  list(a = a$a1, d  = a$d,g = a$g,itemtype=itemtype)
+    }
+
+
+  } else { # multiple groups
+
+    re = list()
+    for (i in 1:length(coefs)) { # For all groups
+
+      a = as.data.frame(coefs[[i]]$items)
+
+      if (itemtype=="gpcm") { # Other Form for GPCM
+        re[[i]] =  list(a = a$a1, d=cbind(rep(0,length(a$a1)),a$d1,a$d2),g = rep(0,length(a$a1)),itemtype=itemtype)
+
+      } else { # default form
+        re[[i]] =  list(a = a$a1, d  = a$d,g = a$g,itemtype=itemtype)
+      }
+
+    }
   }
 
+  # if (length(re)==1) {   # shorten if possible
+  #   re = re[[1]]
+  # }
+
+
   return(re)
+
+  # a = as.data.frame(mirt::coef(mirtfit,simplify=TRUE)$items)
+  # if (is.null(itemtype)) {
+  #   itemtype=mirtfit@Model$itemtype[1]
+  # }
+  #
+  # re =  list(a = a$a1, d  = a$d,g = a$g,itemtype=itemtype)
+  # if (itemtype=="gpcm") {
+  #   re =  list(a = a$a1, d=cbind(rep(0,length(a$a1)),a$d1,a$d2),g = rep(0,length(a$a1)),itemtype=itemtype)
+  # }
+  #
+  # return(re)
 }
 
 
@@ -42,31 +117,33 @@ coef_short = function(mirtfit,itemtype=NULL) {
 #' @export
 #'
 #' @examples
-coef.long = function(mirtfit=NULL,itemtype=NULL,shortcoef=NULL) {
-  # extracts coefs from mml coef output
-  if (is.null(shortcoef)) {
-    if (itemtype=="2PL"& mirtfit@Call[[1]]=="mirt::multipleGroup") {
-      pars = lapply(mirt::coef(mirtfit,simplify=TRUE),function(x) x$items[,1:2] %>% t() %>% as.numeric())
+pars.long = function(pars,itemtype,from.mirt=FALSE) {
+
+  if(!from.mirt) {
+    if (itemtype=="2PL") {
+      re = rbind(pars$a,pars$d) %>% as.numeric()
+    } else if (itemtype=="3PL") {
+      re = rbind(pars$a,pars$d,pars$g) %>% as.numeric()
+    } else if (itemtype=="gpcm") {
+      re = cbind(pars$a,pars$d[,2:ncol(pars$d)]) %>% t() %>% as.numeric()
+    }
+  }
+
+  if(from.mirt) {
+    if (itemtype=="2PL"& pars@Call[[1]]=="mirt::multipleGroup") {
+      pars = lapply(mirt::coef(pars,simplify=TRUE),function(x) x$items[,1:2] %>% t() %>% as.numeric())
       re = c(pars$A,pars$B[1:2])
     } else if (itemtype=="2PL") {
-      re = mirt::coef(mirtfit,simplify=TRUE)$items[,1:2] %>% t() %>% as.numeric()
+      re = mirt::coef(pars,simplify=TRUE)$items[,1:2] %>% t() %>% as.numeric()
     } else if (itemtype=="3PL") {
-      re = mirt::coef(mirtfit,simplify=TRUE)$items[,1:3] %>% t() %>% as.numeric()
+      re = mirt::coef(pars,simplify=TRUE)$items[,1:3] %>% t() %>% as.numeric()
     } else if (itemtype=="gpcm") {
-      nkatx = max(mirtfit@Data$data)
-      a1 = mirt::coef(mirtfit,simplify=TRUE)$items
+      nkatx = max(pars@Data$data)
+      a1 = mirt::coef(pars,simplify=TRUE)$items
       re =  a1[,c(1,(ncol(a1)-nkatx+1):ncol(a1))] %>% t() %>% as.numeric()
     }
-  } else {
-    if (itemtype=="2PL") {
-      re = rbind(shortcoef$a,shortcoef$d) %>% as.numeric()
-    } else if (itemtype=="3PL") {
-      re = rbind(shortcoef$a,shortcoef$d,shortcoef$g) %>% as.numeric()
-    } else if (itemtype=="gpcm") {
-      re = cbind(shortcoef$a,shortcoef$d[,2:ncol(shortcoef$d)]) %>% t() %>% as.numeric()
-    }
-
   }
+
   return(re)
 }
 
@@ -129,6 +206,7 @@ ssize = function(hyp,ncp,power=.8,alpha=.05) {
     )$root
 
   re <- as.numeric(ceiling(w0 / ncp))
+  names(re) = names(ncp)
   return(re)
 }
 

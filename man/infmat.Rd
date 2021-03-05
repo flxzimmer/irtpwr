@@ -4,14 +4,22 @@
 \alias{infmat}
 \title{Calculate information matrix (expected / observed)}
 \usage{
-infmat(pars, method = "mirtFisher", simbased.npers = 2e+05, data = NULL)
+infmat(
+  pars,
+  method = "Fisher",
+  approx.npers = 10^6,
+  data = NULL,
+  multigroup = FALSE,
+  model = 1,
+  itemtype = "2PL"
+)
 }
 \arguments{
 \item{pars}{Parameter Set}
 
-\item{method}{string, method to be used, e.g. "mirtFisher" for the Fisher-expected information matrix calculated using the mirt package}
+\item{method}{string, method to be used, e.g. "Fisher" for the Fisher-expected information matrix calculated using the mirt package}
 
-\item{simbased.npers}{integer, number of persons in the sampling based approach}
+\item{approx.npers}{integer, number of persons in the sampling based approach}
 
 \item{data}{dataset for observed matrix methods}
 }

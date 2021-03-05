@@ -4,7 +4,14 @@
 \alias{mml.fit}
 \title{Fit restricted and unrestriced model by ML using mirt}
 \usage{
-mml.fit(hyp, data, infmat.method = "Oakes", free_mean = FALSE)
+mml.fit(
+  hyp,
+  data,
+  infmat.unres = "Fisher",
+  infmat.res = "Fisher",
+  free_mean = FALSE,
+  approx.npers = 10^6
+)
 }
 \arguments{
 \item{hyp}{Hypothesis Object created from the setup_hypothesis function}
