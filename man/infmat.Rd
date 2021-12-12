@@ -11,7 +11,9 @@ infmat(
   data = NULL,
   multigroup = FALSE,
   model = 1,
-  itemtype = "2PL"
+  itemtype = "2PL",
+  NCYCLES = 5000,
+  SE.type = "Oakes"
 )
 }
 \arguments{

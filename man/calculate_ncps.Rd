@@ -10,7 +10,8 @@ calculate_ncps(
   n = 1,
   sampling = FALSE,
   sampling.npers = 10^4,
-  approx.npers = 10^4
+  approx.npers = 10^4,
+  SE.type = "Oakes"
 )
 }
 \arguments{

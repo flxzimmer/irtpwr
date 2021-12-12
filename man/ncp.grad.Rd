@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate_ncps.R
 \name{ncp.grad}
 \alias{ncp.grad}
-\title{Analytical noncentrality parameter for the Score statistic}
+\title{Analytical noncentrality parameter for the Gradient statistic}
 \usage{
 ncp.grad(hyp, n = 1, parsr = NULL, lx = NULL)
 }
@@ -19,5 +19,5 @@ ncp.grad(hyp, n = 1, parsr = NULL, lx = NULL)
 
 }
 \description{
-Analytical noncentrality parameter for the Score statistic
+Analytical noncentrality parameter for the Gradient statistic
 }

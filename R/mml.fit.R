@@ -21,7 +21,7 @@
 #' data <- setup.data(hyp=hyp,n=500)
 #' fitted <- mml.fit(data = data,hyp = hyp)
 #'
-mml.fit = function(hyp,data,infmat.unres = "Fisher",infmat.res="Fisher",free_mean = FALSE,approx.npers=10^6) {
+mml.fit = function(hyp,data,infmat.unres = "Fisher",infmat.res="Fisher",free_mean = FALSE,approx.npers=10^6,NCYCLES=5000,SE.type="Oakes") {
 
   if (!is.data.frame(data)) {
     group = data$group
@@ -34,29 +34,26 @@ mml.fit = function(hyp,data,infmat.unres = "Fisher",infmat.res="Fisher",free_mea
   if (isTRUE(free_mean)) {invariance = "free_mean"} else {invariance = ""}
 
   if (multigroup.unres) {
-    unres = mirt::multipleGroup(data,model = hyp$unresmod$model,itemtype = hyp$unresmod$itemtype,technical = list(NCYCLES = 5000),verbose = FALSE,group=group,invariance=invariance)
+    unres = mirt::multipleGroup(data,model = hyp$unresmod$model,itemtype = hyp$unresmod$itemtype,technical = list(NCYCLES = NCYCLES),verbose = FALSE,group=group,invariance=invariance)
   }
 
   if (!multigroup.unres) {
-    unres =  mirt::mirt(data,model = hyp$unresmod$model,itemtype = hyp$unresmod$itemtype,technical = list(NCYCLES = 5000),verbose = FALSE)
+    unres =  mirt::mirt(data,model = hyp$unresmod$model,itemtype = hyp$unresmod$itemtype,technical = list(NCYCLES = NCYCLES),verbose = FALSE)
   }
 
   if (multigroup.res) {
-    res = mirt::multipleGroup(data,model = hyp$resmod$model,itemtype = hyp$resmod$itemtype,technical = list(NCYCLES = 5000),verbose = FALSE,group=group,invariance=invariance)
+    res = mirt::multipleGroup(data,model = hyp$resmod$model,itemtype = hyp$resmod$itemtype,technical = list(NCYCLES = NCYCLES),verbose = FALSE,group=group,invariance=invariance)
   }
 
   if (!multigroup.res) {
-    res =  mirt::mirt(data,model = hyp$resmod$model,itemtype = hyp$resmod$itemtype,technical = list(NCYCLES = 5000),verbose = FALSE)
-    }
-
+    res =  mirt::mirt(data,model = hyp$resmod$model,itemtype = hyp$resmod$itemtype,technical = list(NCYCLES = NCYCLES),verbose = FALSE)
+  }
   # Caluclating Infmats
-
   parsr = coef_short(res,itemtype = hyp$resmod$itemtype)
   pars = coef_short(unres,itemtype = hyp$unresmod$itemtype)
 
-    unres@vcov = (infmat(pars,method=infmat.unres,approx.npers = approx.npers,multigroup = multigroup.unres,model = hyp$unresmod$model) * nrow(data) )%>% solve()
-
-    res@vcov = (infmat(parsr,method=infmat.unres,approx.npers = approx.npers,multigroup = multigroup.unres,model = hyp$unresmod$model) * nrow(data) )%>% solve()
+  unres@vcov = (infmat(pars,method=infmat.unres,approx.npers = approx.npers,multigroup = multigroup.unres,model = hyp$unresmod$model,itemtype=hyp$unresmod$itemtype,NCYCLES=NCYCLES,SE.type=SE.type) * nrow(data) )%>% solve()
+  res@vcov = (infmat(parsr,method=infmat.unres,approx.npers = approx.npers,multigroup = multigroup.unres,model = hyp$unresmod$model,itemtype=hyp$unresmod$itemtype,NCYCLES=NCYCLES,SE.type=SE.type) * nrow(data) )%>% solve()
 
 
     re = list(unres=unres,res=res,hyp=hyp)
@@ -98,9 +95,17 @@ wald_obs = function(fitted) {
   resmod = fitted$hyp$resmod
   pars=pars.long(pars = fitted$unres,itemtype = resmod$itemtype,from.mirt=TRUE)
   A = resmod$Amat
-
+# browser()
   dif = A%*%pars-resmod$cvec
+  if(resmod$itemtype == "3PL") {
+    dif[3] = logit((A%*%pars)[3])-logit(resmod$cvec[3])
+  }
+
   sigma=mirt::vcov(fitted$unres)
+  # browser()
+
+  # browser()
+
   re = t(dif) %*% solve(A%*% sigma %*% t(A)) %*% dif %>% as.numeric()
   return(re)
 }
@@ -116,12 +121,18 @@ score_obs = function(fitted,export.lx=FALSE) {
   resmod = fitted$hyp$resmod
   unresmod = fitted$hyp$unresmod
   parsr = coef_short(fitted$res,itemtype = resmod$itemtype)
-  load.functions(resmod$itemtype)
-  patterns = fitted$res@Data$data
+  is.multi = "a2" %in% colnames(parsr$a)
+  load.functions(resmod$itemtype,multi=is.multi)
+  patterns = extract.mirt(fitted$res, "data")
   hashs = apply(patterns,1,digest::digest) %>% factor(.,levels=unique(.))
   rownames(patterns)=hashs
   up = unique(patterns)
   freq = table(hashs)
+
+  # browser()
+  # which(freq==34)
+  # which(rownames(patterns)=="0982a00f80c71de4b38bbfa52ce02fef")
+  # patterns[22,]
 
   if (isTRUE(resmod$multigroup))  { # multigroup model
 
@@ -140,9 +151,25 @@ score_obs = function(fitted,export.lx=FALSE) {
 
   } else { # single group model
 
-    ly = lapply(rownames(up),function(i) ldot(up[i,],parsr)*freq[i] )
-    lx = do.call(rbind,ly) %>% colSums() %>% array(.,dim=c(length(.),1))
+    # print("stuck in score obs")
+    # ptm1 <- proc.time() #start timer
+# browser()
+
+    if(resmod$itemtype == "3PL") {
+      parsr$g = logit(parsr$g)
+    }
+
+
+    ly = lapply(rownames(up),function(i) ldot(up[i,],parsr)*freq[i])
+    # print("finished")
+    # time1 = proc.time() - ptm1 #stop timer
+    # print(time1)
+
+    lx = do.call(rbind,ly) %>% colSums(.,na.rm = TRUE) %>% array(.,dim=c(length(.),1))
   }
+  # print(lx)
+# browser()
+  if(is.multi) lx = lx[-(nrow(lx)-1),1] # since it is not estimated
 
   sigma = mirt::vcov(fitted$res)
 
@@ -161,7 +188,7 @@ grad_obs = function(fitted,lx=NULL) {
   unresmod = fitted$hyp$unresmod
   parsr = coef_short(fitted$res,itemtype = resmod$itemtype)
   load.functions(resmod$itemtype)
-  patterns = fitted$res@Data$data
+  patterns = extract.mirt(fitted$res, "data")
   hashs = apply(patterns,1,digest::digest) %>% factor(.,levels=unique(.))
   rownames(patterns)=hashs
   up = unique(patterns)
@@ -192,12 +219,17 @@ grad_obs = function(fitted,lx=NULL) {
 
   pars=pars.long(pars = fitted$unres,itemtype = resmod$itemtype,from.mirt=TRUE)
   A = resmod$Amat
-  dif = (A%*%pars-resmod$cvec)
+  dif = A%*%pars-resmod$cvec
+  if(resmod$itemtype == "3PL") {
+    dif[3] = logit((A%*%pars)[3])-logit(resmod$cvec[3])
+  }
 
   lambda = findlambda(lx,A)
 
   re = t(lambda) %*% dif %>% as.numeric() %>% abs()
 
+  print(dif)
+  print(lambda)
   return(re)
 }
 

@@ -10,7 +10,9 @@ mml.fit(
   infmat.unres = "Fisher",
   infmat.res = "Fisher",
   free_mean = FALSE,
-  approx.npers = 10^6
+  approx.npers = 10^6,
+  NCYCLES = 5000,
+  SE.type = "Oakes"
 )
 }
 \arguments{

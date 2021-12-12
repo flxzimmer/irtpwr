@@ -4,7 +4,7 @@
 \alias{load.functions}
 \title{Load IRT model functions and derivatives}
 \usage{
-load.functions(model)
+load.functions(model, multi = FALSE)
 }
 \arguments{
 \item{model}{Desired Model (2PL only at the moment)}

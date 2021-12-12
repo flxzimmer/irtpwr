@@ -20,12 +20,12 @@
 #' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = mirtfit)
 #' ncps <- calculate_ncps(hyp=hyp)
 #'
-calculate_ncps = function(hyp,stat=c("Wald","LR","Score","Gradient"),n=1,sampling=FALSE,sampling.npers = 10^4,approx.npers=10^4) {
+calculate_ncps = function(hyp,stat=c("Wald","LR","Score","Gradient"),n=1,sampling=FALSE,sampling.npers = 10^4,approx.npers=10^4,SE.type="Oakes") {
   # implement ncp.sim for other than all three stats
 
   if (sampling) {
     data = setup.data(hyp,n = sampling.npers)
-    fitted = mml.fit(hyp, data = data,infmat.unres = "ApproxFisher",infmat.res="ApproxFisher",approx.npers=approx.npers)
+    fitted = mml.fit(hyp, data = data,infmat.unres = "ApproxFisher",infmat.res="ApproxFisher",approx.npers=approx.npers,SE.type=SE.type)
     obs =stat_obs(fitted,stat)
     ncps = sapply(obs,function(x) get_ncp(x,df=nrow(hyp$resmod$Amat))$ncp)
     re = ncps/sampling.npers
@@ -48,7 +48,6 @@ calculate_ncps = function(hyp,stat=c("Wald","LR","Score","Gradient"),n=1,samplin
       lx = sctemp$lx
     }
     if ("Gradient" %in% stat) {a[4] = ncp.grad(hyp = hyp,parsr=parsr,lx=lx)}
-
     re = a[!is.na(a)]
     names(re) = stat
   }
@@ -72,8 +71,6 @@ ncp.wald = function(hyp,n=1) {
 
   multigroup = isTRUE(unresmod$multigroup)
 
-  # Fisher implementation is currently flawed in mirt:
-  # if (multigroup) {method = "ApproxFisher"} else {method = "Fisher"}
   method = "Fisher"
 
   A = resmod$Amat
@@ -106,6 +103,7 @@ ncp.lr = function(hyp,n=1,parsr= NULL) {
   unres = c()
   load.functions(resmod$itemtype)
 
+
   if (isTRUE(unresmod$multigroup)) {
 
     pars1 = unresmod$parsets[[1]]
@@ -121,7 +119,9 @@ ncp.lr = function(hyp,n=1,parsr= NULL) {
       unres[i] = .5 * log(g1) * g1 + .5 * log(g2) * g2
     }
 
-  } else {
+  }
+
+  else { #unresmod$multigroup NA oder FALSE
 
     pars = unresmod$parsets
     n.kat = max(ncol(pars$d),2)
@@ -210,7 +210,7 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
   return(re)
 }
 
-#' Analytical noncentrality parameter for the Score statistic
+#' Analytical noncentrality parameter for the Gradient statistic
 #'
 #' @param hyp Hypothesis Object created by the setup_hypothesis function
 #' @param n integer, number of persons that the noncentrality parameters refer to (default is 1)

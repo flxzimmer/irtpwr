@@ -30,8 +30,18 @@ setup.data = function(hyp, n,dist.fun=rnorm) {
   } else { # SingleGroup Model
 
     pars = hyp$unresmod$parsets
+    is.multi = "a2" %in% colnames(pars$a)
+    if(is.multi) {
+      distfun = function(x) {dist.fun(2*x) %>% matrix(.,ncol=2)}
+    }
+
     if (is.null(pars$g)) {pars$g = 0}
-    df = mirt::simdata(a = pars$a,d = pars$d,guess=pars$g,Theta = distfun(n),itemtype = hyp$unresmod$itemtype)
+# browser()
+    df = mirt::simdata(a = pars$a,
+                       d = pars$d,
+                       guess=pars$g,
+                       Theta = distfun(n),
+                       itemtype = hyp$unresmod$itemtype)
     re=list(data = df)
   }
 
