@@ -2,6 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
+.Rproj
+.gitignore
+.Rprofile
+.Rbuildignore
 doc
 Meta
 inst/doc
