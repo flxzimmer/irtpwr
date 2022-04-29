@@ -8,6 +8,8 @@
 #' @param free_mean boolean, option to estimate free means between groups
 #' @param approx.npers integer, sample size for approximating the Fisher expected information matrix
 #' @param data dataframe with data to be fitted
+#' @param NCYCLES Sets the NCYCLES argument in the mirt function
+#' @param SE.type specifies the type of the observed information matrix
 #'
 #' @return
 #' @export
@@ -64,6 +66,7 @@ mml.fit = function(hyp,data,infmat.unres = "Fisher",infmat.res="Fisher",free_mea
 #' Calculate statistics from fitted mirt models
 #'
 #' @param fitted Object created by mml.fit function.
+#' @param stat Vector containing statistics to calculate
 #'
 #' @return
 #' @export
@@ -95,16 +98,13 @@ wald_obs = function(fitted) {
   resmod = fitted$hyp$resmod
   pars=pars.long(pars = fitted$unres,itemtype = resmod$itemtype,from.mirt=TRUE)
   A = resmod$Amat
-# browser()
+
   dif = A%*%pars-resmod$cvec
   if(resmod$itemtype == "3PL") {
     dif[3] = logit((A%*%pars)[3])-logit(resmod$cvec[3])
   }
 
   sigma=mirt::vcov(fitted$unres)
-  # browser()
-
-  # browser()
 
   re = t(dif) %*% solve(A%*% sigma %*% t(A)) %*% dif %>% as.numeric()
   return(re)
@@ -129,11 +129,6 @@ score_obs = function(fitted,export.lx=FALSE) {
   up = unique(patterns)
   freq = table(hashs)
 
-  # browser()
-  # which(freq==34)
-  # which(rownames(patterns)=="0982a00f80c71de4b38bbfa52ce02fef")
-  # patterns[22,]
-
   if (isTRUE(resmod$multigroup))  { # multigroup model
 
     freq1 = table(hashs[1:(nrow(patterns)/2)])
@@ -151,9 +146,6 @@ score_obs = function(fitted,export.lx=FALSE) {
 
   } else { # single group model
 
-    # print("stuck in score obs")
-    # ptm1 <- proc.time() #start timer
-# browser()
 
     if(resmod$itemtype == "3PL") {
       parsr$g = logit(parsr$g)
@@ -161,14 +153,10 @@ score_obs = function(fitted,export.lx=FALSE) {
 
 
     ly = lapply(rownames(up),function(i) ldot(up[i,],parsr)*freq[i])
-    # print("finished")
-    # time1 = proc.time() - ptm1 #stop timer
-    # print(time1)
 
     lx = do.call(rbind,ly) %>% colSums(.,na.rm = TRUE) %>% array(.,dim=c(length(.),1))
   }
-  # print(lx)
-# browser()
+
   if(is.multi) lx = lx[-(nrow(lx)-1),1] # since it is not estimated
 
   sigma = mirt::vcov(fitted$res)
@@ -228,8 +216,6 @@ grad_obs = function(fitted,lx=NULL) {
 
   re = t(lambda) %*% dif %>% as.numeric() %>% abs()
 
-  print(dif)
-  print(lambda)
   return(re)
 }
 

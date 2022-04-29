@@ -11,7 +11,8 @@ calculate_ncps(
   sampling = FALSE,
   sampling.npers = 10^4,
   approx.npers = 10^4,
-  SE.type = "Oakes"
+  SE.type = "Oakes",
+  sampling.mat = "ApproxFisher"
 )
 }
 \arguments{
@@ -26,6 +27,10 @@ calculate_ncps(
 \item{sampling.npers}{integer, sample size for the sampling-based approach}
 
 \item{approx.npers}{integer, sample size for approximating the Fisher expected information matrix in the sampling-based approach}
+
+\item{SE.type}{Method for calculation of the observed information matrix used for calculating the statistics in the sampling-based approach ("Oakes" by default)}
+
+\item{sampling.mat}{Approach to calculate the information matrix used for calculating the statistics in the sampling-based approach. By default ("ApproxFisher"), an sampling-based approximation of the expected Fisher matrix is calculated using an observed information matrix of the type SE.type}
 }
 \value{
 numerical vector containing the noncentrality parameters

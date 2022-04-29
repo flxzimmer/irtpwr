@@ -54,7 +54,6 @@ setup_hypothesis = function(type, altpars = NULL, nullpars = NULL) {
     else {print("error..")}
   }
 
-# browser()
   resmod = type$res(altpars = altpars,nullpars = nullpars)
   unresmod = type$unres(altpars = altpars)
 

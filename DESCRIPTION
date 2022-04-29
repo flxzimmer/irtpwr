@@ -16,7 +16,7 @@ Imports:
     mirt,
     Deriv,
     digest,
-    spatstat,
+    spatstat.random,
     MASS,
     dplyr
 VignetteBuilder: knitr

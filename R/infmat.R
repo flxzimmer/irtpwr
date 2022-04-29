@@ -9,6 +9,8 @@
 #' @param multigroup Boolean, multigroup model?
 #' @param model Specific mirt model
 #' @param itemtype String, itemtype
+#' @param NCYCLES Sets the NCYCLES argument in the mirt function
+#' @param SE.type specifies the type of the observed information matrix
 #'
 #' @return
 #' @export
@@ -18,6 +20,7 @@ infmat = function(pars,method = "Fisher",approx.npers = 10^6,data=NULL,multigrou
 
   if(is.null(pars$g)) {pars$g = rep(0,length(pars$a))}
 
+  # multidimensional model?
   is.multi = "a2" %in% colnames(pars$a)
 
 
@@ -58,7 +61,6 @@ infmat = function(pars,method = "Fisher",approx.npers = 10^6,data=NULL,multigrou
     synt$lbound[dpars] = synt$ubound[dpars] = pars$d
     gpars = which(synt$name=="g")
     synt$lbound[gpars] = synt$ubound[gpars] = pars$g
-    # if(pars$d[1]==1)browser()
     mml = mirt::mirt(dat,1,itemtype = itemtype,SE = TRUE,SE.type = SE.type,technical = list(NCYCLES = NCYCLES),verbose = FALSE,pars=synt)
   }
 
@@ -75,9 +77,6 @@ infmat = function(pars,method = "Fisher",approx.npers = 10^6,data=NULL,multigrou
   }
 
   if (method=="ApproxFisher"& !multigroup & itemtype=="gpcm"& !is.multi) {
-    # ggf funktioniert dieser Code auch für itemtype!="gpcm", ausprobieren!
-
-    # browser()
 
     dat = mirt::simdata(a = pars$a,d = pars$d,guess=pars$g,N =approx.npers,itemtype = itemtype)
     synt = mirt::mirt(dat,1,itemtype = itemtype,technical = list(NCYCLES = 1),pars="values")

@@ -1,4 +1,4 @@
-# simtools ----------------------------------------------------------------
+
 
 #' Create artificial dataset from alternative hypothesis
 #'
@@ -36,7 +36,7 @@ setup.data = function(hyp, n,dist.fun=rnorm) {
     }
 
     if (is.null(pars$g)) {pars$g = 0}
-# browser()
+
     df = mirt::simdata(a = pars$a,
                        d = pars$d,
                        guess=pars$g,

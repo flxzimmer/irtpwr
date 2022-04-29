@@ -2,16 +2,18 @@
 % Please edit documentation in R/helper.R
 \name{save.error}
 \alias{save.error}
-\title{Title}
+\title{Helper function for simulation study (used in evaluation_dist.R)}
 \usage{
 save.error(e, x)
 }
 \arguments{
-\item{x}{}
+\item{e}{Error}
+
+\item{x}{Additional}
 }
 \value{
 
 }
 \description{
-Title
+Helper function for simulation study (used in evaluation_dist.R)
 }

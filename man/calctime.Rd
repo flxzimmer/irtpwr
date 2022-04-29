@@ -7,7 +7,9 @@
 calctime(hyp, n.items)
 }
 \arguments{
-\item{n.items}{}
+\item{hyp}{Hypothesis from setup.hypothesis function}
+
+\item{n.items}{Number of items}
 }
 \value{
 

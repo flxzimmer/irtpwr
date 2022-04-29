@@ -27,6 +27,10 @@ mml.fit(
 \item{free_mean}{boolean, option to estimate free means between groups}
 
 \item{approx.npers}{integer, sample size for approximating the Fisher expected information matrix}
+
+\item{NCYCLES}{Sets the NCYCLES argument in the mirt function}
+
+\item{SE.type}{specifies the type of the observed information matrix}
 }
 \value{
 

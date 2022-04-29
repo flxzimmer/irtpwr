@@ -8,6 +8,8 @@ stat_obs(fitted, stat = c("Wald", "LR", "Score", "Gradient"))
 }
 \arguments{
 \item{fitted}{Object created by mml.fit function.}
+
+\item{stat}{Vector containing statistics to calculate}
 }
 \value{
 

@@ -2,7 +2,8 @@
 
 #' Load IRT model functions and derivatives
 #'
-#' @param model Desired Model (2PL only at the moment)
+#' @param model Desired Model (2PL,3PL, GPCM)
+#' @param multi Boolean - Multidimensional? (available for 2PL)
 #'
 #' @return
 #' @export
@@ -11,20 +12,18 @@
 load.functions = function (model,multi=FALSE) {
 
 
-
 # 2PL ---------------------------------------------------------------------
 
 
   # 2PL
   if (model=="2PL"&!multi) {
 
-    # p = function(th,a,d) 1/(1+exp(-(a*th+d)))
     f = function(th,a,d,x) exp(x*(a*th+d))/(1+exp(a*th+d))
     f1 =  Deriv::Deriv(f,c("a"))
     f2 =  Deriv::Deriv(f,c("d"))
 
     g = function(pattern, pars) {
-      re = spatstat.core::gauss.hermite(function(th) {
+      re = spatstat.random::gauss.hermite(function(th) {
         prod(f(th,pars$a,pars$d,pattern))
       }, order = 30)
       return(re)
@@ -33,7 +32,6 @@ load.functions = function (model,multi=FALSE) {
       res = f(th,a,d,x)
       temp1 = f1(th,a,d,x)
       temp2 = f2(th,a,d,x)
-      # clear NAs? can also do later and not in each function eval?
 
       a = lapply(1:length(x),function(i) {
        prod(res[-i])* c(temp1[i],temp2[i])
@@ -41,7 +39,7 @@ load.functions = function (model,multi=FALSE) {
       as.numeric(unlist(a))
     }
     gdot = function(pattern, pars) {
-      re = spatstat.core::gauss.hermite(function(th) {
+      re = spatstat.random::gauss.hermite(function(th) {
         fdot(th,pars$a,pars$d,pattern)
       }, order = 30)
       return(re)
@@ -62,17 +60,16 @@ load.functions = function (model,multi=FALSE) {
   # 2PL
   if (model=="2PL"& multi) {
 
-    # p = function(th,a,d) 1/(1+exp(-(a*th+d)))
     f = function(th1,th2,a1,a2,d,x) exp(x*(a1*th1+a2*th2+d))/(1+exp(a1*th1+a2*th2+d))
     f1 =  Deriv::Deriv(f,c("a1"))
     f2 =  Deriv::Deriv(f,c("a2"))
     f3 =  Deriv::Deriv(f,c("d"))
 
     g = function(pattern, pars) {
-      re = spatstat.core::gauss.hermite(function(th1) {
-      re = spatstat.core::gauss.hermite(function(th2) {
+      re = spatstat.random::gauss.hermite(function(th1) {
+      re = spatstat.random::gauss.hermite(function(th2) {
         prod(f(th1,th2,pars$a[,1],pars$a[,2],pars$d,pattern))
-      }, order = 5)},order=5)
+      }, order = 30)},order=30)
       return(re)
     }
     fdot = function(th1,th2,a1,a2,d,x) {
@@ -81,18 +78,16 @@ load.functions = function (model,multi=FALSE) {
       temp2 = f2(th1,th2,a1,a2,d,x)
       temp3 = f3(th1,th2,a1,a2,d,x)
 
-      # clear NAs? can also do later and not in each function eval?
-
       a = lapply(1:length(x),function(i) {
         prod(res[-i])* c(temp1[i],temp2[i],temp3[i])
       })
       as.numeric(unlist(a))
     }
     gdot = function(pattern, pars) {
-      re = spatstat.core::gauss.hermite(function(th1) {
-        re = spatstat.core::gauss.hermite(function(th2) {
+      re = spatstat.random::gauss.hermite(function(th1) {
+        re = spatstat.random::gauss.hermite(function(th2) {
           fdot(th1,th2,pars$a[,1],pars$a[,2],pars$d,pattern)
-        }, order = 5)},order=5)
+        }, order = 30)},order=30)
       return(re)
     }
     ldot = function(pattern,pars) {
@@ -107,13 +102,9 @@ load.functions = function (model,multi=FALSE) {
 
 # 3PL ---------------------------------------------------------------------
 
-  # Problem ist dass f(x=0) + f(x=1) != 1 ist?
-
   # 3PL
   if (model=="3PL"&!multi) {
 
-    # f = function(th,a,d,g,x) g + (1-g) * exp(x*(a*th+d))/(1+exp(a*th+d))
-    # f = function(th,a,d,g,x) (2 * x - 1) * g + (1-g) * exp(x*(a*th+d))/(1+exp(a*th+d))
     f = function(th,a,d,g,x) (1-x) + (2 * x - 1) * logitinv(g) + (2 * x - 1) * (1-logitinv(g)) /(1+exp(-(a*th+d)))
 
     f1 =  Deriv::Deriv(f,c("a"))
@@ -121,7 +112,7 @@ load.functions = function (model,multi=FALSE) {
     f3 =  Deriv::Deriv(f,c("g"))
 
     g = function(pattern, pars) {
-      re = spatstat.core::gauss.hermite(function(th) {
+      re = spatstat.random::gauss.hermite(function(th) {
         prod(f(th,pars$a,pars$d,pars$g,pattern))
       }, order = 30)
       return(re)
@@ -138,7 +129,7 @@ load.functions = function (model,multi=FALSE) {
       as.numeric(unlist(a))
     }
     gdot = function(pattern, pars) {
-      re = spatstat.core::gauss.hermite(function(th) {
+      re = spatstat.random::gauss.hermite(function(th) {
         fdot(th,pars$a,pars$d,pars$g,pattern)
       }, order = 30)
       return(re)
@@ -166,7 +157,7 @@ load.functions = function (model,multi=FALSE) {
     f3 =  Deriv::Deriv(f,c("d2"))
 
     g = function(pattern, pars) {
-      re = spatstat.core::gauss.hermite(function(th) {
+      re = spatstat.random::gauss.hermite(function(th) {
         prod(f(th,pars$a,pars$d[,2],pars$d[,3],pattern))
       }, order = 50)
       return(re)
@@ -185,7 +176,7 @@ load.functions = function (model,multi=FALSE) {
     }
 
     gdot = function(pattern, pars) {
-      re = spatstat.core::gauss.hermite(function(th) {
+      re = spatstat.random::gauss.hermite(function(th) {
         fdot(th,pars$a,pars$d[,2],pars$d[,3],pattern)
       }, order = 50)
       return(re)

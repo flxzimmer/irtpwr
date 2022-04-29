@@ -10,6 +10,8 @@
 #' @param sampling.npers integer, sample size for the sampling-based approach
 #' @param approx.npers integer, sample size for approximating the Fisher expected information matrix in the sampling-based approach
 #' @param sampling boolean, TRUE gives the sampling-based estimate instead of the analytical, recommended for larger itemsets
+#' @param SE.type Method for calculation of the observed information matrix used for calculating the statistics in the sampling-based approach ("Oakes" by default)
+#' @param sampling.mat Approach to calculate the information matrix used for calculating the statistics in the sampling-based approach. By default ("ApproxFisher"), an sampling-based approximation of the expected Fisher matrix is calculated using an observed information matrix of the type SE.type
 #'
 #' @return numerical vector containing the noncentrality parameters
 #' @export
@@ -20,12 +22,11 @@
 #' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = mirtfit)
 #' ncps <- calculate_ncps(hyp=hyp)
 #'
-calculate_ncps = function(hyp,stat=c("Wald","LR","Score","Gradient"),n=1,sampling=FALSE,sampling.npers = 10^4,approx.npers=10^4,SE.type="Oakes") {
-  # implement ncp.sim for other than all three stats
+calculate_ncps = function(hyp,stat=c("Wald","LR","Score","Gradient"),n=1,sampling=FALSE,sampling.npers = 10^4,approx.npers=10^4,SE.type="Oakes",sampling.mat = "ApproxFisher") {
 
   if (sampling) {
     data = setup.data(hyp,n = sampling.npers)
-    fitted = mml.fit(hyp, data = data,infmat.unres = "ApproxFisher",infmat.res="ApproxFisher",approx.npers=approx.npers,SE.type=SE.type)
+    fitted = mml.fit(hyp, data = data,infmat.unres = sampling.mat,infmat.res=sampling.mat,approx.npers=approx.npers,SE.type=SE.type)
     obs =stat_obs(fitted,stat)
     ncps = sapply(obs,function(x) get_ncp(x,df=nrow(hyp$resmod$Amat))$ncp)
     re = ncps/sampling.npers
@@ -121,7 +122,7 @@ ncp.lr = function(hyp,n=1,parsr= NULL) {
 
   }
 
-  else { #unresmod$multigroup NA oder FALSE
+  else { #unresmod$multigroup NA or FALSE
 
     pars = unresmod$parsets
     n.kat = max(ncol(pars$d),2)
@@ -167,9 +168,6 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
   load.functions(resmod$itemtype)
   multigroup = isTRUE(unresmod$multigroup)
 
-  # Fisher implementation is currently flawed in mirt:
-  method = "Fisher"
-
   if (multigroup) { # Multigroup Model
 
     pars1 = unresmod$parsets[[1]]
@@ -201,7 +199,7 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
     lx = do.call(rbind,ly) %>% colSums() %>% array(.,dim=c(length(.),1))
   }
 
-  sigma = infmat(parsr,method=method,model = hyp$unresmod$model, multigroup = multigroup,itemtype = hyp$unresmod$itemtype) %>% solve()
+  sigma = infmat(parsr,method="Fisher",model = hyp$unresmod$model, multigroup = multigroup,itemtype = hyp$unresmod$itemtype) %>% solve()
 
   ncp = t(lx) %*% sigma %*% lx %>% c()
 

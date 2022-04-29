@@ -4,11 +4,10 @@ logit <- function(p) { log(p/(1-p)) }
 logitinv<- function(q) { 1/(1+exp(-q)) }
 
 
-
 #' Calculate the time needed
 #'
-#' @param hyp
-#' @param n.items
+#' @param hyp Hypothesis from setup.hypothesis function
+#' @param n.items Number of items
 #'
 #' @return
 #' @export
@@ -144,13 +143,6 @@ pars.long = function(pars, itemtype, from.mirt=FALSE) {
 
   if(from.mirt) {
 
-    # if (itemtype=="2PL"& class(pars)=="MultipleGroupClass" & pars@Model$nest== pars@Model$nestpars - pars@Data$nitems -5) {
-    #
-    #     pars = lapply(mirt::coef(pars,simplify=TRUE),function(x) x$items[,1:2] %>% t() %>% as.numeric())
-    #     re = c(pars$A,pars$B[seq(12,length(pars$B),2)])
-    #
-    # } else
-
       if (itemtype=="2PL"& class(pars)=="MultipleGroupClass") {
         pars = lapply(mirt::coef(pars,simplify=TRUE),function(x) x$items[,1:2] %>% t() %>% as.numeric())
         re = c(pars$A,pars$B[1:2])
@@ -175,7 +167,6 @@ pars.long = function(pars, itemtype, from.mirt=FALSE) {
     } else if (itemtype=="gpcm") {
 
       nkatx = max(extract.mirt(pars, "K") - 1)
-      # nkatx = max(pars@Data$data)
       a1 = mirt::coef(pars,simplify=TRUE)$items
       re =  a1[,c(1,(ncol(a1)-nkatx+1):ncol(a1))] %>% t() %>% as.numeric()
     }
@@ -198,12 +189,9 @@ pars.long = function(pars, itemtype, from.mirt=FALSE) {
 #'
 #' @examples
 get_ncp = function(chii,df) {
-  ncp_x = mean(chii)-df
+  ncp_x = mean(chii)-df # mean for compatibility with chii as vector of multiple values
   chii[chii<=0] = .00000001
   if (ncp_x<0) {return(list(ncp=0,sd = NA))}
-  # chi_ncp <- MASS::fitdistr(chii,"chi-squared",start=list(ncp=0),
-  #                     method="Brent",df=df,lower=0,upper=10000000)
-  # return(list(ncp=chi_ncp$estimate,sd = chi_ncp$sd))
   return(list(ncp=ncp_x))
 }
 
@@ -274,10 +262,10 @@ power = function(hyp,ncp,ssize,alpha=.05) {
 }
 
 
-#' Title
+#' Helper function for simulation study (used in evaluation_dist.R)
 #'
-#' @param e
-#' @param x
+#' @param e Error
+#' @param x Additional
 #'
 #' @return
 #' @export

@@ -30,6 +30,10 @@ infmat(
 \item{model}{Specific mirt model}
 
 \item{itemtype}{String, itemtype}
+
+\item{NCYCLES}{Sets the NCYCLES argument in the mirt function}
+
+\item{SE.type}{specifies the type of the observed information matrix}
 }
 \value{
 

@@ -7,7 +7,9 @@
 load.functions(model, multi = FALSE)
 }
 \arguments{
-\item{model}{Desired Model (2PL only at the moment)}
+\item{model}{Desired Model (2PL,3PL, GPCM)}
+
+\item{multi}{Boolean - Multidimensional? (available for 2PL)}
 }
 \value{
 

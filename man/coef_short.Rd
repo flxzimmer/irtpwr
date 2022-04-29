@@ -21,6 +21,6 @@ extract coefs from mirtfit
 
 dat <- expand.table(LSAT7)
 mirtfit <- mirt(dat,1)
-pars = coef_short(mirtfit)
+pars <- coef_short(mirtfit)
 
 }

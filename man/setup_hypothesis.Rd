@@ -22,7 +22,7 @@ Setup null and alternative hypothesis
 \examples{
 dat <- expand.table(LSAT7)
 mirtfit <- mirt(dat,1)
-pars = coef_short(mirtfit)
+pars <- coef_short(mirtfit)
 hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = pars)
 
 }
