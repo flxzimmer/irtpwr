@@ -13,9 +13,6 @@ ncp.score(hyp, n = 1, parsr = NULL)
 
 \item{parsr}{Restricted parameters}
 }
-\value{
-
-}
 \description{
 Analytical noncentrality parameter for the Score statistic
 }

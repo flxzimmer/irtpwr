@@ -11,9 +11,6 @@ stat_obs(fitted, stat = c("Wald", "LR", "Score", "Gradient"))
 
 \item{stat}{Vector containing statistics to calculate}
 }
-\value{
-
-}
 \description{
 Calculate statistics from fitted mirt models
 }

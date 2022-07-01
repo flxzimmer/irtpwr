@@ -11,9 +11,6 @@ get_ncp(chii, df)
 
 \item{df}{integer, degrees of freedom}
 }
-\value{
-
-}
 \description{
 Used in the sampling based ncps
 }

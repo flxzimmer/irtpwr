@@ -11,9 +11,6 @@ calctime(hyp, n.items)
 
 \item{n.items}{Number of items}
 }
-\value{
-
-}
 \description{
 Calculate the time needed
 }

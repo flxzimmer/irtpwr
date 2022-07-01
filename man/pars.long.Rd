@@ -13,9 +13,6 @@ pars.long(pars, itemtype, from.mirt = FALSE)
 
 \item{from.mirt}{Boolean, is the parameter set a mirt model?}
 }
-\value{
-
-}
 \description{
 extract coefs from mirtfit or element created by shortcoef
 }

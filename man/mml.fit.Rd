@@ -32,9 +32,6 @@ mml.fit(
 
 \item{SE.type}{specifies the type of the observed information matrix}
 }
-\value{
-
-}
 \description{
 Fit restricted and unrestriced model by ML using mirt
 }

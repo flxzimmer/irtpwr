@@ -15,9 +15,6 @@ ssize(hyp, ncp, power = 0.8, alpha = 0.05)
 
 \item{alpha}{numeric, alpha niveau, e.g. .05 (default)}
 }
-\value{
-
-}
 \description{
 Calculate sample size
 }

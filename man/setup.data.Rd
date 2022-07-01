@@ -13,9 +13,6 @@ setup.data(hyp, n, dist.fun = rnorm)
 
 \item{dist.fun}{function to generate the person parameters}
 }
-\value{
-
-}
 \description{
 Create artificial dataset from alternative hypothesis
 }

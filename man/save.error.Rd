@@ -11,9 +11,6 @@ save.error(e, x)
 
 \item{x}{Additional}
 }
-\value{
-
-}
 \description{
 Helper function for simulation study (used in evaluation_dist.R)
 }

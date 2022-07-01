@@ -11,9 +11,6 @@ ncp.wald(hyp, n = 1)
 
 \item{n}{integer, number of persons that the noncentrality parameters refer to (default is 1)}
 }
-\value{
-
-}
 \description{
 Analytical noncentrality parameter for the Wald statistic
 }

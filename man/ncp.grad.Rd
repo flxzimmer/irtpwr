@@ -15,9 +15,6 @@ ncp.grad(hyp, n = 1, parsr = NULL, lx = NULL)
 
 \item{lx}{Score-vector, optional, can be used from the output of ncp.score.}
 }
-\value{
-
-}
 \description{
 Analytical noncentrality parameter for the Gradient statistic
 }

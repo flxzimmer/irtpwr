@@ -11,9 +11,6 @@ load.functions(model, multi = FALSE)
 
 \item{multi}{Boolean - Multidimensional? (available for 2PL)}
 }
-\value{
-
-}
 \description{
 Load IRT model functions and derivatives
 }

@@ -11,9 +11,6 @@ coef_short(mirtfit, itemtype = NULL)
 
 \item{itemtype}{optional, itemtype as string}
 }
-\value{
-
-}
 \description{
 extract coefs from mirtfit
 }

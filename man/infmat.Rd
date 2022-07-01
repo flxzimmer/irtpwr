@@ -35,9 +35,6 @@ infmat(
 
 \item{SE.type}{specifies the type of the observed information matrix}
 }
-\value{
-
-}
 \description{
 Calculate information matrix (expected / observed)
 }
