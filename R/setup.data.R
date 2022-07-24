@@ -36,7 +36,6 @@ setup.data = function(hyp, n,dist.fun=rnorm) {
     }
 
     if (is.null(pars$g)) {pars$g = 0}
-
     df = mirt::simdata(a = pars$a,
                        d = pars$d,
                        guess=pars$g,
