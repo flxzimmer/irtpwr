@@ -98,14 +98,39 @@ h_DIF2PL = list(
 
     n.items = length(altpars[[1]][[1]])
 
+    reA = altpars[[1]]
+    reB = altpars[[2]]
+
+    hyp_a = which(reA$a!=reB$a)
+    hyp_d = which(reA$d!=reB$d)
+
+    Amat = matrix(0,nrow=length(c(hyp_a,hyp_d)),ncol=n.items*2)
+
+    i=1
+    for (j in hyp_a) {
+      Amat[i,j*2-1] = 1
+      i = i+1
+    }
+    for (j in hyp_d) {
+      Amat[i,j*2] = 1
+      i = i+1
+    }
+    Amat = cbind(Amat,-Amat)
+
+    delcols = (colSums(Amat)== 0) & (1:(n.items*2*2))> 2*n.items
+    relpars = colSums(Amat[,1:(2*n.items)])== 1
+    Amat = Amat[,!delcols]
+
     re = list(
       n.items = n.items,
       itemtype = "2PL",
-      Amat = c(1,0,rep(0,(n.items-1)*2),-1,0) %>% c(.,c(0,1,rep(0,(n.items-1)*2),0,-1)) %>% matrix(.,ncol=(n.items+1)*2,byrow=TRUE),
+      Amat = Amat,
       cvec = 0,
       model = mirt::mirt.model(paste('F = 1-',n.items,'
                        CONSTRAINB = (1-',n.items,', d), (1-',n.items,', a1)')),
-      multigroup = TRUE
+      multigroup = TRUE,
+      delcols = delcols,
+      relpars = relpars
     )
 
     return(re)
@@ -122,12 +147,37 @@ h_DIF2PL = list(
 
     reA$longpars = pars.long(pars = reA,itemtype="2PL")
     reB$longpars = pars.long(pars = reB,itemtype="2PL")
+
+    constrain_a = which(reA$a==reB$a)
+    constrain_d = which(reA$d==reB$d)
+
+    hyp_a = which(reA$a!=reB$a)
+    hyp_d = which(reA$d!=reB$d)
+
+    Amat = matrix(0,nrow=length(c(hyp_a,hyp_d)),ncol=n.items*2)
+
+    i=1
+    for (j in hyp_a) {
+      Amat[i,j*2-1] = 1
+      i = i+1
+    }
+    for (j in hyp_d) {
+      Amat[i,j*2] = 1
+      i = i+1
+    }
+    Amat = cbind(Amat,-Amat)
+
+    delcols = (colSums(Amat)== 0) & (1:(n.items*2*2))> 2*n.items
+
+    longpars = c(reA$longpars,reB$longpars)[!delcols]
+
     re = list(parsets = list(reA,reB),
               model = mirt::mirt.model(paste('F = 1-',n.items,'
-                     CONSTRAINB = (2-',n.items,', d), (2-',n.items,', a1)')),
-              longpars = c(reA$longpars,reB$longpars[1:2]),
+                     CONSTRAINB = (',paste(constrain_d,collapse=","),', d), (',paste(constrain_a,collapse=","),', a1)')),
+              longpars = longpars,
               multigroup = TRUE,
-              itemtype = "2PL"
+              itemtype = "2PL",
+              delcols = delcols
     )
 
     return(re)
@@ -165,7 +215,6 @@ h_DIF2PL = list(
       re$a[i] = optpar$par[1]
       re$d[i] = optpar$par[2]
     }
-
     return(re)
   }
 )

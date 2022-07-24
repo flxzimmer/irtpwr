@@ -97,6 +97,8 @@ stat_obs = function(fitted,stat=c("Wald","LR","Score","Gradient")) {
 wald_obs = function(fitted) {
   resmod = fitted$hyp$resmod
   pars=pars.long(pars = fitted$unres,itemtype = resmod$itemtype,from.mirt=TRUE)
+
+  if(!is.null(fitted$hyp$resmod$delcols)) pars = pars[!fitted$hyp$resmod$delcols]
   A = resmod$Amat
 
   dif = A%*%pars-resmod$cvec
@@ -131,6 +133,8 @@ score_obs = function(fitted,export.lx=FALSE) {
 
   if (isTRUE(resmod$multigroup))  { # multigroup model
 
+    relpars = resmod$relpars
+
     freq1 = table(hashs[1:(nrow(patterns)/2)])
     freq2 = table(hashs[(nrow(patterns)/2+1):nrow(patterns)])
 
@@ -141,7 +145,8 @@ score_obs = function(fitted,export.lx=FALSE) {
     lx1 = lapply(ly,function(x) x[[2]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
     lx2 = lapply(ly,function(x) x[[3]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
 
-    lx = c(lx1[1:2,],lx[3:length(lx),],lx2[1:2,]) %>% array(.,dim=c(length(.),1))
+    lx[relpars,] = lx1[relpars,]
+    lx = c(lx,lx2[relpars,]) %>% array(.,dim=c(length(.),1))
 
 
   } else { # single group model
@@ -186,6 +191,8 @@ grad_obs = function(fitted,lx=NULL) {
 
   if (multigroup & is.null(lx)) { # Multigroup Model
 
+    relpars = resmod$relpars
+
     freq1 = table(hashs[1:(nrow(patterns)/2)])
     freq2 = table(hashs[(nrow(patterns)/2+1):nrow(patterns)])
 
@@ -196,7 +203,8 @@ grad_obs = function(fitted,lx=NULL) {
     lx1 = lapply(ly,function(x) x[[2]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
     lx2 = lapply(ly,function(x) x[[3]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
 
-    lx = c(lx1[1:2,],lx[3:length(lx),],lx2[1:2,]) %>% array(.,dim=c(length(.),1))
+    lx[relpars,] = lx1[relpars,]
+    lx = c(lx,lx2[relpars,]) %>% array(.,dim=c(length(.),1))
 
   }
 
@@ -206,6 +214,8 @@ grad_obs = function(fitted,lx=NULL) {
   }
 
   pars=pars.long(pars = fitted$unres,itemtype = resmod$itemtype,from.mirt=TRUE)
+  if(!is.null(fitted$hyp$resmod$delcols)) pars = pars[!fitted$hyp$resmod$delcols]
+
   A = resmod$Amat
   dif = A%*%pars-resmod$cvec
   if(resmod$itemtype == "3PL") {

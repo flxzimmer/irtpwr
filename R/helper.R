@@ -145,7 +145,7 @@ pars.long = function(pars, itemtype, from.mirt=FALSE) {
 
       if (itemtype=="2PL"& class(pars)=="MultipleGroupClass") {
         pars = lapply(mirt::coef(pars,simplify=TRUE),function(x) x$items[,1:2] %>% t() %>% as.numeric())
-        re = c(pars$A,pars$B[1:2])
+        re = c(pars$A,pars$B)
 
     } else if (itemtype=="2PL") {
 

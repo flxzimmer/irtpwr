@@ -170,6 +170,8 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
 
   if (multigroup) { # Multigroup Model
 
+    relpars = resmod$relpars
+
     pars1 = unresmod$parsets[[1]]
     pars2 = unresmod$parsets[[2]]
     n.kat = max(ncol(pars1$d),2)
@@ -178,13 +180,13 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
     freq12 = lapply(patterns,function(x) c(g(x,pars1)/2,g(x,pars2)/2)) %>% do.call(rbind,.)
     freq = cbind(rowSums(freq12),freq12)
     ly = lapply(1:length(patterns),function(i) {
-
       l = ldot(patterns[[i]],parsr); list(freq[i,1] * l,freq[i,2] * l,freq[i,3] * l)} )
       lx = lapply(ly,function(x) x[[1]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
       lx1 = lapply(ly,function(x) x[[2]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
       lx2 = lapply(ly,function(x) x[[3]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
 
-      lx = c(lx1[1:2,],lx[3:length(lx),],lx2[1:2,]) %>% array(.,dim=c(length(.),1))
+      lx[relpars,] = lx1[relpars,]
+      lx = c(lx,lx2[relpars,]) %>% array(.,dim=c(length(.),1))
 
       # transform restricted pars for infmat calculation
       parsr = list(parsr,parsr)
@@ -232,6 +234,8 @@ ncp.grad = function(hyp,n=1,parsr=NULL,lx=NULL) {
 
   if (multigroup & is.null(lx)) { # Multigroup Model
 
+    relpars = resmod$relpars
+
     pars1 = unresmod$parsets[[1]]
     pars2 = unresmod$parsets[[2]]
     n.kat = max(ncol(pars1$d),2)
@@ -246,7 +250,8 @@ ncp.grad = function(hyp,n=1,parsr=NULL,lx=NULL) {
       lx1 = lapply(ly,function(x) x[[2]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
       lx2 = lapply(ly,function(x) x[[3]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
 
-      lx = c(lx1[1:2,],lx[3:length(lx),],lx2[1:2,]) %>% array(.,dim=c(length(.),1))
+      lx[relpars,] = lx1[relpars,]
+      lx = c(lx,lx2[relpars,]) %>% array(.,dim=c(length(.),1))
 
       # transform restricted pars for infmat calculation
       parsr = list(parsr,parsr)

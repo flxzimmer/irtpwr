@@ -18,5 +18,6 @@ Imports:
     digest,
     spatstat.random,
     MASS,
-    dplyr
+    dplyr,
+    magrittr
 VignetteBuilder: knitr
