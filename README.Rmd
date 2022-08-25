@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# pwrml
+# irtpwr
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -26,9 +26,6 @@ The vignette "demo" gives an introduction of basic features, "adding_hypotheses"
 
 ```{r}
 # library(devtools)
-# install_github('anonymized')
+# install_github('flxzimmer/irtpwr')
 ```
 
-## To-Dos:
-
-- speed up calculation of score statistic using internals from the mirt functions, e.g. attributes(fitted$res)$Internals

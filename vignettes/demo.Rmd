@@ -16,7 +16,7 @@ knitr::opts_chunk$set(eval=TRUE)
 ```
 
 ```{r message=FALSE}
-library(pwrml)
+library(irtpwr)
 library(mirt)
 library(dplyr)
 ```

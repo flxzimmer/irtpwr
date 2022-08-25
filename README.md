@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# pwrml
+# irtpwr
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -12,19 +12,14 @@ frameworks of linear hypotheses and marginal maximum likelihood
 estimation.
 
 The vignette “demo” gives an introduction of basic features,
-“adding\_hypotheses” contains a tutorial on setting up custom
-hypotheses. Further details can be found in our paper “Power analysis
-for the Wald, LR, score, and gradient tests in a marginal maximum
-likelihood framework: Applications in IRT”.
+“adding_hypotheses” contains a tutorial on setting up custom hypotheses.
+Further details can be found in our paper “Power analysis for the Wald,
+LR, score, and gradient tests in a marginal maximum likelihood
+framework: Applications in IRT”.
 
 ## Installation
 
 ``` r
 # library(devtools)
-# install_github('anonymized')
+# install_github('flxzimmer/irtpwr')
 ```
-
-## To-Dos:
-
--   speed up calculation of score statistic using internals from the
-    mirt functions, e.g. attributes(fitted*r**e**s*)Internals
