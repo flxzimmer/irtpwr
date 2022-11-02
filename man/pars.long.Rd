@@ -13,6 +13,15 @@ pars.long(pars, itemtype, from.mirt = FALSE)
 
 \item{from.mirt}{logical, treat as coefficients from a model fitted by mirt if TRUE}
 }
+\value{
+numeric vector
+}
 \description{
 This is a helper function used to generate custom hypotheses. See the "adding_hypotheses" vignette.
+}
+\examples{
+
+pars = list(a= c(1,1,1),d=c(0,0,0))
+pars.long(pars,itemtype="2PL")
+
 }

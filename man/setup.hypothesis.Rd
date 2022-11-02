@@ -20,6 +20,8 @@ a list specifying the hypothesis for usage in further functions, e.g. estimation
 Setup null and alternative hypothesis
 }
 \examples{
+
+library(mirt)
 dat <- expand.table(LSAT7)
 mirtfit <- mirt(dat,1)
 pars <- coef_short(mirtfit)

@@ -7,10 +7,13 @@
 #' @param model character, Desired Model (2PL,3PL, GPCM)
 #' @param multi logical, multidimensional model if TRUE (available for 2PL)
 #'
-#' @return
+#' @return nothing
 #' @export
 #'
 #' @examples
+#'
+#' load.functions("2PL")
+#'
 load.functions = function (model,multi=FALSE) {
 
 

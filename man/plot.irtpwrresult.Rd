@@ -21,6 +21,8 @@ Plot the power curves using the resulting object of the irtpwr function.
 }
 \examples{
 #Load a simulation function
+
+library(mirt)
 dat <- expand.table(LSAT7)
 mirtfit <- mirt(dat,1,verbose = FALSE)
 hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)

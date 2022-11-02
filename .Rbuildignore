@@ -3,3 +3,8 @@
 ^README\.Rmd$
 ^doc$
 ^Meta$
+^LICENSE\.md$
+^cran-comments.md$
+^notes.txt$
+^.gitignore$
+^CRAN-SUBMISSION$

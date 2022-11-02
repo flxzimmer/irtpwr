@@ -11,6 +11,14 @@ load.functions(model, multi = FALSE)
 
 \item{multi}{logical, multidimensional model if TRUE (available for 2PL)}
 }
+\value{
+nothing
+}
 \description{
 This is a helper function used to generate custom hypotheses. See the "adding_hypotheses" vignette.
+}
+\examples{
+
+load.functions("2PL")
+
 }

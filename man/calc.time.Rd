@@ -19,6 +19,7 @@ Calculate the computation time needed for the analytical method
 }
 \examples{
 
+library(mirt)
 dat <- expand.table(LSAT7)
 mirtfit <- mirt(dat,1,verbose = FALSE)
 hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)

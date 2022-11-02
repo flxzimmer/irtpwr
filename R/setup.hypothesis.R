@@ -11,6 +11,8 @@
 #' @export
 #'
 #' @examples
+#'
+#' library(mirt)
 #' dat <- expand.table(LSAT7)
 #' mirtfit <- mirt(dat,1)
 #' pars <- coef_short(mirtfit)

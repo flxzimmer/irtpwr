@@ -18,10 +18,12 @@ An object of class summary.irtpwrresult
 Print Summary of the search result
 }
 \examples{
-#Load a simulation function
-simfun = example.simfun('ttest')
-# Perform the search
-ds = find.design(simfun = simfun, boundaries = c(100,300), power = .95)
-# Output the results
-summary(ds)
+
+library(mirt)
+dat <- expand.table(LSAT7)
+mirtfit <- mirt(dat,1,verbose = FALSE)
+hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
+res <- irtpwr(hyp=hyp,alpha=.05)
+summary(res)
+
 }

@@ -14,6 +14,7 @@ logitinv<- function(q) { 1/(1+exp(-q)) }
 #'
 #' @examples
 #'
+#' library(mirt)
 #' dat <- expand.table(LSAT7)
 #' mirtfit <- mirt(dat,1,verbose = FALSE)
 #' hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
@@ -51,12 +52,12 @@ coef_short = function(mirtfit,itemtype=NULL) {
   # extract coefs from mirtfit
 
   if (is.null(itemtype)) {
-    itemtype <- extract.mirt(mirtfit, what = "itemtype")[1]
+    itemtype <- mirt::extract.mirt(mirtfit, what = "itemtype")[1]
     }
 
   coefs <- mirt::coef(mirtfit,simplify=TRUE)
 
-  if (extract.mirt(mirtfit, "ngroups") == 1) {
+  if (mirt::extract.mirt(mirtfit, "ngroups") == 1) {
 
     a = as.data.frame(coefs$items)
     ismulti = "a2" %in% names(a)
@@ -117,10 +118,14 @@ coef_short = function(mirtfit,itemtype=NULL) {
 #' @param from.mirt logical, treat as coefficients from a model fitted by mirt if TRUE
 #' @param itemtype character, type of the item as string, e.g. "2PL"
 #'
-#' @return
+#' @return numeric vector
 #' @export
 #'
 #' @examples
+#'
+#' pars = list(a= c(1,1,1),d=c(0,0,0))
+#' pars.long(pars,itemtype="2PL")
+#'
 pars.long = function(pars, itemtype, from.mirt=FALSE) {
 
   if(!from.mirt) {
@@ -162,7 +167,7 @@ pars.long = function(pars, itemtype, from.mirt=FALSE) {
 
     } else if (itemtype=="gpcm") {
 
-      nkatx = max(extract.mirt(pars, "K") - 1)
+      nkatx = max(mirt::extract.mirt(pars, "K") - 1)
       a1 = mirt::coef(pars,simplify=TRUE)$items
       re =  a1[,c(1,(ncol(a1)-nkatx+1):ncol(a1))] %>% t() %>% as.numeric()
     }
@@ -207,13 +212,13 @@ calc.N = function(hyp,ncp,power=.8,alpha=.05) {
   #
 
   df = nrow(hyp$resmod$Amat)
-  qcentral <- qchisq(p = 1 - alpha, df = df)
+  qcentral <- stats::qchisq(p = 1 - alpha, df = df)
   func <-
     function (x) {
-      1-  power - pchisq(q = qcentral, df = df, ncp = x)
+      1-  power - stats::pchisq(q = qcentral, df = df, ncp = x)
     }
   w0 <-
-    uniroot(
+    stats::uniroot(
       f = func,
       interval = c(0, 1000),
       tol = .Machine$double.eps ^ 0.5
@@ -248,7 +253,7 @@ calc.power = function(hyp,ncp,ssize,alpha=.05) {
 
 
   df = nrow(hyp$resmod$Amat)
-  crit = qchisq(1-alpha,df = df, ncp = 0) %>% as.numeric()
-  re = 1 - pchisq(q = crit, df = df, ncp = ncp*ssize)
+  crit = stats::qchisq(1-alpha,df = df, ncp = 0) %>% as.numeric()
+  re = 1 - stats::pchisq(q = crit, df = df, ncp = ncp*ssize)
   return(re)
 }

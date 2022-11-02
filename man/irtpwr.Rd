@@ -45,6 +45,8 @@ function returns an object of class irtpwrresult
 Perform analytical or sampling-based power analysis for the Wald, LR, score, or gradient statistic.
 }
 \examples{
+
+library(mirt)
 dat <- expand.table(LSAT7)
 mirtfit <- mirt(dat,1,verbose = FALSE)
 hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)

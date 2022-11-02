@@ -1,6 +1,6 @@
 #' Summary of the Power Analysis
 #'
-#' Output the resulting power or sample size
+#' Output the resulting power or sample size for each statistic
 #'
 #' @param object Object of class irtpwrresult as created by the irtpwr function
 #' @param ... additional arguments to be passed
@@ -8,12 +8,15 @@
 #' @return An object of class summary.irtpwrresult
 #' @export
 #'
-#' @examples #Load a simulation function
-#' simfun = example.simfun('ttest')
-#' # Perform the search
-#' ds = find.design(simfun = simfun, boundaries = c(100,300), power = .95)
-#' # Output the results
-#' summary(ds)
+#' @examples
+#'
+#' library(mirt)
+#' dat <- expand.table(LSAT7)
+#' mirtfit <- mirt(dat,1,verbose = FALSE)
+#' hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
+#' res <- irtpwr(hyp=hyp,alpha=.05)
+#' summary(res)
+#'
 summary.irtpwrresult <- function(object, ..., power = NULL, N = NULL, alpha = NULL) {
 
   ds <- object
@@ -54,12 +57,15 @@ summary.irtpwrresult <- function(object, ..., power = NULL, N = NULL, alpha = NU
 #' @return An object of class summary.irtpwrresult
 #' @export
 #'
-#' @examples #Load a simulation function
-#' simfun = example.simfun('ttest')
-#' # Perform the search
-#' ds = find.design(simfun = simfun, boundaries = c(100,300), power = .95)
-#' # Output the results
-#' summary(ds)
+#' @examples
+#'
+#' library(mirt)
+#' dat <- expand.table(LSAT7)
+#' mirtfit <- mirt(dat,1,verbose = FALSE)
+#' hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
+#' res <- irtpwr(hyp=hyp,alpha=.05)
+#' summary(res)
+#'
 print.summary.irtpwrresult <- function(x, ...) {
 
   method = x$method
