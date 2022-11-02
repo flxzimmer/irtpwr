@@ -17,8 +17,8 @@ knitr::opts_chunk$set(
   comment = "#>",
   out.width = "70%",
   fig.dim = c(6, 4),
-  tidy = TRUE,
-  tidy.opts=list(arrow=TRUE,width.cutoff = 50),
+  # tidy = TRUE,
+  # tidy.opts=list(arrow=TRUE,width.cutoff = 50),
   eval=T
 )
 ```

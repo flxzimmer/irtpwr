@@ -1,5 +1,6 @@
 ---
 title: "Adding Hypotheses"
+output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Adding Hypotheses}
   %\VignetteEngine{knitr::rmarkdown}
@@ -16,8 +17,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
     out.width = "70%",
-  tidy = TRUE,
-  tidy.opts=list(arrow=TRUE,width.cutoff = 50),
+  # tidy = TRUE,
+  # tidy.opts=list(arrow=TRUE,width.cutoff = 50),
   eval=T
 )
 ```
@@ -167,7 +168,6 @@ hyp <- setup.hypothesis(type = h_basic, altpars = altpars)
 
 res <- irtpwr(hyp = hyp, alpha = 0.05, power = 0.8)
 summary(res)
-plot(res)
 ```
 
 

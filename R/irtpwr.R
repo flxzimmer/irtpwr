@@ -18,7 +18,7 @@
 #' @return function returns an object of class irtpwrresult
 #' @export
 #'
-#' @examples
+#' @examples \donttest{
 #'
 #' library(mirt)
 #' dat <- expand.table(LSAT7)
@@ -26,7 +26,7 @@
 #' hyp <- setup.hypothesis(type = '1PLvs2PL', altpars = mirtfit)
 #' res <- irtpwr(hyp=hyp,alpha=.05,power =.8)
 #' summary(res)
-#'
+#' }
 irtpwr <- function(hyp, stat = c("Wald", "LR", "Score",
     "Gradient"), method = "analytical", sampling.npers = 10^5,
     approx.npers = 10^5, SE.type = "Oakes", sampling.mat = "ApproxFisher",

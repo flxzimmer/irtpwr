@@ -11,7 +11,7 @@
 #' @return An object of class summary.irtpwrresult
 #' @export
 #'
-#' @examples
+#' @examples \donttest{
 #'
 #' library(mirt)
 #' dat <- expand.table(LSAT7)
@@ -19,7 +19,7 @@
 #' hyp <- setup.hypothesis(type = '1PLvs2PL', altpars = mirtfit)
 #' res <- irtpwr(hyp=hyp,alpha=.05,power =.8)
 #' summary(res)
-#'
+#' }
 summary.irtpwrresult <- function(object, ..., power = NULL,
     N = NULL, alpha = NULL) {
 
@@ -73,7 +73,7 @@ summary.irtpwrresult <- function(object, ..., power = NULL,
 #' @return An object of class summary.irtpwrresult
 #' @export
 #'
-#' @examples
+#' @examples \donttest{
 #'
 #' library(mirt)
 #' dat <- expand.table(LSAT7)
@@ -81,7 +81,7 @@ summary.irtpwrresult <- function(object, ..., power = NULL,
 #' hyp <- setup.hypothesis(type = '1PLvs2PL', altpars = mirtfit)
 #' res <- irtpwr(hyp=hyp,alpha=.05,power =.8)
 #' summary(res)
-#'
+#' }
 print.summary.irtpwrresult <- function(x, ...) {
 
     method <- x$method
