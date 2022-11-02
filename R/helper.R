@@ -42,7 +42,7 @@ findlambda = function(lx,A) {
 
   fn = function(k) {sum((lx + t(A)%*%k)^2)}
 
-  k = optim(rep(0,nrow(A)),fn,method="BFGS")$par
+  k = stats::optim(rep(0,nrow(A)),fn,method="BFGS")$par
 
   return(k)
 }
@@ -132,20 +132,20 @@ pars.long = function(pars, itemtype, from.mirt=FALSE) {
     is.multi = "a2" %in% colnames(pars$a)
 
     if (itemtype=="2PL"&!is.multi) {
-      re = rbind(pars$a,pars$d) %>% as.numeric()
+      re = rbind(pars$a,pars$d) |> as.numeric()
     } else if (itemtype=="2PL"&is.multi) {
-      re = cbind(pars$a,pars$d) %>% t() %>% as.numeric()
+      re = cbind(pars$a,pars$d) |> t() |> as.numeric()
     } else if (itemtype=="3PL") {
-      re = rbind(pars$a,pars$d,pars$g) %>% as.numeric()
+      re = rbind(pars$a,pars$d,pars$g) |> as.numeric()
     } else if (itemtype=="gpcm") {
-      re = cbind(pars$a,pars$d[,2:ncol(pars$d)]) %>% t() %>% as.numeric()
+      re = cbind(pars$a,pars$d[,2:ncol(pars$d)]) |> t() |> as.numeric()
     }
   }
 
   if(from.mirt) {
 
-      if (itemtype=="2PL"& class(pars)=="MultipleGroupClass") {
-        pars = lapply(mirt::coef(pars,simplify=TRUE),function(x) x$items[,1:2] %>% t() %>% as.numeric())
+      if (itemtype=="2PL"& methods::is(pars,"MultipleGroupClass")) {
+        pars = lapply(mirt::coef(pars,simplify=TRUE),function(x) x$items[,1:2] |> t() |> as.numeric())
         re = c(pars$A,pars$B)
 
     } else if (itemtype=="2PL") {
@@ -154,22 +154,22 @@ pars.long = function(pars, itemtype, from.mirt=FALSE) {
         is.multi = "a2" %in% colnames(ps)
 
         if (!is.multi) {
-        re = mirt::coef(pars,simplify=TRUE)$items[,1:2] %>% t() %>% as.numeric()
+        re = mirt::coef(pars,simplify=TRUE)$items[,1:2] |> t() |> as.numeric()
         }
         if (is.multi) {
-          re = mirt::coef(pars,simplify=TRUE)$items[,1:3] %>% t() %>% as.numeric()
+          re = mirt::coef(pars,simplify=TRUE)$items[,1:3] |> t() |> as.numeric()
           re = re[-(length(re)-1)] # since it is not estimated
         }
 
     } else if (itemtype=="3PL") {
 
-      re = mirt::coef(pars,simplify=TRUE)$items[,1:3] %>% t() %>% as.numeric()
+      re = mirt::coef(pars,simplify=TRUE)$items[,1:3] |> t() |> as.numeric()
 
     } else if (itemtype=="gpcm") {
 
       nkatx = max(mirt::extract.mirt(pars, "K") - 1)
       a1 = mirt::coef(pars,simplify=TRUE)$items
-      re =  a1[,c(1,(ncol(a1)-nkatx+1):ncol(a1))] %>% t() %>% as.numeric()
+      re =  a1[,c(1,(ncol(a1)-nkatx+1):ncol(a1))] |> t() |> as.numeric()
     }
   }
 
@@ -253,7 +253,7 @@ calc.power = function(hyp,ncp,ssize,alpha=.05) {
 
 
   df = nrow(hyp$resmod$Amat)
-  crit = stats::qchisq(1-alpha,df = df, ncp = 0) %>% as.numeric()
+  crit = stats::qchisq(1-alpha,df = df, ncp = 0) |> as.numeric()
   re = 1 - stats::pchisq(q = crit, df = df, ncp = ncp*ssize)
   return(re)
 }

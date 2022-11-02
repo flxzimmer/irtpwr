@@ -14,9 +14,8 @@
 #'
 #' library(mirt)
 #' dat <- expand.table(LSAT7)
-#' mirtfit <- mirt(dat,1)
-#' pars <- coef_short(mirtfit)
-#' hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = pars)
+#' mirtfit <- mirt(dat,1,verbose = FALSE)
+#' hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
 #'
 setup.hypothesis = function(type, altpars = NULL, nullpars = NULL) {
 # setup a null and alternative hypothesis according to a given type
@@ -32,12 +31,12 @@ setup.hypothesis = function(type, altpars = NULL, nullpars = NULL) {
     if (type == "1PLvs2PL") {
       type = h_1PLvs2PL
     }
-    else if (type == "1PLvs2PLa1") {
-      type = h_1PLvs2PLa1
-    }
-    else if (type == "1PLvs2PLa2") {
-      type = h_1PLvs2PLa2
-    }
+    # else if (type == "1PLvs2PLa1") {
+    #   type = h_1PLvs2PLa1
+    # }
+    # else if (type == "1PLvs2PLa2") {
+    #   type = h_1PLvs2PLa2
+    # }
     else if (type == "DIF2PL") {
       type = h_DIF2PL
     }

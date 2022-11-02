@@ -19,7 +19,7 @@ mml.fit = function(hyp,data,infmat.unres = "Fisher",infmat.res="Fisher",free_mea
   #
   # altpars <- list(
   # a = rlnorm(5,sdlog = .4),
-  # d = rnorm(5))
+  # d = stats::rnorm(5))
   # hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = altpars)
   # data <- setup.data(hyp=hyp,n=500)
   # fitted <- mml.fit(data = data,hyp = hyp)
@@ -55,8 +55,8 @@ mml.fit = function(hyp,data,infmat.unres = "Fisher",infmat.res="Fisher",free_mea
   pars = coef_short(unres,itemtype = hyp$unresmod$itemtype)
 
 
-  unres@vcov = (infmat(pars,method=infmat.unres,approx.npers = approx.npers,multigroup = multigroup.unres,model = hyp$unresmod$model,itemtype=hyp$unresmod$itemtype,NCYCLES=NCYCLES,SE.type=SE.type) * nrow(data) )%>% solve()
-  res@vcov = (infmat(parsr,method=infmat.unres,approx.npers = approx.npers,multigroup = multigroup.unres,model = hyp$unresmod$model,itemtype=hyp$unresmod$itemtype,NCYCLES=NCYCLES,SE.type=SE.type) * nrow(data) )%>% solve()
+  unres@vcov = (infmat(pars,method=infmat.unres,approx.npers = approx.npers,multigroup = multigroup.unres,model = hyp$unresmod$model,itemtype=hyp$unresmod$itemtype,NCYCLES=NCYCLES,SE.type=SE.type) * nrow(data) ) |> solve()
+  res@vcov = (infmat(parsr,method=infmat.unres,approx.npers = approx.npers,multigroup = multigroup.unres,model = hyp$unresmod$model,itemtype=hyp$unresmod$itemtype,NCYCLES=NCYCLES,SE.type=SE.type) * nrow(data) ) |> solve()
 
 
     re = list(unres=unres,res=res,hyp=hyp)
@@ -111,7 +111,7 @@ wald_obs = function(fitted) {
 
   sigma=mirt::vcov(fitted$unres)
 
-  re = t(dif) %*% solve(A%*% sigma %*% t(A)) %*% dif %>% as.numeric()
+  re = t(dif) %*% solve(A%*% sigma %*% t(A)) %*% dif |> as.numeric()
   return(re)
 }
 
@@ -128,8 +128,8 @@ score_obs = function(fitted,export.lx=FALSE) {
   parsr = coef_short(fitted$res,itemtype = resmod$itemtype)
   is.multi = "a2" %in% colnames(parsr$a)
   load.functions(resmod$itemtype,multi=is.multi)
-  patterns = mirt::mirt::extract.mirt(fitted$res, "data")
-  hashs = apply(patterns,1,digest::digest) %>% factor(.,levels=unique(.))
+  patterns = mirt::extract.mirt(fitted$res, "data")
+  hashs = apply(patterns,1,digest::digest) |> (\(x)factor(x,levels=unique(x)))()
   rownames(patterns)=hashs
   up = unique(patterns)
   freq = table(hashs)
@@ -144,12 +144,12 @@ score_obs = function(fitted,export.lx=FALSE) {
     parsr = parsr[[1]]
 
     ly = lapply(rownames(up),function(i) {l = ldot(up[i,],parsr); list(freq[i] * l,freq1[i] * l,freq2[i] * l)} )
-    lx = lapply(ly,function(x) x[[1]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
-    lx1 = lapply(ly,function(x) x[[2]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
-    lx2 = lapply(ly,function(x) x[[3]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
+    lx = lapply(ly,function(x) x[[1]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
+    lx1 = lapply(ly,function(x) x[[2]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
+    lx2 = lapply(ly,function(x) x[[3]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
 
     lx[relpars,] = lx1[relpars,]
-    lx = c(lx,lx2[relpars,]) %>% array(.,dim=c(length(.),1))
+    lx = c(lx,lx2[relpars,]) |> (\(x) array(x,dim=c(length(x),1)))()
 
 
   } else { # single group model
@@ -159,17 +159,16 @@ score_obs = function(fitted,export.lx=FALSE) {
       parsr$g = logit(parsr$g)
     }
 
-
     ly = lapply(rownames(up),function(i) ldot(up[i,],parsr)*freq[i])
 
-    lx = do.call(rbind,ly) %>% colSums(.,na.rm = TRUE) %>% array(.,dim=c(length(.),1))
+    lx = do.call(rbind,ly) |> (\(x) colSums(x,na.rm = TRUE))() |> (\(x) array(x,dim=c(length(x),1)))()
   }
 
   if(is.multi) lx = lx[-(nrow(lx)-1),1] # since it is not estimated
 
   sigma = mirt::vcov(fitted$res)
 
-  re = t(lx) %*% sigma %*% lx %>% as.numeric()
+  re = t(lx) %*% sigma %*% lx |> as.numeric()
 
   if (isTRUE(export.lx)) {
     re = list(stat=re,lx=lx)
@@ -178,14 +177,15 @@ score_obs = function(fitted,export.lx=FALSE) {
   return(re)
 }
 
+
 grad_obs = function(fitted,lx=NULL) {
 
   resmod = fitted$hyp$resmod
   unresmod = fitted$hyp$unresmod
   parsr = coef_short(fitted$res,itemtype = resmod$itemtype)
   load.functions(resmod$itemtype)
-  patterns = mirt::mirt::extract.mirt(fitted$res, "data")
-  hashs = apply(patterns,1,digest::digest) %>% factor(.,levels=unique(.))
+  patterns = mirt::extract.mirt(fitted$res, "data")
+  hashs = apply(patterns,1,digest::digest) |> (\(x)factor(x,levels=unique(x)))()
   rownames(patterns)=hashs
   up = unique(patterns)
   freq = table(hashs)
@@ -202,18 +202,18 @@ grad_obs = function(fitted,lx=NULL) {
     parsr = parsr[[1]]
 
     ly = lapply(rownames(up),function(i) {l = ldot(up[i,],parsr); list(freq[i] * l,freq1[i] * l,freq2[i] * l)} )
-    lx = lapply(ly,function(x) x[[1]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
-    lx1 = lapply(ly,function(x) x[[2]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
-    lx2 = lapply(ly,function(x) x[[3]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
+    lx = lapply(ly,function(x) x[[1]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
+    lx1 = lapply(ly,function(x) x[[2]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
+    lx2 = lapply(ly,function(x) x[[3]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
 
     lx[relpars,] = lx1[relpars,]
-    lx = c(lx,lx2[relpars,]) %>% array(.,dim=c(length(.),1))
+    lx = c(lx,lx2[relpars,]) |> (\(x) array(x,dim=c(length(x),1)))()
 
   }
 
   if (!multigroup & is.null(lx)) { # Single Group Model
     ly = lapply(rownames(up),function(i) ldot(up[i,],parsr)*freq[i] )
-    lx = do.call(rbind,ly) %>% colSums() %>% array(.,dim=c(length(.),1))
+    lx = do.call(rbind,ly) |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
   }
 
   pars=pars.long(pars = fitted$unres,itemtype = resmod$itemtype,from.mirt=TRUE)
@@ -227,7 +227,7 @@ grad_obs = function(fitted,lx=NULL) {
 
   lambda = findlambda(lx,A)
 
-  re = t(lambda) %*% dif %>% as.numeric() %>% abs()
+  re = t(lambda) %*% dif |> as.numeric() |> abs()
 
   return(re)
 }

@@ -24,8 +24,8 @@
 #' dat <- expand.table(LSAT7)
 #' mirtfit <- mirt(dat,1,verbose = FALSE)
 #' hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
-#' res <- irtpwr(hyp=hyp)
-#' summary(res,power=.8,alpha=.05)
+#' res <- irtpwr(hyp=hyp,alpha=.05,power =.8)
+#' summary(res)
 #'
 irtpwr = function(hyp,stat=c("Wald","LR","Score","Gradient"),method="analytical",sampling.npers = 10^5,approx.npers=10^5,SE.type="Oakes",sampling.mat = "ApproxFisher",power = NULL,N=NULL,alpha=NULL) {
 
@@ -87,8 +87,8 @@ ncp.wald = function(hyp,n=1) {
 
   A = resmod$Amat
   dif = A%*%unresmod$longpars-resmod$cvec
-  sigma = infmat(unresmod$parsets,method=method,model = hyp$unresmod$model, multigroup = multigroup,itemtype = hyp$unresmod$itemtype) %>% solve()
-  re = t(dif) %*% solve(A%*% sigma %*% t(A)) %*% dif %>% c()
+  sigma = infmat(unresmod$parsets,method=method,model = hyp$unresmod$model, multigroup = multigroup,itemtype = hyp$unresmod$itemtype) |> solve()
+  re = t(dif) %*% solve(A%*% sigma %*% t(A)) %*% dif |> c()
   return(re*n)
 }
 
@@ -152,7 +152,7 @@ ncp.lr = function(hyp,n=1,parsr= NULL) {
   res = sum(res)
   unres = sum(unres)
 
-  re = 2*(unres-res) %>% c()
+  re = 2*(unres-res) |> c()
 
   return(re*n)
 
@@ -189,18 +189,18 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
     pars1 = unresmod$parsets[[1]]
     pars2 = unresmod$parsets[[2]]
     n.kat = max(ncol(pars1$d),2)
-    patterns = lapply(1:resmod$n.items,function(x) 0:(n.kat-1)) %>% expand.grid() %>% as.matrix() %>% split(.,seq(nrow(.)))
+    patterns = lapply(1:resmod$n.items,function(x) 0:(n.kat-1)) |> expand.grid() |> as.matrix() |> (\(x) split(x,seq(nrow(x))))()
 
-    freq12 = lapply(patterns,function(x) c(g(x,pars1)/2,g(x,pars2)/2)) %>% do.call(rbind,.)
+    freq12 = lapply(patterns,function(x) c(g(x,pars1)/2,g(x,pars2)/2))  |> (\(x) do.call(rbind,x))()
     freq = cbind(rowSums(freq12),freq12)
     ly = lapply(1:length(patterns),function(i) {
       l = ldot(patterns[[i]],parsr); list(freq[i,1] * l,freq[i,2] * l,freq[i,3] * l)} )
-      lx = lapply(ly,function(x) x[[1]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
-      lx1 = lapply(ly,function(x) x[[2]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
-      lx2 = lapply(ly,function(x) x[[3]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
+      lx = lapply(ly,function(x) x[[1]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
+      lx1 = lapply(ly,function(x) x[[2]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
+      lx2 = lapply(ly,function(x) x[[3]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
 
       lx[relpars,] = lx1[relpars,]
-      lx = c(lx,lx2[relpars,]) %>% array(.,dim=c(length(.),1))
+      lx = c(lx,lx2[relpars,]) |> (\(x) array(x,dim=c(length(x),1)))()
 
       # transform restricted pars for infmat calculation
       parsr = list(parsr,parsr)
@@ -209,20 +209,21 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
 
     pars = unresmod$parsets
     n.kat = max(ncol(pars$d),2)
-    patterns = lapply(1:resmod$n.items,function(x) 0:(n.kat-1)) %>% expand.grid() %>% as.matrix() %>% split(.,seq(nrow(.)))
+    patterns = lapply(1:resmod$n.items,function(x) 0:(n.kat-1)) |> expand.grid() |> as.matrix() |> (\(x) split(x,seq(nrow(x))))()
     i=0
     ly = lapply(patterns,function(x) {ldot(x,parsr) * g(x,pars)})
-    lx = do.call(rbind,ly) %>% colSums() %>% array(.,dim=c(length(.),1))
+    lx = do.call(rbind,ly) |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
   }
 
-  sigma = infmat(parsr,method="Fisher",model = hyp$unresmod$model, multigroup = multigroup,itemtype = hyp$unresmod$itemtype) %>% solve()
+  sigma = infmat(parsr,method="Fisher",model = hyp$unresmod$model, multigroup = multigroup,itemtype = hyp$unresmod$itemtype) |> solve()
 
-  ncp = t(lx) %*% sigma %*% lx %>% c()
+  ncp = t(lx) %*% sigma %*% lx |> c()
 
   re = list(ncp = ncp*n,lx=lx)
 
   return(re)
 }
+
 
 ncp.grad = function(hyp,n=1,parsr=NULL,lx=NULL) {
   # Analytical noncentrality parameter for the Gradient statistic
@@ -255,19 +256,19 @@ ncp.grad = function(hyp,n=1,parsr=NULL,lx=NULL) {
     pars1 = unresmod$parsets[[1]]
     pars2 = unresmod$parsets[[2]]
     n.kat = max(ncol(pars1$d),2)
-    patterns = lapply(1:resmod$n.items,function(x) 0:(n.kat-1)) %>% expand.grid() %>% as.matrix() %>% split(.,seq(nrow(.)))
+    patterns = lapply(1:resmod$n.items,function(x) 0:(n.kat-1)) |> expand.grid() |> as.matrix() |> (\(x) split(x,seq(nrow(x))))()
 
-    freq12 = lapply(patterns,function(x) c(g(x,pars1)/2,g(x,pars2)/2)) %>% do.call(rbind,.)
+    freq12 = lapply(patterns,function(x) c(g(x,pars1)/2,g(x,pars2)/2)) |> (\(x) do.call(rbind,x))()
     freq = cbind(rowSums(freq12),freq12)
     ly = lapply(1:length(patterns),function(i) {
 
       l = ldot(patterns[[i]],parsr); list(freq[i,1] * l,freq[i,2] * l,freq[i,3] * l)} )
-      lx = lapply(ly,function(x) x[[1]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
-      lx1 = lapply(ly,function(x) x[[2]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
-      lx2 = lapply(ly,function(x) x[[3]]) %>% do.call(rbind,.) %>% colSums() %>% array(.,dim=c(length(.),1))
+      lx = lapply(ly,function(x) x[[1]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
+      lx1 = lapply(ly,function(x) x[[2]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
+      lx2 = lapply(ly,function(x) x[[3]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
 
       lx[relpars,] = lx1[relpars,]
-      lx = c(lx,lx2[relpars,]) %>% array(.,dim=c(length(.),1))
+      lx = c(lx,lx2[relpars,]) |> (\(x) array(x,dim=c(length(x),1)))()
 
       # transform restricted pars for infmat calculation
       parsr = list(parsr,parsr)
@@ -278,10 +279,10 @@ ncp.grad = function(hyp,n=1,parsr=NULL,lx=NULL) {
 
     pars = unresmod$parsets
     n.kat = max(ncol(pars$d),2)
-    patterns = lapply(1:resmod$n.items,function(x) 0:(n.kat-1)) %>% expand.grid() %>% as.matrix() %>% split(.,seq(nrow(.)))
+    patterns = lapply(1:resmod$n.items,function(x) 0:(n.kat-1)) |> expand.grid() |> as.matrix() |> (\(x) split(x,seq(nrow(x))))()
     i=0
     ly = lapply(patterns,function(x) {ldot(x,parsr) * g(x,pars)})
-    lx = do.call(rbind,ly) %>% colSums() %>% array(.,dim=c(length(.),1))
+    lx = do.call(rbind,ly) |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
   }
 
   A = resmod$Amat
@@ -289,7 +290,7 @@ ncp.grad = function(hyp,n=1,parsr=NULL,lx=NULL) {
 
   lambda = findlambda(lx,A)
 
-  re = t(lambda) %*% dif %>% as.numeric() %>% abs()
+  re = t(lambda) %*% dif |> as.numeric() |> abs()
 
   return(re*n)
 }

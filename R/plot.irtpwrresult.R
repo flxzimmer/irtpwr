@@ -15,7 +15,7 @@
 #' dat <- expand.table(LSAT7)
 #' mirtfit <- mirt(dat,1,verbose = FALSE)
 #' hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
-#' res <- irtpwr(hyp=hyp,alpha=.05)
+#' res <- irtpwr(hyp=hyp,alpha=.05,power =.8)
 #' plot(res)
 #'
 plot.irtpwrresult <- function(x, bounds  = NULL, ...) {

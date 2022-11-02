@@ -72,7 +72,7 @@ h_1PLvs2PL = list(
     startval = c(mean(pars$a),as.numeric(pars$d))
 
     maxlpre = maxlpreload(pars)
-    optpar = optim(startval,function(x) {maxl(x,pars,maxlpre)},method = "BFGS")
+    optpar = stats::optim(startval,function(x) {maxl(x,pars,maxlpre)},method = "BFGS")
     re = pars
     re$a = rep(optpar$par[1],length(pars$a))
     re$d = optpar$par[2:length(optpar$par)]
@@ -203,7 +203,7 @@ h_DIF2PL = list(
 
     for (i in 1:length(pars1$a)) {
       startval = c(re$a[i],re$d[i])
-      optpar = optim(startval,function(x) {maxl(x,pars1,pars2,i)},method = "BFGS")
+      optpar = stats::optim(startval,function(x) {maxl(x,pars1,pars2,i)},method = "BFGS")
       re$a[i] = optpar$par[1]
       re$d[i] = optpar$par[2]
     }
@@ -297,7 +297,7 @@ h_PCMvsGPCM = list(
 
     maxlpre = maxlpreload(pars)
 
-    optpar = optim(startval,function(x) {maxl(x,pars,maxlpre)},method = "BFGS")
+    optpar = stats::optim(startval,function(x) {maxl(x,pars,maxlpre)},method = "BFGS")
     re = pars
     re$a = rep(optpar$par[1],n.items)
     re$d = matrix(c(rep(0,n.items),optpar$par[2:length(optpar$par)]),ncol=ncol(pars$d))
@@ -386,7 +386,7 @@ h_basic = list(
 
     maxlpre = maxlpreload(pars)
 
-    optpar = optim(startval,function(x) {maxl(x,pars,maxlpre)},method = "BFGS")
+    optpar = stats::optim(startval,function(x) {maxl(x,pars,maxlpre)},method = "BFGS")
     re = pars
     re$a = c(optpar$par[1],pars$a[2:length(pars$a)])
     re$d = c(0,pars$d[2:length(pars$d)])
@@ -475,7 +475,7 @@ h_3PL_basic = list(
 
     maxlpre = maxlpreload(pars)
 
-    optpar = optim(startval,function(x) {maxl(x,pars,maxlpre)},method = "BFGS")
+    optpar = stats::optim(startval,function(x) {maxl(x,pars,maxlpre)},method = "BFGS")
     re = pars
     re$a = c(optpar$par[1],pars$a[2:length(pars$a)])
     re$d = c(0,pars$d[2:length(pars$d)])

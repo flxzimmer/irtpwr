@@ -10,6 +10,12 @@
 \item{object}{Object of class irtpwrresult as created by the irtpwr function}
 
 \item{...}{additional arguments to be passed}
+
+\item{power}{numeric, statistical power for which the necessary sample size is calculated}
+
+\item{N}{integer, sample size for which the statistical power is calculated.}
+
+\item{alpha}{numeric, alpha level}
 }
 \value{
 An object of class summary.irtpwrresult
@@ -23,7 +29,7 @@ library(mirt)
 dat <- expand.table(LSAT7)
 mirtfit <- mirt(dat,1,verbose = FALSE)
 hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
-res <- irtpwr(hyp=hyp,alpha=.05)
+res <- irtpwr(hyp=hyp,alpha=.05,power =.8)
 summary(res)
 
 }

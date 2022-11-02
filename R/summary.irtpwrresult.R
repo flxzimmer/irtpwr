@@ -4,6 +4,9 @@
 #'
 #' @param object Object of class irtpwrresult as created by the irtpwr function
 #' @param ... additional arguments to be passed
+#' @param power numeric, statistical power for which the necessary sample size is calculated
+#' @param N integer, sample size for which the statistical power is calculated.
+#' @param alpha numeric, alpha level
 #'
 #' @return An object of class summary.irtpwrresult
 #' @export
@@ -14,7 +17,7 @@
 #' dat <- expand.table(LSAT7)
 #' mirtfit <- mirt(dat,1,verbose = FALSE)
 #' hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
-#' res <- irtpwr(hyp=hyp,alpha=.05)
+#' res <- irtpwr(hyp=hyp,alpha=.05,power =.8)
 #' summary(res)
 #'
 summary.irtpwrresult <- function(object, ..., power = NULL, N = NULL, alpha = NULL) {
@@ -63,7 +66,7 @@ summary.irtpwrresult <- function(object, ..., power = NULL, N = NULL, alpha = NU
 #' dat <- expand.table(LSAT7)
 #' mirtfit <- mirt(dat,1,verbose = FALSE)
 #' hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
-#' res <- irtpwr(hyp=hyp,alpha=.05)
+#' res <- irtpwr(hyp=hyp,alpha=.05,power =.8)
 #' summary(res)
 #'
 print.summary.irtpwrresult <- function(x, ...) {
