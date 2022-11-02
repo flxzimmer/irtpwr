@@ -38,7 +38,7 @@ load.functions = function (model,multi=FALSE) {
       temp1 = f1(th,a,d,x)
       temp2 = f2(th,a,d,x)
 
-      a = lapply(1:length(x),function(i) {
+      a = lapply(seq_len(length(x)),function(i) {
        prod(res[-i])* c(temp1[i],temp2[i])
       })
       as.numeric(unlist(a))
@@ -83,7 +83,7 @@ load.functions = function (model,multi=FALSE) {
       temp2 = f2(th1,th2,a1,a2,d,x)
       temp3 = f3(th1,th2,a1,a2,d,x)
 
-      a = lapply(1:length(x),function(i) {
+      a = lapply(seq_len(length(x)),function(i) {
         prod(res[-i])* c(temp1[i],temp2[i],temp3[i])
       })
       as.numeric(unlist(a))
@@ -128,7 +128,7 @@ load.functions = function (model,multi=FALSE) {
       temp2 = f2(th,a,d,g,x)
       temp3 = f3(th,a,d,g,x)
 
-      a = lapply(1:length(x),function(i) {
+      a = lapply(seq_len(length(x)),function(i) {
         prod(res[-i])* c(temp1[i],temp2[i],temp3[i])
       })
       as.numeric(unlist(a))
@@ -174,7 +174,7 @@ load.functions = function (model,multi=FALSE) {
       temp2 = f2(th,a,d1,d2,x)
       temp3 = f3(th,a,d1,d2,x)
 
-      a = lapply(1:length(x),function(i) {
+      a = lapply(seq_len(length(x)),function(i) {
         prod(res[-i])* c(temp1[i],temp2[i],temp3[i])
       })
       as.numeric(unlist(a))
@@ -194,8 +194,6 @@ load.functions = function (model,multi=FALSE) {
     funlist=list(f=f_gpcm,g=g,fdot=fdot_gpcm,gdot=gdot,ldot=ldot)
   }
 
-
-  # attach(funlist,warn.conflicts = FALSE)
 
   return(funlist)
 

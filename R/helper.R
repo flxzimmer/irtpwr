@@ -179,8 +179,7 @@ pars.long = function(pars, itemtype, from.mirt=FALSE) {
 
 get_ncp = function(chii,df) {
 
-  #Extract ncp from vector of chi² distributed values
-  #
+  # Extract ncp from vector of chi² distributed values
   # Used in the sampling based ncps
 
   ncp_x = mean(chii)-df # mean for compatibility with chii as vector of multiple values
@@ -193,23 +192,6 @@ get_ncp = function(chii,df) {
 
 calc.N = function(hyp,ncp,power=.8,alpha=.05) {
   # Calculate sample size
-  #
-  # @param hyp Hypothesis Object created from the setup.hypothesis function
-  # @param ncp numeric, Noncentrality parameter for n=1
-  # @param power numeric, desired power, e.g. .8 (default)
-  # @param alpha numeric, alpha niveau, e.g. .05 (default)
-  #
-  # @return
-  # @export
-  #
-  # @examples
-  #
-  # dat <- expand.table(LSAT7)
-  # mirtfit <- mirt(dat,1,verbose = FALSE)
-  # hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
-  # ncps <- calculate_ncps(hyp=hyp)
-  # ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
-  #
 
   df = nrow(hyp$resmod$Amat)
   qcentral <- stats::qchisq(p = 1 - alpha, df = df)
@@ -233,24 +215,6 @@ calc.N = function(hyp,ncp,power=.8,alpha=.05) {
 
 calc.power = function(hyp,ncp,ssize,alpha=.05) {
   # Calculate power
-  #
-  # @param hyp Hypothesis Object created from the setup.hypothesis function
-  # @param ncp numeric, Noncentrality parameter for n=1
-  # @param ssize interger, sample size
-  # @param alpha numeric, alpha niveau, e.g. .05 (default)
-  #
-  # @return
-  # @export
-  #
-  # @examples
-  #
-  # dat <- expand.table(LSAT7)
-  # mirtfit <- mirt(dat,1,verbose = FALSE)
-  # hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
-  # ncps <- calculate_ncps(hyp=hyp)
-  # power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
-  #
-
 
   df = nrow(hyp$resmod$Amat)
   crit = stats::qchisq(1-alpha,df = df, ncp = 0) |> as.numeric()

@@ -3,27 +3,14 @@ mml.fit = function(hyp,data,infmat.unres = "Fisher",infmat.res="Fisher",free_mea
 
   # Fit restricted and unrestriced model by ML using mirt
   #
-  # @param hyp Hypothesis Object created from the setup.hypothesis function
-  # @param infmat.unres String, type of the information matrix for the unrestricted model, "Fisher" or "ApproxFisher" are currently implemented
-  # @param infmat.res String, type of the information matrix for the restricted model, "Fisher" or "ApproxFisher" are currently implemented
-  # @param free_mean boolean, option to estimate free means between groups
-  # @param approx.npers integer, sample size for approximating the Fisher expected information matrix
-  # @param data dataframe with data to be fitted
-  # @param NCYCLES Sets the NCYCLES argument in the mirt function
-  # @param SE.type specifies the type of the observed information matrix
-  #
-  # @return
-  # @export
-  #
-  # @examples
-  #
-  # altpars <- list(
-  # a = rlnorm(5,sdlog = .4),
-  # d = stats::rnorm(5))
-  # hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = altpars)
-  # data <- setup.data(hyp=hyp,n=500)
-  # fitted <- mml.fit(data = data,hyp = hyp)
-  #
+  #  hyp Hypothesis Object created from the setup.hypothesis function
+  #  infmat.unres String, type of the information matrix for the unrestricted model, "Fisher" or "ApproxFisher" are currently implemented
+  #  infmat.res String, type of the information matrix for the restricted model, "Fisher" or "ApproxFisher" are currently implemented
+  #  free_mean boolean, option to estimate free means between groups
+  #  approx.npers integer, sample size for approximating the Fisher expected information matrix
+  #  data dataframe with data to be fitted
+  #  NCYCLES Sets the NCYCLES argument in the mirt function
+  #  SE.type specifies the type of the observed information matrix
 
   if (!is.data.frame(data)) {
     group = data$group
@@ -68,14 +55,6 @@ mml.fit = function(hyp,data,infmat.unres = "Fisher",infmat.res="Fisher",free_mea
 stat_obs = function(fitted,stat=c("Wald","LR","Score","Gradient")) {
 
   # Calculate statistics from fitted mirt models
-  #
-  # @param fitted Object created by mml.fit function.
-  # @param stat Vector containing statistics to calculate
-  #
-  # @return
-  # @export
-  #
-  # @examples
 
   a = rep(NA,4) # Prepare Result Vector
 

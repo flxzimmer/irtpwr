@@ -96,10 +96,10 @@ In this specific case, we know that the restricted model parameters can be expec
     maxlpreload= function(pars) {
       # returns the density for each response pattern under the model parameters pars
 
-      patterns = as.matrix(expand.grid(lapply(1:length(pars$a),function(x) c(0,1))))
+      patterns = as.matrix(expand.grid(lapply(seq_len(length(pars$a)),function(x) c(0,1))))
 
       pre = c()
-      for (i in 1:nrow(patterns)) {
+      for (i in seq_len(nrow(patterns))) {
         pre[i] = funs$g(patterns[i,],pars)
       }
 
@@ -109,7 +109,7 @@ In this specific case, we know that the restricted model parameters can be expec
 
     maxl = function(x,pars,pre) {
       # calculates the likelihood of parameters x given model "pars"
-      patterns = as.matrix(expand.grid(lapply(1:length(pars$a),function(x) c(0,1))))
+      patterns = as.matrix(expand.grid(lapply(seq_len(length(pars$a)),function(x) c(0,1))))
 
       x = list(
         a=c(x,pars$a[2:length(pars$a)]),
@@ -117,7 +117,7 @@ In this specific case, we know that the restricted model parameters can be expec
       )
 
       res  = c()
-      for (i in 1:nrow(patterns)) {
+      for (i in seq_len(nrow(patterns))) {
         px = pre[i]
         browser()
         qx = funs$g(patterns[i,],x)

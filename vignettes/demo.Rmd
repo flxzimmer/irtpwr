@@ -172,7 +172,7 @@ To demonstrate extending the method to models not treated in our paper, we test 
 
 ## 3PL Model
 
-We test the null hypothesis that the first item parameters are (1,0,.2) for the a,d, and g parameters respectively. This hypothesis is implemented as the type "3PL_basic" we later use in the setup.hpyothesis function.  The parameters under the alternative hypothesis are:
+We test the null hypothesis that the first item parameters are (1,0,.2) for the a,d, and g parameters respectively. This hypothesis is implemented as the type "3PL_basic" we later use in the setup.hypothesis function.  The parameters under the alternative hypothesis are:
 
 ```{r}
 altpars <- list(
@@ -200,7 +200,7 @@ summary(res)
 
 ## Multidimensional Model
 
-We test the null hypothesis that the difficulty of the first two item parameters is equal. This hypothesis is implemented as the type "multi_basic" we later use in the setup.hpyothesis function. The parameters under the alternative hypothesis are taken from the LSAT7 dataset:
+We test the null hypothesis that the difficulty of the first two item parameters is equal. This hypothesis is implemented as the type "multi_basic" we later use in the setup.hypothesis function. The parameters under the alternative hypothesis are taken from the LSAT7 dataset:
 
 ```{r}
 dat <- expand.table(LSAT7)

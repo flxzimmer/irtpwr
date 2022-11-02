@@ -34,7 +34,6 @@ irtpwr = function(hyp,stat=c("Wald","LR","Score","Gradient"),method="analytical"
 
     data = setup.data(hyp,n = sampling.npers)
     fitted = mml.fit(hyp, data = data,infmat.unres = sampling.mat,infmat.res=sampling.mat,approx.npers=approx.npers,SE.type=SE.type)
-    # funs = load.functions(hyp$resmod$itemtype)
     obs =stat_obs(fitted,stat)
     ncps = sapply(obs,function(x) get_ncp(x,df=nrow(hyp$resmod$Amat))$ncp)
     ncps = ncps/sampling.npers
@@ -71,14 +70,6 @@ irtpwr = function(hyp,stat=c("Wald","LR","Score","Gradient"),method="analytical"
 ncp.wald = function(hyp,n=1) {
 
   # Analytical noncentrality parameter for the Wald statistic
-  #
-  # @param hyp Hypothesis Object created by the setup.hypothesis function
-  # @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
-  #
-  # @return
-  # @export
-  #
-  # @examples
 
   resmod = hyp$resmod
   unresmod = hyp$unresmod
@@ -98,15 +89,6 @@ ncp.wald = function(hyp,n=1) {
 
 ncp.lr = function(hyp,n=1,parsr= NULL) {
   # Analytical noncentrality parameter for the LR statistic
-  #
-  # @param hyp Hypothesis Object created by the setup.hypothesis function
-  # @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
-  # @param parsr Restricted parameters
-  #
-  # @return
-  # @export
-  #
-  # @examples
 
   resmod = hyp$resmod
   unresmod = hyp$unresmod
@@ -126,7 +108,7 @@ ncp.lr = function(hyp,n=1,parsr= NULL) {
     n.kat = max(ncol(pars1$d),2)
     patterns = as.matrix(expand.grid(lapply(1:resmod$n.items,function(x) 0:(n.kat-1))))
 
-    for (i in 1:nrow(patterns)) {
+    for (i in seq_len(nrow(patterns))) {
       gr = funs$g(patterns[i,],parsr)
       g1 = funs$g(patterns[i,],pars1)
       g2 = funs$g(patterns[i,],pars2)
@@ -142,7 +124,7 @@ ncp.lr = function(hyp,n=1,parsr= NULL) {
     n.kat = max(ncol(pars$d),2)
     patterns = as.matrix(expand.grid(lapply(1:resmod$n.items,function(x) 0:(n.kat-1))))
 
-    for (i in 1:nrow(patterns)) {
+    for (i in seq_len(nrow(patterns))) {
       gr = funs$g(patterns[i,],parsr)
       gu = funs$g(patterns[i,],pars)
       res[i] = log(gr) * (gu)
@@ -164,15 +146,7 @@ ncp.lr = function(hyp,n=1,parsr= NULL) {
 
 ncp.score = function(hyp,n=1,parsr=NULL) {
   # Analytical noncentrality parameter for the Score statistic
-  #
-  # @param hyp Hypothesis Object created by the setup.hypothesis function
-  # @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
-  # @param parsr Restricted parameters
-  #
-  # @return
-  # @export
-  #
-  # @examples
+
 
   resmod = hyp$resmod
   unresmod = hyp$unresmod
@@ -195,7 +169,7 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
 
     freq12 = lapply(patterns,function(x) c(funs$g(x,pars1)/2,funs$g(x,pars2)/2))  |> (\(x) do.call(rbind,x))()
     freq = cbind(rowSums(freq12),freq12)
-    ly = lapply(1:length(patterns),function(i) {
+    ly = lapply(seq_len(length(patterns)),function(i) {
       l = funs$ldot(patterns[[i]],parsr); list(freq[i,1] * l,freq[i,2] * l,freq[i,3] * l)} )
       lx = lapply(ly,function(x) x[[1]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
       lx1 = lapply(ly,function(x) x[[2]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
@@ -229,17 +203,6 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
 
 ncp.grad = function(hyp,n=1,parsr=NULL,lx=NULL) {
   # Analytical noncentrality parameter for the Gradient statistic
-  #
-  # @param hyp Hypothesis Object created by the setup.hypothesis function
-  # @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
-  # @param parsr Restricted parameters
-  # @param lx Score-vector, optional, can be used from the output of ncp.score.
-  #
-  # @return
-  # @export
-  #
-  # @examples
-
 
   resmod = hyp$resmod
   unresmod = hyp$unresmod
@@ -262,7 +225,7 @@ ncp.grad = function(hyp,n=1,parsr=NULL,lx=NULL) {
 
     freq12 = lapply(patterns,function(x) c(funs$g(x,pars1)/2,funs$g(x,pars2)/2)) |> (\(x) do.call(rbind,x))()
     freq = cbind(rowSums(freq12),freq12)
-    ly = lapply(1:length(patterns),function(i) {
+    ly = lapply(seq_len(length(patterns)),function(i) {
 
       l = funs$ldot(patterns[[i]],parsr); list(freq[i,1] * l,freq[i,2] * l,freq[i,3] * l)} )
       lx = lapply(ly,function(x) x[[1]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()

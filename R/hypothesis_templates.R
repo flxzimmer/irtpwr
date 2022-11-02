@@ -38,10 +38,10 @@ h_1PLvs2PL = list(
     maxlpreload= function(pars,funs) {
       # returns the density for each response pattern under the model parameters pars
 
-      patterns = as.matrix(expand.grid(lapply(1:length(pars$a),function(x) c(0,1))))
+      patterns = as.matrix(expand.grid(lapply(seq_len(length(pars$a)),function(x) c(0,1))))
 
       pre = c()
-      for (i in 1:nrow(patterns)) {
+      for (i in seq_len(nrow(patterns))) {
         pre[i] = funs$g(patterns[i,],pars)
       }
 
@@ -52,11 +52,11 @@ h_1PLvs2PL = list(
     maxl = function(x,pars,pre,funs) {
       # calculates the likelihood of parameters x given model "pars"
 
-      patterns = as.matrix(expand.grid(lapply(1:length(pars$a),function(x) c(0,1))))
+      patterns = as.matrix(expand.grid(lapply(seq_len(length(pars$a)),function(x) c(0,1))))
       x = list(a=rep(x[1],length(pars$a)),d=x[2:length(x)])
 
       res  = c()
-      for (i in 1:nrow(patterns)) {
+      for (i in seq_len(nrow(patterns))) {
         px = pre[i]
         qx = funs$g(patterns[i,],x)
         res[i] =  {px*log(qx)}
@@ -262,7 +262,7 @@ h_PCMvsGPCM = list(
       patterns = as.matrix(expand.grid(lapply(1:n.items,function(x) 0:(n.kat-1))))
 
       pre = c()
-      for (i in 1:nrow(patterns)) {
+      for (i in seq_len(nrow(patterns))) {
         pre[i] = funs$g(patterns[i,],pars)
       }
 
@@ -277,7 +277,7 @@ h_PCMvsGPCM = list(
       x = list(a=rep(x[1],n.items),d=matrix(c(rep(0,n.items),x[2:length(x)]),ncol=ncol(pars$d)))
 
       res  = c()
-      for (i in 1:nrow(patterns)) {
+      for (i in seq_len(nrow(patterns))) {
         px = pre[i]
         qx = funs$g(patterns[i,],x)
         res[i] =  {px*log(qx)}
@@ -349,10 +349,10 @@ h_basic = list(
     maxlpreload= function(pars) {
       # returns the density for each response pattern under the model parameters pars
 
-      patterns = as.matrix(expand.grid(lapply(1:length(pars$a),function(x) c(0,1))))
+      patterns = as.matrix(expand.grid(lapply(seq_len(length(pars$a)),function(x) c(0,1))))
 
       pre = c()
-      for (i in 1:nrow(patterns)) {
+      for (i in seq_len(nrow(patterns))) {
         pre[i] = funs$g(patterns[i,],pars)
       }
 
@@ -362,7 +362,7 @@ h_basic = list(
 
     maxl = function(x,pars,pre) {
       # calculates the likelihood of parameters x given model "pars"
-      patterns = as.matrix(expand.grid(lapply(1:length(pars$a),function(x) c(0,1))))
+      patterns = as.matrix(expand.grid(lapply(seq_len(length(pars$a)),function(x) c(0,1))))
 
       x = list(
         a=c(x,pars$a[2:length(pars$a)]),
@@ -370,7 +370,7 @@ h_basic = list(
       )
 
       res  = c()
-      for (i in 1:nrow(patterns)) {
+      for (i in seq_len(nrow(patterns))) {
         px = pre[i]
         qx = funs$g(patterns[i,],x)
         res[i] =  {px*log(qx)}
@@ -438,10 +438,10 @@ h_3PL_basic = list(
     maxlpreload= function(pars) {
       # returns the density for each response pattern under the model parameters pars
 
-      patterns = as.matrix(expand.grid(lapply(1:length(pars$a),function(x) c(0,1))))
+      patterns = as.matrix(expand.grid(lapply(seq_len(length(pars$a)),function(x) c(0,1))))
 
       pre = c()
-      for (i in 1:nrow(patterns)) {
+      for (i in seq_len(nrow(patterns))) {
         pre[i] = funs$g(patterns[i,],pars)
       }
 
@@ -451,7 +451,7 @@ h_3PL_basic = list(
 
     maxl = function(x,pars,pre) {
       # calculates the likelihood of parameters x given model "pars"
-      patterns = as.matrix(expand.grid(lapply(1:length(pars$a),function(x) c(0,1))))
+      patterns = as.matrix(expand.grid(lapply(seq_len(length(pars$a)),function(x) c(0,1))))
 
       x = list(
         a=c(x,pars$a[2:length(pars$a)]),
@@ -459,7 +459,7 @@ h_3PL_basic = list(
       )
 
       res  = c()
-      for (i in 1:nrow(patterns)) {
+      for (i in seq_len(nrow(patterns))) {
         px = pre[i]
         qx = funs$g(patterns[i,],x)
         res[i] =  {px*log(qx)}

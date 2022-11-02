@@ -5,20 +5,15 @@ infmat = function(pars,method = "Fisher",approx.npers = 10^6,data=NULL,multigrou
 
   # Calculate information matrix (expected / observed)
   #
-  # @param pars Parameter Set
-  # @param method string, method to be used, e.g. "Fisher" for the Fisher-expected information matrix calculated using the mirt package or "ApproxFisher" for its approximation
-  # @param approx.npers integer, number of persons in the sampling based approach
-  # @param data dataset for observed matrix methods
-  # @param multigroup Boolean, multigroup model?
-  # @param model Specific mirt model
-  # @param itemtype String, itemtype
-  # @param NCYCLES Sets the NCYCLES argument in the mirt function
-  # @param SE.type specifies the type of the observed information matrix
-  #
-  # @return
-  # @export
-  #
-  # @examples
+  #   pars Parameter Set
+  #   method string, method to be used, e.g. "Fisher" for the Fisher-expected information matrix calculated using the mirt package or "ApproxFisher" for its approximation
+  #   approx.npers integer, number of persons in the sampling based approach
+  #   data dataset for observed matrix methods
+  #   multigroup Boolean, multigroup model?
+  #   model Specific mirt model
+  #   itemtype String, itemtype
+  #   NCYCLES Sets the NCYCLES argument in the mirt function
+  #   SE.type specifies the type of the observed information matrix
   #
 
   if(is.null(pars$g)) {pars$g = rep(0,length(pars$a))}

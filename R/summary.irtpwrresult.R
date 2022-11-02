@@ -89,7 +89,7 @@ print.summary.irtpwrresult <- function(x, ...) {
 
   cat("\n")
 
-  print(mat,row.names=F)
+  print(mat,row.names=FALSE)
 
   cat("\nMethod: ", paste(method, sep = "\n",
                              collapse = "\n"), sep = "")
