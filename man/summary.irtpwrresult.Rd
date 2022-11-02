@@ -28,7 +28,7 @@ Output the resulting power or sample size for each statistic
 library(mirt)
 dat <- expand.table(LSAT7)
 mirtfit <- mirt(dat,1,verbose = FALSE)
-hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
+hyp <- setup.hypothesis(type = '1PLvs2PL', altpars = mirtfit)
 res <- irtpwr(hyp=hyp,alpha=.05,power =.8)
 summary(res)
 

@@ -43,22 +43,19 @@ Additional templates for hypothesis objects are included in the "hypothesis_temp
 
 In our restricted model, we define the A Matrix and the c vector. They formally represent the hypothesis. Then we setup the instructions for mirt to fit the model, which imply to keep the first item difficulty fixed at 0.
 ```{r}
-  res = function(altpars,nullpars = NULL) {
+res = function(altpars, nullpars = NULL) {
 
-    n.items = length(altpars[[1]])
+    n.items <- length(altpars[[1]])
 
-    re = list(
-      n.items = n.items,
-      itemtype = "2PL",
-      Amat = c(0,1,rep(0,(n.items-1)*2)) %>% matrix(.,ncol=n.items*2,byrow=TRUE),
-      cvec = 0,
-      model = mirt::mirt.model(paste('F = 1-',n.items,'
+    re <- list(n.items = n.items, itemtype = "2PL",
+        Amat = c(0, 1, rep(0, (n.items - 1) * 2)) |>
+            (function(x) matrix(x, ncol = n.items *
+                2, byrow = TRUE))(), cvec = 0, model = mirt::mirt.model(paste("F = 1-",
+            n.items, "
                            FIXED = (1, d)
-                           START = (1,d,0)'))
-    )
+                           START = (1,d,0)")))
     return(re)
-  }
-
+}
 ```
 
 
@@ -69,15 +66,11 @@ The unrestricted model is a basic 2PL model. Note that we generate a longpars ob
 ```{r}
 unres = function(altpars) {
 
-    re = list(
-      parsets = altpars,
-      model = 1,
-      itemtype = "2PL",
-      longpars = pars.long(pars = altpars,itemtype="2PL")
-    )
+    re <- list(parsets = altpars, model = 1, itemtype = "2PL",
+        longpars = pars.long(pars = altpars, itemtype = "2PL"))
 
     return(re)
-  }
+}
 ```
 
 
@@ -89,59 +82,65 @@ Note that this function can be left blank if you don't want to setup the analyti
 In this specific case, we know that the restricted model parameters can be expected to result in the true parameters for all but the first item. The only parameter in question is the discrimination of the first item parameter. We therefore ask the question: If we set the first item difficulty to 0, what is the most likely item discrimination given the data follows the true parameters.
 
 ```{r}
-  maximizeL = function(hyp) {
-    # Hypothesis-specific algorithm to find the maximum likelihood restricted parameter set
+maximizeL = function(hyp) {
+    # Hypothesis-specific algorithm to find the
+    # maximum likelihood restricted parameter set
 
 
-    maxlpreload= function(pars) {
-      # returns the density for each response pattern under the model parameters pars
+    maxlpreload <- function(pars) {
+        # returns the density for each response
+        # pattern under the model parameters pars
 
-      patterns = as.matrix(expand.grid(lapply(seq_len(length(pars$a)),function(x) c(0,1))))
+        patterns <- as.matrix(expand.grid(lapply(seq_len(length(pars$a)),
+            function(x) c(0, 1))))
 
-      pre = c()
-      for (i in seq_len(nrow(patterns))) {
-        pre[i] = funs$g(patterns[i,],pars)
-      }
+        pre <- c()
+        for (i in seq_len(nrow(patterns))) {
+            pre[i] <- funs$g(patterns[i, ], pars)
+        }
 
-      return(pre)
+        return(pre)
     }
 
 
-    maxl = function(x,pars,pre) {
-      # calculates the likelihood of parameters x given model "pars"
-      patterns = as.matrix(expand.grid(lapply(seq_len(length(pars$a)),function(x) c(0,1))))
+    maxl <- function(x, pars, pre) {
+        # calculates the likelihood of parameters
+        # x given model 'pars'
+        patterns <- as.matrix(expand.grid(lapply(seq_len(length(pars$a)),
+            function(x) c(0, 1))))
 
-      x = list(
-        a=c(x,pars$a[2:length(pars$a)]),
-        d=c(0,pars$d[2:length(pars$d)])
-      )
+        x <- list(a = c(x, pars$a[2:length(pars$a)]),
+            d = c(0, pars$d[2:length(pars$d)]))
 
-      res  = c()
-      for (i in seq_len(nrow(patterns))) {
-        px = pre[i]
-        browser()
-        qx = funs$g(patterns[i,],x)
-        res[i] =  {px*log(qx)}
-      }
-      re = -sum(res)
+        res <- c()
+        for (i in seq_len(nrow(patterns))) {
+            px <- pre[i]
+            qx <- funs$g(patterns[i, ], x)
+            res[i] <- {
+                px * log(qx)
+            }
+        }
+        re <- -sum(res)
     }
-    resmod = hyp$resmod
-    unresmod = hyp$unresmod
+    resmod <- hyp$resmod
+    unresmod <- hyp$unresmod
 
-    pars = unresmod$parsets
-funs = load.functions(unresmod$itemtype)
+    pars <- unresmod$parsets
+    funs <- load.functions(unresmod$itemtype)
 
-    startval = pars$a[1]
+    startval <- pars$a[1]
 
-    maxlpre = maxlpreload(pars)
+    maxlpre <- maxlpreload(pars)
 
-    optpar = stats::optim(startval,function(x) {maxl(x,pars,maxlpre)},method = "BFGS")
-    re = pars
-    re$a = c(optpar$par[1],pars$a[2:length(pars$a)])
-    re$d = c(0,pars$d[2:length(pars$d)])
+    optpar <- stats::optim(startval, function(x) {
+        maxl(x, pars, maxlpre)
+    }, method = "BFGS")
+    re <- pars
+    re$a <- c(optpar$par[1], pars$a[2:length(pars$a)])
+    re$d <- c(0, pars$d[2:length(pars$d)])
 
     return(re)
-  }
+}
 
 ```
 
@@ -151,11 +150,7 @@ funs = load.functions(unresmod$itemtype)
 We put the functions defined above in a list. 
 
 ```{r}
-h_basic = list(
-  res = res,
-  unres = unres,
-  maximizeL = maximizeL
-)
+h_basic <- list(res = res, unres = unres, maximizeL = maximizeL)
 ```
 
 
@@ -164,16 +159,13 @@ h_basic = list(
 The new hypothesis can be set up using the h_basic list object as the type argument of the setup.hypothesis function. We may then calculate the power at arbitrary sample sizes.
 
 ```{r}
-altpars <- list(
-        a = rlnorm(5,sdlog = .4),
-        d = rnorm(5)
-        )
+altpars <- list(a = rlnorm(5, sdlog = 0.4), d = rnorm(5))
 
-altpars$d[1]=.2
+altpars$d[1] <- 0.2
 
 hyp <- setup.hypothesis(type = h_basic, altpars = altpars)
 
-res = irtpwr(hyp=hyp,alpha=.05,power=.8)
+res <- irtpwr(hyp = hyp, alpha = 0.05, power = 0.8)
 summary(res)
 plot(res)
 ```

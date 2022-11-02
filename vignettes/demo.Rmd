@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   out.width = "70%",
+  fig.dim = c(6, 4),
   tidy = TRUE,
   tidy.opts=list(arrow=TRUE,width.cutoff = 50),
   eval=T
@@ -50,7 +51,7 @@ As a first step, we load the data set and fit a 2PL model.
 
 ```{r}
 dat <- expand.table(LSAT7)
-mirtfit <- mirt(dat,1,verbose = FALSE)
+mirtfit <- mirt(dat, 1, verbose = FALSE)
 ```
 
 The 2PL parameters are then used as parameters for the alternative hypothesis in our hypothesis definition.
@@ -62,7 +63,7 @@ hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
 
 We can now perform the power analysis. We want to determine the sample size necessary for a power of .8 while using an alpha level of .05. 
 ```{r}
-res = irtpwr(hyp=hyp, power = .8, alpha = .05)
+res <- irtpwr(hyp = hyp, power = 0.8, alpha = 0.05)
 summary(res)
 ```
 Here we see that the gradient statistic would be the most efficient to test our hypothesis: We would need a sample size of 778 to reach our desired power.
@@ -83,10 +84,7 @@ We will present the main functions and their arguments in more detail.
 To setup a hypothesis, we can either use a fitted mirt model or specify alternative parameters directly. In both cases, we use the altpars argument of the setup.hypothesis function. An example of direct specification is:
 
 ```{r}
-altpars <- list(
-        a = rlnorm(5,sdlog = .4),
-        d = rnorm(5)
-        )
+altpars <- list(a = rlnorm(5, sdlog = 0.4), d = rnorm(5))
 hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = altpars)
 ```
 
@@ -101,15 +99,13 @@ The following types are currently available in the package:
 We have already seen the Rasch against 2PL hypothesis setup in the toy example above. The procedure for the DIF in 2PL hypothesis is analogous, yet a bit more complicated since we need to define two groups. An example is:
 
 ```{r}
-group1 = group2 <- list(
-        a = rlnorm(5,sdlog = .2),
-        d = rnorm(5)
-        )
+group1 <- group2 <- list(a = rlnorm(5, sdlog = 0.2),
+    d = rnorm(5))
 
-group2$a[1] = (group2$a[1])^2
-group2$d[1] = group2$d[1] + .5
+group2$a[1] <- (group2$a[1])^2
+group2$d[1] <- group2$d[1] + 0.5
 
-altpars <- list(group1,group2)
+altpars <- list(group1, group2)
 
 hyp <- setup.hypothesis(type = "DIF2PL", altpars = altpars)
 
@@ -128,17 +124,17 @@ The irtpwr function can be used to perform the power analysis. Apart from an hyp
 
 For example, to calculate the power for a sample size of 600 using our DIF hypothesis from above:
 ```{r}
-res = irtpwr(hyp=hyp, N = 600, alpha = .05)
+res <- irtpwr(hyp = hyp, N = 600, alpha = 0.05)
 summary(res)
 ```
 
 The object resulting from irtpwr can be used to gather further information about the relationship between sample size and power. For example, we can obtain the sample size necessary for reaching a power of .8. 
 ```{r}
-summary(res,power = .8)
+summary(res, power = 0.8)
 ```
 We can also obtain the power for a different sample size than originally specified in our execution of the irtpwr function.
 ```{r}
-summary(res,N=700)
+summary(res, N = 700)
 ```
 
 
@@ -149,7 +145,7 @@ The irtpwr function builds on one of two available methods that are described in
 
 To use the sampling based approach, we can execute: 
 ```{r}
-res = irtpwr(hyp=hyp, N = 600, alpha = .05,method="sampling")
+res <- irtpwr(hyp = hyp, N = 600, alpha = 0.05, method = "sampling")
 summary(res)
 ```
 
@@ -159,7 +155,7 @@ Since the analytical approach can be too time-intensive for larger numbers of it
 
 In our example hypothesis, we used 5 items. To estimate the computation time for 7 items we can use: 
 ```{r}
-calc.time(hyp,n.items=7)
+calc.time(hyp, n.items = 7)
 ```
 
 Note that the estimated time can sometimes deviate from the actual time. As a result from our test runs, I suggest to expect an increase of 80% as a worst case scenario.
@@ -189,7 +185,8 @@ hyp <- setup.hypothesis(type = "3PL_basic", altpars = altpars)
 
 We calculate the power using a sampling-based approach. Since we ran into convergence problems using the default SE.type value, we choose an alternative (SE.type = "Fisher"). 
 ```{r}
-res <- irtpwr(hyp=hyp,alpha=.05,power=.80,method = "sampling",SE.type = "Fisher")
+res <- irtpwr(hyp = hyp, alpha = 0.05, power = 0.8,
+    method = "sampling", SE.type = "Fisher")
 ```
 
 We can obtain the result using
@@ -204,10 +201,11 @@ We test the null hypothesis that the difficulty of the first two item parameters
 
 ```{r}
 dat <- expand.table(LSAT7)
-dat = dat[,c(2,4,1,3,5)] # re-ordering items so that items 1 and 2 of the resulting data frame are compared
-model_an <- 'F1 = 1-5
-      F2 = 1-4'
-altpars = mirt(dat, model = mirt.model(model_an),verbose = FALSE)
+dat <- dat[, c(2, 4, 1, 3, 5)]  # re-ordering items so that items 1 and 2 of the resulting data frame are compared
+model_an <- "F1 = 1-5
+      F2 = 1-4"
+altpars <- mirt(dat, model = mirt.model(model_an),
+    verbose = FALSE)
 ```
 
 We setup the hypothesis:
@@ -217,7 +215,8 @@ hyp <- setup.hypothesis(type = "multi_basic", altpars = altpars)
 
 We calculate the power using a sampling-based approach. We again encountered convergence problems using the default SE.type value, so we choose an alternative (SE.type = "Fisher").
 ```{r}
-res <- irtpwr(hyp=hyp,alpha=.05,power=.80,method = "sampling",SE.type = "Fisher")
+res <- irtpwr(hyp = hyp, alpha = 0.05, power = 0.8,
+    method = "sampling", SE.type = "Fisher")
 ```
 
 We can obtain the result using

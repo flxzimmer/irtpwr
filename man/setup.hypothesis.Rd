@@ -7,7 +7,7 @@
 setup.hypothesis(type, altpars = NULL, nullpars = NULL)
 }
 \arguments{
-\item{type}{preset, e.g. "1PLvs2PL". Either a string for an existing preset or a list with the required functions for a custom  preset. See the section extending the package for a tutorial on how to create a custom preset.}
+\item{type}{preset, e.g. '1PLvs2PL'. Either a string for an existing preset or a list with the required functions for a custom  preset. See the section extending the package for a tutorial on how to create a custom preset.}
 
 \item{altpars}{List of model parameters following the alternative hypothesis. The format depends on the preset. When parameters are derived from observed data by mirt, the coef_short function can be used to convert the parameters to the right format.}
 
@@ -24,6 +24,6 @@ Setup null and alternative hypothesis
 library(mirt)
 dat <- expand.table(LSAT7)
 mirtfit <- mirt(dat,1,verbose = FALSE)
-hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
+hyp <- setup.hypothesis(type = '1PLvs2PL', altpars = mirtfit)
 
 }

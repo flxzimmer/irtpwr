@@ -91,10 +91,13 @@ plot(res)
 ## Further documentation
 
 Further documentation on how to use the package is found in the package
-vignettes: \* The vignette “demo” gives an introduction of basic
-features, \* “adding_hypotheses” gives a tutorial on setting up custom
-hypotheses, \* “hypothesis_templates” includes some templates for
-hypothesis objects that can be altered for your specific use case.
+vignettes:
+
+-   The vignette “demo” gives an introduction of basic features,
+-   “adding_hypotheses” gives a tutorial on setting up custom
+    hypotheses,
+-   “hypothesis_templates” includes some templates for hypothesis
+    objects that can be altered for your specific use case.
 
 If the vignettes were included during installation (for example using
 the methods above), they can be accessed via:

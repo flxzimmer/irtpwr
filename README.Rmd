@@ -69,7 +69,7 @@ hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
 
 We can now perform the power analysis. We want to determine the sample size necessary for a power of .8 while using an alpha level of .05. 
 ```{r}
-res = irtpwr(hyp=hyp, power = .8, alpha = .05)
+res <- irtpwr(hyp = hyp, power = 0.8, alpha = 0.05)
 summary(res)
 ```
 Here we see that the gradient statistic would be the most efficient to test our hypothesis: We would need a sample size of 778 to reach our desired power.
@@ -84,6 +84,7 @@ plot(res)
 ## Further documentation 
 
 Further documentation on how to use the package is found in the package vignettes:
+
 * The vignette "demo" gives an introduction of basic features,
 * "adding_hypotheses" gives a tutorial on setting up custom hypotheses,
 * "hypothesis_templates" includes some templates for hypothesis objects that can be altered for your specific use case.

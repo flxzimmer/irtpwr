@@ -9,7 +9,7 @@ pars.long(pars, itemtype, from.mirt = FALSE)
 \arguments{
 \item{pars}{list of parameters. Can also be coefficients from a model fitted by mirt. In this case, the from.mirt argument has to be set to TRUE}
 
-\item{itemtype}{character, type of the item as string, e.g. "2PL"}
+\item{itemtype}{character, type of the item as string, e.g. '2PL'}
 
 \item{from.mirt}{logical, treat as coefficients from a model fitted by mirt if TRUE}
 }
@@ -17,11 +17,11 @@ pars.long(pars, itemtype, from.mirt = FALSE)
 numeric vector
 }
 \description{
-This is a helper function used to generate custom hypotheses. See the "adding_hypotheses" vignette.
+This is a helper function used to generate custom hypotheses. See the 'adding_hypotheses' vignette.
 }
 \examples{
 
 pars = list(a= c(1,1,1),d=c(0,0,0))
-pars.long(pars,itemtype="2PL")
+pars.long(pars,itemtype='2PL')
 
 }
