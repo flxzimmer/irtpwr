@@ -4,21 +4,27 @@ logit <- function(p) { log(p/(1-p)) }
 logitinv<- function(q) { 1/(1+exp(-q)) }
 
 
-#' Calculate the time needed
+#' Calculate the computation time needed for the analytical method
 #'
-#' @param hyp Hypothesis from setup.hypothesis function
+#' @param hyp Hypothesis object as created by the setup.hypothesis function
 #' @param n.items Number of items
 #'
-#' @return
+#' @return Numeric
 #' @export
 #'
 #' @examples
-calctime = function(hyp,n.items) {
+#'
+#' dat <- expand.table(LSAT7)
+#' mirtfit <- mirt(dat,1,verbose = FALSE)
+#' hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
+#' calc.time(hyp,n.items=7)
+#'
+calc.time = function(hyp,n.items) {
 
   n.items.ex <- length(hyp$unresmod$parsets$d)
 
   ptm <- proc.time() #start timer
-  ncps <- calculate_ncps(hyp=hyp)
+  ncps <- irtpwr(hyp=hyp)$ncps
   time <- proc.time() - ptm #stop timer
 
   time <- as.numeric(time[3])
@@ -40,24 +46,9 @@ findlambda = function(lx,A) {
   return(k)
 }
 
-#' extract coefs from mirtfit
-#'
-#' @param mirtfit object created from mirt()
-#' @param itemtype optional, itemtype as string
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-#' dat <- expand.table(LSAT7)
-#' mirtfit <- mirt(dat,1)
-#' pars <- coef_short(mirtfit)
-#'
-coef_short = function(mirtfit,itemtype=NULL) {
-  # extracts coefs from mml coef output
 
-  # vllt nützlich? mirtfit@Internals[["shortpars"]]
+coef_short = function(mirtfit,itemtype=NULL) {
+  # extract coefs from mirtfit
 
   if (is.null(itemtype)) {
     itemtype <- extract.mirt(mirtfit, what = "itemtype")[1]
@@ -115,11 +106,16 @@ coef_short = function(mirtfit,itemtype=NULL) {
 }
 
 
-#' extract coefs from mirtfit or element created by shortcoef
+#' Transform parameters to a longer format
 #'
-#' @param pars Parameter Set
-#' @param from.mirt Boolean, is the parameter set a mirt model?
-#' @param itemtype optional, itemtype as string
+#' This is a helper function used to generate custom hypotheses. See the "adding_hypotheses" vignette.
+#'
+#'
+#'
+#' @param pars list of parameters. Can also be coefficients from a model fitted by mirt. In this case, the from.mirt argument has to be set to TRUE
+#'
+#' @param from.mirt logical, treat as coefficients from a model fitted by mirt if TRUE
+#' @param itemtype character, type of the item as string, e.g. "2PL"
 #'
 #' @return
 #' @export
@@ -176,19 +172,12 @@ pars.long = function(pars, itemtype, from.mirt=FALSE) {
 }
 
 
-
-#' Extract ncp from vector of chi² distributed values
-#'
-#' Used in the sampling based ncps
-#'
-#' @param chii numeric vector
-#' @param df integer, degrees of freedom
-#'
-#' @return
-#' @export
-#'
-#' @examples
 get_ncp = function(chii,df) {
+
+  #Extract ncp from vector of chi² distributed values
+  #
+  # Used in the sampling based ncps
+
   ncp_x = mean(chii)-df # mean for compatibility with chii as vector of multiple values
   chii[chii<=0] = .00000001
   if (ncp_x<0) {return(list(ncp=0,sd = NA))}
@@ -197,25 +186,26 @@ get_ncp = function(chii,df) {
 
 
 
-#' Calculate sample size
-#'
-#' @param hyp Hypothesis Object created from the setup_hypothesis function
-#' @param ncp numeric, Noncentrality parameter for n=1
-#' @param power numeric, desired power, e.g. .8 (default)
-#' @param alpha numeric, alpha niveau, e.g. .05 (default)
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-#' dat <- expand.table(LSAT7)
-#' mirtfit <- mirt(dat,1,verbose = FALSE)
-#' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = mirtfit)
-#' ncps <- calculate_ncps(hyp=hyp)
-#' ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
-#'
-ssize = function(hyp,ncp,power=.8,alpha=.05) {
+calc.N = function(hyp,ncp,power=.8,alpha=.05) {
+  # Calculate sample size
+  #
+  # @param hyp Hypothesis Object created from the setup.hypothesis function
+  # @param ncp numeric, Noncentrality parameter for n=1
+  # @param power numeric, desired power, e.g. .8 (default)
+  # @param alpha numeric, alpha niveau, e.g. .05 (default)
+  #
+  # @return
+  # @export
+  #
+  # @examples
+  #
+  # dat <- expand.table(LSAT7)
+  # mirtfit <- mirt(dat,1,verbose = FALSE)
+  # hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
+  # ncps <- calculate_ncps(hyp=hyp)
+  # ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
+  #
+
   df = nrow(hyp$resmod$Amat)
   qcentral <- qchisq(p = 1 - alpha, df = df)
   func <-
@@ -236,44 +226,29 @@ ssize = function(hyp,ncp,power=.8,alpha=.05) {
 
 
 
-#' Calculate power
-#'
-#' @param hyp Hypothesis Object created from the setup_hypothesis function
-#' @param ncp numeric, Noncentrality parameter for n=1
-#' @param ssize interger, sample size
-#' @param alpha numeric, alpha niveau, e.g. .05 (default)
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-#' dat <- expand.table(LSAT7)
-#' mirtfit <- mirt(dat,1,verbose = FALSE)
-#' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = mirtfit)
-#' ncps <- calculate_ncps(hyp=hyp)
-#' power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
-#'
-power = function(hyp,ncp,ssize,alpha=.05) {
+calc.power = function(hyp,ncp,ssize,alpha=.05) {
+  # Calculate power
+  #
+  # @param hyp Hypothesis Object created from the setup.hypothesis function
+  # @param ncp numeric, Noncentrality parameter for n=1
+  # @param ssize interger, sample size
+  # @param alpha numeric, alpha niveau, e.g. .05 (default)
+  #
+  # @return
+  # @export
+  #
+  # @examples
+  #
+  # dat <- expand.table(LSAT7)
+  # mirtfit <- mirt(dat,1,verbose = FALSE)
+  # hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
+  # ncps <- calculate_ncps(hyp=hyp)
+  # power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
+  #
+
+
   df = nrow(hyp$resmod$Amat)
   crit = qchisq(1-alpha,df = df, ncp = 0) %>% as.numeric()
   re = 1 - pchisq(q = crit, df = df, ncp = ncp*ssize)
   return(re)
 }
-
-
-#' Helper function for simulation study (used in evaluation_dist.R)
-#'
-#' @param e Error
-#' @param x Additional
-#'
-#' @return
-#' @export
-#'
-#' @examples
-save.error = function(e,x) {
-  num = sample(1:1000,1)
-  file_string =paste0("errors/err_",num,".Rdata")
-  save(e,x,file=file_string)
-}
-

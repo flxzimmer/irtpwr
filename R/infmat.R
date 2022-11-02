@@ -1,28 +1,30 @@
 
 
-#' Calculate information matrix (expected / observed)
-#'
-#' @param pars Parameter Set
-#' @param method string, method to be used, e.g. "Fisher" for the Fisher-expected information matrix calculated using the mirt package or "ApproxFisher" for its approximation
-#' @param approx.npers integer, number of persons in the sampling based approach
-#' @param data dataset for observed matrix methods
-#' @param multigroup Boolean, multigroup model?
-#' @param model Specific mirt model
-#' @param itemtype String, itemtype
-#' @param NCYCLES Sets the NCYCLES argument in the mirt function
-#' @param SE.type specifies the type of the observed information matrix
-#'
-#' @return
-#' @export
-#'
-#' @examples
+
 infmat = function(pars,method = "Fisher",approx.npers = 10^6,data=NULL,multigroup = FALSE,model = 1,itemtype="2PL",NCYCLES=5000,SE.type="Oakes") {
+
+  # Calculate information matrix (expected / observed)
+  #
+  # @param pars Parameter Set
+  # @param method string, method to be used, e.g. "Fisher" for the Fisher-expected information matrix calculated using the mirt package or "ApproxFisher" for its approximation
+  # @param approx.npers integer, number of persons in the sampling based approach
+  # @param data dataset for observed matrix methods
+  # @param multigroup Boolean, multigroup model?
+  # @param model Specific mirt model
+  # @param itemtype String, itemtype
+  # @param NCYCLES Sets the NCYCLES argument in the mirt function
+  # @param SE.type specifies the type of the observed information matrix
+  #
+  # @return
+  # @export
+  #
+  # @examples
+  #
 
   if(is.null(pars$g)) {pars$g = rep(0,length(pars$a))}
 
   # multidimensional model?
   is.multi = "a2" %in% colnames(pars$a)
-
 
   if (method=="Fisher" & !multigroup) {
     dat = mirt::simdata(a = pars$a,d = pars$d,guess=pars$g,N =1000,itemtype = itemtype)

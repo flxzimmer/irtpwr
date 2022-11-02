@@ -1,13 +1,5 @@
 
 
-# Presets containing:
-
-# - Functions to generate a restricted and unrestricted model
-# - Function to maximize the Likelihood
-# currently implemented: 1PLvs2PL, DIF2PL, PCMvsGPCM
-# additional basic presets for: 2PL, 3PL, multidimensional
-
-
 # h_1PLvs2PL --------------------------------------------------------------
 
 h_1PLvs2PL = list(

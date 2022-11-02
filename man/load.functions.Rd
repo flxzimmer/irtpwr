@@ -7,10 +7,10 @@
 load.functions(model, multi = FALSE)
 }
 \arguments{
-\item{model}{Desired Model (2PL,3PL, GPCM)}
+\item{model}{character, Desired Model (2PL,3PL, GPCM)}
 
-\item{multi}{Boolean - Multidimensional? (available for 2PL)}
+\item{multi}{logical, multidimensional model if TRUE (available for 2PL)}
 }
 \description{
-Load IRT model functions and derivatives
+This is a helper function used to generate custom hypotheses. See the "adding_hypotheses" vignette.
 }

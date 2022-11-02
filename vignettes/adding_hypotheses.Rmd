@@ -16,9 +16,6 @@ knitr::opts_chunk$set(eval=TRUE)
 
 ```{r message=FALSE}
 library(irtpwr)
-library(mirt)
-library(dplyr)
-
 ```
 
 # Walkthrough
@@ -31,6 +28,8 @@ This vignette introduces the addition of new hypothesis to allow for a power ana
 * Putting it together
 
 As an example, we will set up a simple hypothesis, testing whether the difficulty of the first item is equal to 0.
+
+Additional templates for hypothesis objects are included in the "hypothesis_templates" vignette.
 
 ## Function to set up the restricted model
 
@@ -76,7 +75,10 @@ unres = function(altpars) {
 
 ## Function to maximize the likelihood of the restricted parameters
 
-We define a function that calculates the maximum likelihood parameters under the restricted model. In this specific case, we know that the restricted model parameters can be expected to result in the true parameters for all but the first item. The only parameter in question is the discrimination of the first item parameter. We therefore ask the question: If we set the first item difficulty to 0, what is the most likely item discrimination given the data follows the true parameters.
+We define a function that calculates the maximum likelihood parameters under the restricted model.
+Note that this function can be left blank if you don't want to setup the analytical approach. The sampling-based approach can still be used without this function. 
+
+In this specific case, we know that the restricted model parameters can be expected to result in the true parameters for all but the first item. The only parameter in question is the discrimination of the first item parameter. We therefore ask the question: If we set the first item difficulty to 0, what is the most likely item discrimination given the data follows the true parameters.
 
 ```{r}
   maximizeL = function(hyp) {
@@ -137,7 +139,8 @@ We define a function that calculates the maximum likelihood parameters under the
 
 ## Putting it together
 
-We simply put the functions defined above in a list. 
+We put the functions defined above in a list. 
+
 ```{r}
 h_basic = list(
   res = res,
@@ -149,7 +152,7 @@ h_basic = list(
 
 # Testing the new hypothesis
 
-The new hypothesis can be set up using the h_basic list object as the type argument of the setup_hypothesis function. We may then calculate the power at arbitrary sample sizes.
+The new hypothesis can be set up using the h_basic list object as the type argument of the setup.hypothesis function. We may then calculate the power at arbitrary sample sizes.
 
 ```{r}
 altpars <- list(
@@ -159,14 +162,11 @@ altpars <- list(
 
 altpars$d[1]=.2
 
-hyp <- setup_hypothesis(type = h_basic, altpars = altpars)
+hyp <- setup.hypothesis(type = h_basic, altpars = altpars)
 
-ncps <- calculate_ncps(hyp=hyp)
-
-n = seq(100,2000)
-pow = power(hyp=hyp,ncp=ncps["Gradient"],alpha=.05,ssize=n)
-plot(n,pow)
-
+res = irtpwr(hyp=hyp,alpha=.05,power=.8)
+summary(res)
+plot(res)
 ```
 
 

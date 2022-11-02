@@ -1,38 +1,43 @@
 
 
-#' Calculate noncentrality parameters
+#' Perform Power Analysis
 #'
-#' #' Wrapper function for the different analytical and sampling-based functions
+#' Perform analytical or sampling-based power analysis for the Wald, LR, score, or gradient statistic.
 #'
-#' @param hyp Hypothesis Object created by the setup_hypothesis function
-#' @param stat character vector containing the statistics to be calculated. Options are "Wald","LR","Score", and "Gradient". All statistics are included by default.
-#' @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
+#' @param hyp Hypothesis Object created by the setup.hypothesis function
+#' @param stat character vector containing the statistics to be calculated. Options are "Wald","LR","Score", and "Gradient". By default, all statistics are included
 #' @param sampling.npers integer, sample size for the sampling-based approach
 #' @param approx.npers integer, sample size for approximating the Fisher expected information matrix in the sampling-based approach
-#' @param sampling boolean, TRUE gives the sampling-based estimate instead of the analytical, recommended for larger itemsets
-#' @param SE.type Method for calculation of the observed information matrix used for calculating the statistics in the sampling-based approach ("Oakes" by default)
+#' @param method character, indicating the method used. The options are "analytical"(default) for the analytical power analysis method or "sampling" for the sampling-based method. The sampling-based method is generally recommended for higher numbers of items.
+#' @param SE.type Method for calculation of the observed information matrix used for calculating the statistics in the sampling-based approach ("Oakes" by default). Another option is "Fisher".
 #' @param sampling.mat Approach to calculate the information matrix used for calculating the statistics in the sampling-based approach. By default ("ApproxFisher"), an sampling-based approximation of the expected Fisher matrix is calculated using an observed information matrix of the type SE.type
+#' @param power numeric, statistical power for which the necessary sample size is calculated
+#' @param N integer, sample size for which the statistical power is calculated.
+#' @param alpha numeric, alpha level
 #'
-#' @return numerical vector containing the noncentrality parameters
+#' @return function returns an object of class irtpwrresult
 #' @export
 #'
 #' @examples
 #' dat <- expand.table(LSAT7)
 #' mirtfit <- mirt(dat,1,verbose = FALSE)
-#' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = mirtfit)
-#' ncps <- calculate_ncps(hyp=hyp)
+#' hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
+#' res <- irtpwr(hyp=hyp)
+#' summary(res,power=.8,alpha=.05)
 #'
-calculate_ncps = function(hyp,stat=c("Wald","LR","Score","Gradient"),n=1,sampling=FALSE,sampling.npers = 10^4,approx.npers=10^4,SE.type="Oakes",sampling.mat = "ApproxFisher") {
+irtpwr = function(hyp,stat=c("Wald","LR","Score","Gradient"),method="analytical",sampling.npers = 10^5,approx.npers=10^5,SE.type="Oakes",sampling.mat = "ApproxFisher",power = NULL,N=NULL,alpha=NULL) {
 
-  if (sampling) {
+  if (method == "sampling") {
+
     data = setup.data(hyp,n = sampling.npers)
     fitted = mml.fit(hyp, data = data,infmat.unres = sampling.mat,infmat.res=sampling.mat,approx.npers=approx.npers,SE.type=SE.type)
     obs =stat_obs(fitted,stat)
     ncps = sapply(obs,function(x) get_ncp(x,df=nrow(hyp$resmod$Amat))$ncp)
-    re = ncps/sampling.npers
+    ncps = ncps/sampling.npers
+    names(ncps) = stat
     }
 
-  if (!sampling) {
+  if (method == "analytical") {
 
     a = rep(NA,4) # Prepare Result Vector
 
@@ -49,24 +54,28 @@ calculate_ncps = function(hyp,stat=c("Wald","LR","Score","Gradient"),n=1,samplin
       lx = sctemp$lx
     }
     if ("Gradient" %in% stat) {a[4] = ncp.grad(hyp = hyp,parsr=parsr,lx=lx)}
-    re = a[!is.na(a)]
-    names(re) = stat
+    ncps = a[!is.na(a)]
+    names(ncps) = stat
   }
+
+  re = list(call = match.call(),hyp=hyp,ncps=ncps,power=power,N =N,alpha= alpha,method = method)
+  class(re) = "irtpwrresult"
   return(re)
 }
 
 
-
-#' Analytical noncentrality parameter for the Wald statistic
-#'
-#' @param hyp Hypothesis Object created by the setup_hypothesis function
-#' @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
-#'
-#' @return
-#' @export
-#'
-#' @examples
 ncp.wald = function(hyp,n=1) {
+
+  # Analytical noncentrality parameter for the Wald statistic
+  #
+  # @param hyp Hypothesis Object created by the setup.hypothesis function
+  # @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
+  #
+  # @return
+  # @export
+  #
+  # @examples
+
   resmod = hyp$resmod
   unresmod = hyp$unresmod
 
@@ -82,17 +91,18 @@ ncp.wald = function(hyp,n=1) {
 }
 
 
-#' Analytical noncentrality parameter for the LR statistic
-#'
-#' @param hyp Hypothesis Object created by the setup_hypothesis function
-#' @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
-#' @param parsr Restricted parameters
-#'
-#' @return
-#' @export
-#'
-#' @examples
+
 ncp.lr = function(hyp,n=1,parsr= NULL) {
+  # Analytical noncentrality parameter for the LR statistic
+  #
+  # @param hyp Hypothesis Object created by the setup.hypothesis function
+  # @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
+  # @param parsr Restricted parameters
+  #
+  # @return
+  # @export
+  #
+  # @examples
 
   resmod = hyp$resmod
   unresmod = hyp$unresmod
@@ -147,17 +157,19 @@ ncp.lr = function(hyp,n=1,parsr= NULL) {
 }
 
 
-#' Analytical noncentrality parameter for the Score statistic
-#'
-#' @param hyp Hypothesis Object created by the setup_hypothesis function
-#' @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
-#' @param parsr Restricted parameters
-#'
-#' @return
-#' @export
-#'
-#' @examples
+
 ncp.score = function(hyp,n=1,parsr=NULL) {
+  # Analytical noncentrality parameter for the Score statistic
+  #
+  # @param hyp Hypothesis Object created by the setup.hypothesis function
+  # @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
+  # @param parsr Restricted parameters
+  #
+  # @return
+  # @export
+  #
+  # @examples
+
   resmod = hyp$resmod
   unresmod = hyp$unresmod
 
@@ -210,18 +222,20 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
   return(re)
 }
 
-#' Analytical noncentrality parameter for the Gradient statistic
-#'
-#' @param hyp Hypothesis Object created by the setup_hypothesis function
-#' @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
-#' @param parsr Restricted parameters
-#' @param lx Score-vector, optional, can be used from the output of ncp.score.
-#'
-#' @return
-#' @export
-#'
-#' @examples
 ncp.grad = function(hyp,n=1,parsr=NULL,lx=NULL) {
+  # Analytical noncentrality parameter for the Gradient statistic
+  #
+  # @param hyp Hypothesis Object created by the setup.hypothesis function
+  # @param n integer, number of persons that the noncentrality parameters refer to (default is 1)
+  # @param parsr Restricted parameters
+  # @param lx Score-vector, optional, can be used from the output of ncp.score.
+  #
+  # @return
+  # @export
+  #
+  # @examples
+
+
   resmod = hyp$resmod
   unresmod = hyp$unresmod
 

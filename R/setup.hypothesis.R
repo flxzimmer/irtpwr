@@ -14,9 +14,9 @@
 #' dat <- expand.table(LSAT7)
 #' mirtfit <- mirt(dat,1)
 #' pars <- coef_short(mirtfit)
-#' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = pars)
+#' hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = pars)
 #'
-setup_hypothesis = function(type, altpars = NULL, nullpars = NULL) {
+setup.hypothesis = function(type, altpars = NULL, nullpars = NULL) {
 # setup a null and alternative hypothesis according to a given type
 
   if (!is.null(attr(class(altpars),"package"))) {

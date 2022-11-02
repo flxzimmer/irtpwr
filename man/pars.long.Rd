@@ -2,17 +2,17 @@
 % Please edit documentation in R/helper.R
 \name{pars.long}
 \alias{pars.long}
-\title{extract coefs from mirtfit or element created by shortcoef}
+\title{Transform parameters to a longer format}
 \usage{
 pars.long(pars, itemtype, from.mirt = FALSE)
 }
 \arguments{
-\item{pars}{Parameter Set}
+\item{pars}{list of parameters. Can also be coefficients from a model fitted by mirt. In this case, the from.mirt argument has to be set to TRUE}
 
-\item{itemtype}{optional, itemtype as string}
+\item{itemtype}{character, type of the item as string, e.g. "2PL"}
 
-\item{from.mirt}{Boolean, is the parameter set a mirt model?}
+\item{from.mirt}{logical, treat as coefficients from a model fitted by mirt if TRUE}
 }
 \description{
-extract coefs from mirtfit or element created by shortcoef
+This is a helper function used to generate custom hypotheses. See the "adding_hypotheses" vignette.
 }

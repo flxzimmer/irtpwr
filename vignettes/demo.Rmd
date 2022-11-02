@@ -11,42 +11,41 @@ output:
     toc: true
 ---
 
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  tidy = TRUE,
+  tidy.opts=list(arrow=TRUE,width.cutoff = 50),
+  eval=T
+)
+```
+
 ```{r include=FALSE}
-knitr::opts_chunk$set(eval=TRUE)
+set.seed(1)
 ```
-
-```{r message=FALSE}
-library(irtpwr)
-library(mirt)
-library(dplyr)
-```
-
 
 # Introduction
 
-This vignette introduces the implementation of a power analysis for the Wald, LR, score and gradient test for linear hypothesis. It uses some IRT examples and treats basic as well as additional features of the package. It is directed towards beginner to intermediate level R users. Previous experience with the mirt package may be helpful. In the following we will cover the three-step workflow in detail:
+This vignette introduces the implementation of a power analysis for the Wald, LR, score and gradient test for linear hypothesis. It uses some IRT examples and treats basic as well as additional features of the package. It is directed towards beginner to intermediate level R users. Previous experience with the mirt package may be helpful. In the following, we will cover the two-step workflow in detail:
 
-* Setup Hypotheses (setup_hypothesis)
-* Calculate Noncentrality Parameters (calculate_ncps)
-* Calculate Power or Sample Size (power, ssize)
+* Setup Hypotheses (setup.hypothesis)
+* Perform the power analysis (irtpwr Function)
 
-As additional features, we cover:
-
-* Generate artificial datasets
-* Performing hypothesis tests
-* Estimating the time needed
-
-Finally, we provide some additional models to facilitate adoption of the package for more complex hypotheses:
-
-* 3PL model
-* Multidimensional model
+Finally, we provide some additional examples of more complex hypotheses for a 3PL model and a multidimensional model. 
 
 
-# Workflow example
+## Toy Example
+ 
+We can load the irtpwr package using:
+```{r}
+library(irtpwr)
+library(mirt)
+```
 
-We want to know the power and required sample size for a test of the Rasch vs 2PL model. We use the LSAT 7 Dataset from the mirt package.
+We want to know the power and the required sample size for a test of the Rasch vs 2PL model. We use the LSAT 7 data set which is included the mirt package.
 
-As a first step, we load the dataset and fit a 2PL model.
+As a first step, we load the data set and fit a 2PL model.
 
 ```{r}
 dat <- expand.table(LSAT7)
@@ -54,47 +53,51 @@ mirtfit <- mirt(dat,1,verbose = FALSE)
 ```
 
 The 2PL parameters are then used as parameters for the alternative hypothesis in our hypothesis definition.
-```{r}
-hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = mirtfit)
-```
 
-We can now calculate the noncentrality parameters.
 ```{r}
-ncps <- calculate_ncps(hyp=hyp)
-```
-
-From the noncentrality parameters, we can estimate the power or required sample size.
-```{r}
-power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
-ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
+hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
 ```
 
 
-# Functions in detail
+We can now perform the power analysis. We want to determine the sample size necessary for a power of .8 while using an alpha level of .05. 
+```{r}
+res = irtpwr(hyp=hyp, power = .8, alpha = .05)
+summary(res)
+```
+Here we see that the gradient statistic would be the most efficient to test our hypothesis: We would need a sample size of 778 to reach our desired power.
 
-We will present all included functions and their arguments in more detail.
 
-## Setup Hypotheses (setup_hypothesis)
+We can also plot the power curves to get a more detailed look on the relationships between sample size and power: 
+```{r}
+plot(res)
+```
 
-We can either use a fitted mirt model or specify alternative parameters directly. An example of the letter would be:
+
+# Main Functions and Arguments
+
+We will present the main functions and their arguments in more detail.
+
+## setup.hypothesis
+
+To setup a hypothesis, we can either use a fitted mirt model or specify alternative parameters directly. In both cases, we use the altpars argument of the setup.hypothesis function. An example of direct specification is:
 
 ```{r}
 altpars <- list(
         a = rlnorm(5,sdlog = .4),
         d = rnorm(5)
         )
-altpars
-hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
-
+hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = altpars)
 ```
 
-The following alternative hypotheses are currently implemented.
+You can use the type argument to specify which type of hypothesis test you want to perform.
 
-* Rasch against 2PL
-* DIF in 2PL
-* PCM against GPCM
+The following types are currently available in the package:
 
-The Rasch against 2PL hypothesis is presented above. The procedure for the DIF in 2PL hypothesis is analogous, yet is a bit more complicated since we need to define different groups:
+* Rasch against 2PL (type = "1PLvs2PL"),
+* DIF in 2PL (type = "DIF2PL"),
+* PCM against GPCM (type = "PCMvsGPCM").
+
+We have already seen the Rasch against 2PL hypothesis setup in the toy example above. The procedure for the DIF in 2PL hypothesis is analogous, yet a bit more complicated since we need to define two groups. An example is:
 
 ```{r}
 group1 = group2 <- list(
@@ -107,123 +110,68 @@ group2$d[1] = group2$d[1] + .5
 
 altpars <- list(group1,group2)
 
-altpars
-
-hyp <- setup_hypothesis(type = "DIF2PL", altpars = altpars)
+hyp <- setup.hypothesis(type = "DIF2PL", altpars = altpars)
 
 ```
 
-To implement custom hypotheses, please refer to the respective vignette. Note that for both hypothesis types, we do not have to provide the parameters under the null hypothesis here, because they are implicitly defined by the hypotheses. The setup_hypothesis function, however, also takes a nullpars argument for cases in which the parmaters under the null hypothesis are not identified by the parameters under the alternative.
+Note that for both hypothesis types, we do not have to provide the parameters under the null hypothesis here, because they are implicitly defined by the alternative hypothesis. The setup.hypothesis function, also allows for specifying parameters under the null hypothesis via a "nullpars" argument for cases in which the parameters under the null hypothesis are not identified by the parameters under the alternative. To implement such custom hypotheses, we provide additional guidance in the "adding_hypotheses" vignette. Some templates for hypothesis objects are included in the "hypothesis_templates" vignette.
 
 
-## Calculate Noncentrality Parameters (calculate_ncps)
 
-The calculation of noncentrality parameters is straightforward. 
+## irtpwr Function
+
+The irtpwr function can be used to perform the power analysis. Apart from an hypothesis, an alpha niveau needs to be specified. The function can:
+
+* calculate a necessary sample size N given a desired power (using the power argument, e.g. power = .8)
+* calculate the power for a specific sample size N (using the N argument, e.g. N = 600)
+
+For example, to calculate the power for a sample size of 600 using our DIF hypothesis from above:
 ```{r}
-ncps <- calculate_ncps(hyp=hyp)
+res = irtpwr(hyp=hyp, N = 600, alpha = .05)
+summary(res)
 ```
 
-To use the sampling-based parameters, one may use sampling=TRUE. The sample size of the sampling-based approach and the approximation of the Fisher expected matrix may be tweaked or left at their default values.
-
+The object resulting from irtpwr can be used to gather further information about the relationship between sample size and power. For example, we can obtain the sample size necessary for reaching a power of .8. 
 ```{r}
-ncps <- calculate_ncps(hyp=hyp,sampling=TRUE,sampling.npers = 10^4,approx.npers=10^4)
+summary(res,power = .8)
 ```
-
-
-## Calculate Power or Sample Size (power, ssize)
-
-The functions to calculate power and sample size are straightforward. One may use them to plot a power curve.
+We can also obtain the power for a different sample size than originally specified in our execution of the irtpwr function.
 ```{r}
-n = seq(100,2000)
-pow = power(hyp=hyp,ncp=ncps["Gradient"],alpha=.05,ssize=n)
-plot(n,pow)
+summary(res,N=700)
 ```
 
 
+The irtpwr function builds on one of two available methods that are described in our paper in more detail (Zimmer et al. (2022), https://doi.org/10.1007/s11336-022-09883-5):
 
-# Additional Features
+* an analytical approach (method = "analytical", this is the default option)
+* a sampling-based approach (method = "sampling")
 
-We will take a look at some additional features.
-
-## Generate artificial datasets
-
-The hypothesis object can also be used to generate data according to the parameters of the alternative hypothesis. Note that setup.data also allows for non-normal person distributions, e.g. uniform or skewed-normal distributions.
+To use the sampling based approach, we can execute: 
 ```{r}
-altpars <- list(
-        a = rlnorm(5,sdlog = .4),
-        d = rnorm(5)
-        )
-
-hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
-
-data <- setup.data(hyp=hyp,n=500)
+res = irtpwr(hyp=hyp, N = 600, alpha = .05,method="sampling")
+summary(res)
 ```
 
+The sampling-based approach offers two parameters that can be increased to obtain a more exact result. These are the sample size of the sampling-based approach (sampling.npers) and the sample size for the approximation of the Fisher expected matrix (approx.npers). These may be tweaked upwards if the result from repeated executions of the irtpwr function is not stable. 
 
-## Performing Hypothesis Tests
+Since the analytical approach can be too time-intensive for larger numbers of items, we might want to know beforehand how long it will take approximately. We do so using the calc.time function.
 
-One can also perform hypothesis tests on observed data. This is done in two steps, model fitting (mml.fit) and calculation of the statitics (stat_obs). To fit both an unrestricted and restricted model in one go, we specify the data and the hypothesis.
-
+In our example hypothesis, we used 5 items. To estimate the computation time for 7 items we can use: 
 ```{r}
-fitted <- mml.fit(data = data,hyp = hyp)
+calc.time(hyp,n.items=7)
 ```
 
-One may also use an approximation of the Fisher expected matrix, e.g. for larger item sets.
-```{r}
-fitted <- mml.fit(data = data,hyp = hyp,infmat.unres = "ApproxFisher",infmat.res="ApproxFisher",approx.npers = 10^4)
-```
-
-From the results, we can calculate the observed statistics and p-values.
-
-```{r}
-stats_obs <- stat_obs(fitted)
-stats_obs
-pvals <- pchisq(stats_obs,df=nrow(hyp$resmod$Amat),ncp=0,lower.tail=FALSE)
-pvals
-```
-
-
-## Estimating the time needed for the analytical approach
-
-We can calculate the approximate time needed to calculate the analytical noncentrality parameters using a larger numbers of items.
-
-```{r}
-altpars <- list(
-        a = rlnorm(5,sdlog = .4),
-        d = rnorm(5)
-        )
-
-hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
-
-calctime(hyp,n.items=7)
-```
-
-Measuring the actual time for comparison:
-
-```{r}
-altpars <- list(
-        a = rlnorm(7,sdlog = .4),
-        d = rnorm(7)
-        )
-
-hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
-
-calctime(hyp,n.items=7)
-
-```
-
-The suggested time does deviate sometimes from the actual time. As a result from our test runs, I suggest to expect +80% as a worst case scenario.
-
+Note that the estimated time can sometimes deviate from the actual time. As a result from our test runs, I suggest to expect an increase of 80% as a worst case scenario.
 
 
 # Further Examples
 
-To demonstrate extensability of the method to models not treated in the paper, we demonstrate testing some basic hypotheses in the 3PL model and a multidimensional model. We present only the sampling-based method here, but it can be extended to the analytical method in the future.
+To demonstrate extending the method to models not treated in our paper, we test some basic hypotheses in the 3PL model and a multidimensional model. We present only the sampling-based method here, but the analytical method can be extended to account for it in the future.
 
 
-## 3PL model
+## 3PL Model
 
-We test the null hypothesis that the first item parameters are (1,0,.2) for the a,d, and g parameters respectively. The parameters under the alternative hypothesis are:
+We test the null hypothesis that the first item parameters are (1,0,.2) for the a,d, and g parameters respectively. This hypothesis is implemented as the type "3PL_basic" we later use in the setup.hpyothesis function.  The parameters under the alternative hypothesis are:
 
 ```{r}
 altpars <- list(
@@ -231,47 +179,49 @@ altpars <- list(
   d = c(.1,seq(1.3,-1.3,length.out=4)),
   g = c(.22,rep(.2,4))
 )
-altpars
 ```
 
-Calculating sampling-based noncentrality parameters
+We setup the hypothesis:
 ```{r}
-hyp <- setup_hypothesis(type = "3PL_basic", altpars = altpars)
-set.seed(1)
-ncps <- calculate_ncps(hyp=hyp,sampling=TRUE,sampling.npers = 10^5,approx.npers=10^5,SE.type="Fisher")
+hyp <- setup.hypothesis(type = "3PL_basic", altpars = altpars)
 ```
 
-Power and sample size
+We calculate the power using a sampling-based approach. Since we ran into convergence problems using the default SE.type value, we choose an alternative (SE.type = "Fisher"). 
 ```{r}
-power(hyp=hyp,ncp=ncps,alpha=.05,ssize=500)
-ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.50)
+res <- irtpwr(hyp=hyp,alpha=.05,power=.80,method = "sampling",SE.type = "Fisher")
+```
+
+We can obtain the result using
+```{r}
+summary(res)
 ```
 
 
-## Multidimensional model
+## Multidimensional Model
 
-We test the null hypothesis that the difficulty of the first two item parameters is equal. The parameters under the alternative hypothesis are taken from the LSAT7 dataset:
+We test the null hypothesis that the difficulty of the first two item parameters is equal. This hypothesis is implemented as the type "multi_basic" we later use in the setup.hpyothesis function. The parameters under the alternative hypothesis are taken from the LSAT7 dataset:
 
 ```{r}
 dat <- expand.table(LSAT7)
-dat = dat[,c(2,4,1,3,5)] # re-ordering items, items 1 and 2 of the resulting data.frame are compared
+dat = dat[,c(2,4,1,3,5)] # re-ordering items so that items 1 and 2 of the resulting data frame are compared
 model_an <- 'F1 = 1-5
       F2 = 1-4'
 altpars = mirt(dat, model = mirt.model(model_an),verbose = FALSE)
-coef(altpars,simplify=T)
 ```
 
-Calculating sampling-based noncentrality parameters
+We setup the hypothesis:
 ```{r}
-hyp <- setup_hypothesis(type = "multi_basic", altpars = altpars)
-set.seed(1)
-ncps <- calculate_ncps(hyp=hyp,sampling=TRUE,sampling.npers = 10^5,approx.npers=10^5)
+hyp <- setup.hypothesis(type = "multi_basic", altpars = altpars)
 ```
 
-Power and sample size
+We calculate the power using a sampling-based approach. We again encountered convergence problems using the default SE.type value, so we choose an alternative (SE.type = "Fisher").
 ```{r}
-power(hyp=hyp,ncp=ncps,alpha=.05,ssize=1000)
-ssize(hyp=hyp,ncp=ncps,alpha=.05,power=.80)
+res <- irtpwr(hyp=hyp,alpha=.05,power=.80,method = "sampling",SE.type = "Fisher")
+```
+
+We can obtain the result using
+```{r}
+summary(res)
 ```
 
 

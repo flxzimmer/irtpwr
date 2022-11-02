@@ -1,29 +1,29 @@
 
-
-#' Fit restricted and unrestriced model by ML using mirt
-#'
-#' @param hyp Hypothesis Object created from the setup_hypothesis function
-#' @param infmat.unres String, type of the information matrix for the unrestricted model, "Fisher" or "ApproxFisher" are currently implemented
-#' @param infmat.res String, type of the information matrix for the restricted model, "Fisher" or "ApproxFisher" are currently implemented
-#' @param free_mean boolean, option to estimate free means between groups
-#' @param approx.npers integer, sample size for approximating the Fisher expected information matrix
-#' @param data dataframe with data to be fitted
-#' @param NCYCLES Sets the NCYCLES argument in the mirt function
-#' @param SE.type specifies the type of the observed information matrix
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-#' altpars <- list(
-#' a = rlnorm(5,sdlog = .4),
-#' d = rnorm(5))
-#' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
-#' data <- setup.data(hyp=hyp,n=500)
-#' fitted <- mml.fit(data = data,hyp = hyp)
-#'
 mml.fit = function(hyp,data,infmat.unres = "Fisher",infmat.res="Fisher",free_mean = FALSE,approx.npers=10^6,NCYCLES=5000,SE.type="Oakes") {
+
+  # Fit restricted and unrestriced model by ML using mirt
+  #
+  # @param hyp Hypothesis Object created from the setup.hypothesis function
+  # @param infmat.unres String, type of the information matrix for the unrestricted model, "Fisher" or "ApproxFisher" are currently implemented
+  # @param infmat.res String, type of the information matrix for the restricted model, "Fisher" or "ApproxFisher" are currently implemented
+  # @param free_mean boolean, option to estimate free means between groups
+  # @param approx.npers integer, sample size for approximating the Fisher expected information matrix
+  # @param data dataframe with data to be fitted
+  # @param NCYCLES Sets the NCYCLES argument in the mirt function
+  # @param SE.type specifies the type of the observed information matrix
+  #
+  # @return
+  # @export
+  #
+  # @examples
+  #
+  # altpars <- list(
+  # a = rlnorm(5,sdlog = .4),
+  # d = rnorm(5))
+  # hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = altpars)
+  # data <- setup.data(hyp=hyp,n=500)
+  # fitted <- mml.fit(data = data,hyp = hyp)
+  #
 
   if (!is.data.frame(data)) {
     group = data$group
@@ -50,9 +50,10 @@ mml.fit = function(hyp,data,infmat.unres = "Fisher",infmat.res="Fisher",free_mea
   if (!multigroup.res) {
     res =  mirt::mirt(data,model = hyp$resmod$model,itemtype = hyp$resmod$itemtype,technical = list(NCYCLES = NCYCLES),verbose = FALSE)
   }
-  # Caluclating Infmats
+  # Calculating Infmats
   parsr = coef_short(res,itemtype = hyp$resmod$itemtype)
   pars = coef_short(unres,itemtype = hyp$unresmod$itemtype)
+
 
   unres@vcov = (infmat(pars,method=infmat.unres,approx.npers = approx.npers,multigroup = multigroup.unres,model = hyp$unresmod$model,itemtype=hyp$unresmod$itemtype,NCYCLES=NCYCLES,SE.type=SE.type) * nrow(data) )%>% solve()
   res@vcov = (infmat(parsr,method=infmat.unres,approx.npers = approx.npers,multigroup = multigroup.unres,model = hyp$unresmod$model,itemtype=hyp$unresmod$itemtype,NCYCLES=NCYCLES,SE.type=SE.type) * nrow(data) )%>% solve()
@@ -63,16 +64,18 @@ mml.fit = function(hyp,data,infmat.unres = "Fisher",infmat.res="Fisher",free_mea
 }
 
 
-#' Calculate statistics from fitted mirt models
-#'
-#' @param fitted Object created by mml.fit function.
-#' @param stat Vector containing statistics to calculate
-#'
-#' @return
-#' @export
-#'
-#' @examples
+
 stat_obs = function(fitted,stat=c("Wald","LR","Score","Gradient")) {
+
+  # Calculate statistics from fitted mirt models
+  #
+  # @param fitted Object created by mml.fit function.
+  # @param stat Vector containing statistics to calculate
+  #
+  # @return
+  # @export
+  #
+  # @examples
 
   a = rep(NA,4) # Prepare Result Vector
 

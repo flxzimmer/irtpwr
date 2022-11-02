@@ -2,8 +2,10 @@
 
 #' Load IRT model functions and derivatives
 #'
-#' @param model Desired Model (2PL,3PL, GPCM)
-#' @param multi Boolean - Multidimensional? (available for 2PL)
+#' This is a helper function used to generate custom hypotheses. See the "adding_hypotheses" vignette.
+#'
+#' @param model character, Desired Model (2PL,3PL, GPCM)
+#' @param multi logical, multidimensional model if TRUE (available for 2PL)
 #'
 #' @return
 #' @export

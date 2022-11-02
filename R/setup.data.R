@@ -1,23 +1,24 @@
 
 
-#' Create artificial dataset from alternative hypothesis
-#'
-#' @param hyp Hypothesis Object created from the setup_hypothesis function
-#' @param n integer, number of persons
-#' @param dist.fun function to generate the person parameters
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-#' altpars <- list(
-#' a = rlnorm(5,sdlog = .4),
-#' d = rnorm(5))
-#' hyp <- setup_hypothesis(type = "1PLvs2PL", altpars = altpars)
-#' data <- setup.data(hyp=hyp,n=500)
-#'
+
 setup.data = function(hyp, n,dist.fun=rnorm) {
+  # Create artificial dataset from alternative hypothesis
+  #
+  # @param hyp Hypothesis Object created from the setup.hypothesis function
+  # @param n integer, number of persons
+  # @param dist.fun function to generate the person parameters
+  #
+  # @return
+  # @export
+  #
+  # @examples
+  #
+  # altpars <- list(
+  # a = rlnorm(5,sdlog = .4),
+  # d = rnorm(5))
+  # hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = altpars)
+  # data <- setup.data(hyp=hyp,n=500)
+  #
 
   distfun = function(x) {dist.fun(x) %>% matrix(.,ncol=1)}
 
