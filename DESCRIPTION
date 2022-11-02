@@ -23,7 +23,6 @@ Imports:
     Deriv,
     digest,
     spatstat.random,
-    magrittr,
     ggplot2,
     methods
 VignetteBuilder: knitr
