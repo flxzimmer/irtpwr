@@ -19,6 +19,6 @@ This is a helper function used to generate custom hypotheses. See the "adding_hy
 }
 \examples{
 
-load.functions("2PL")
+funs = load.functions("2PL")
 
 }

@@ -127,7 +127,7 @@ score_obs = function(fitted,export.lx=FALSE) {
   unresmod = fitted$hyp$unresmod
   parsr = coef_short(fitted$res,itemtype = resmod$itemtype)
   is.multi = "a2" %in% colnames(parsr$a)
-  load.functions(resmod$itemtype,multi=is.multi)
+  funs = load.functions(resmod$itemtype,multi=is.multi)
   patterns = mirt::extract.mirt(fitted$res, "data")
   hashs = apply(patterns,1,digest::digest) |> (\(x)factor(x,levels=unique(x)))()
   rownames(patterns)=hashs
@@ -143,7 +143,7 @@ score_obs = function(fitted,export.lx=FALSE) {
 
     parsr = parsr[[1]]
 
-    ly = lapply(rownames(up),function(i) {l = ldot(up[i,],parsr); list(freq[i] * l,freq1[i] * l,freq2[i] * l)} )
+    ly = lapply(rownames(up),function(i) {l = funs$ldot(up[i,],parsr); list(freq[i] * l,freq1[i] * l,freq2[i] * l)} )
     lx = lapply(ly,function(x) x[[1]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
     lx1 = lapply(ly,function(x) x[[2]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
     lx2 = lapply(ly,function(x) x[[3]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
@@ -159,7 +159,7 @@ score_obs = function(fitted,export.lx=FALSE) {
       parsr$g = logit(parsr$g)
     }
 
-    ly = lapply(rownames(up),function(i) ldot(up[i,],parsr)*freq[i])
+    ly = lapply(rownames(up),function(i) funs$ldot(up[i,],parsr)*freq[i])
 
     lx = do.call(rbind,ly) |> (\(x) colSums(x,na.rm = TRUE))() |> (\(x) array(x,dim=c(length(x),1)))()
   }
@@ -183,7 +183,7 @@ grad_obs = function(fitted,lx=NULL) {
   resmod = fitted$hyp$resmod
   unresmod = fitted$hyp$unresmod
   parsr = coef_short(fitted$res,itemtype = resmod$itemtype)
-  load.functions(resmod$itemtype)
+  funs = load.functions(resmod$itemtype)
   patterns = mirt::extract.mirt(fitted$res, "data")
   hashs = apply(patterns,1,digest::digest) |> (\(x)factor(x,levels=unique(x)))()
   rownames(patterns)=hashs
@@ -201,7 +201,7 @@ grad_obs = function(fitted,lx=NULL) {
 
     parsr = parsr[[1]]
 
-    ly = lapply(rownames(up),function(i) {l = ldot(up[i,],parsr); list(freq[i] * l,freq1[i] * l,freq2[i] * l)} )
+    ly = lapply(rownames(up),function(i) {l = funs$ldot(up[i,],parsr); list(freq[i] * l,freq1[i] * l,freq2[i] * l)} )
     lx = lapply(ly,function(x) x[[1]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
     lx1 = lapply(ly,function(x) x[[2]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
     lx2 = lapply(ly,function(x) x[[3]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
@@ -212,7 +212,7 @@ grad_obs = function(fitted,lx=NULL) {
   }
 
   if (!multigroup & is.null(lx)) { # Single Group Model
-    ly = lapply(rownames(up),function(i) ldot(up[i,],parsr)*freq[i] )
+    ly = lapply(rownames(up),function(i) funs$ldot(up[i,],parsr)*freq[i] )
     lx = do.call(rbind,ly) |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
   }
 

@@ -15,9 +15,10 @@ output:
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
+  out.width = "70%",
   tidy = TRUE,
   tidy.opts=list(arrow=TRUE,width.cutoff = 50),
-  eval=F
+  eval=T
 )
 ```
 

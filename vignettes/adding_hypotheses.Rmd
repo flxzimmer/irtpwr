@@ -15,9 +15,10 @@ output:
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
+    out.width = "70%",
   tidy = TRUE,
   tidy.opts=list(arrow=TRUE,width.cutoff = 50),
-  eval=F
+  eval=T
 )
 ```
 
@@ -99,7 +100,7 @@ In this specific case, we know that the restricted model parameters can be expec
 
       pre = c()
       for (i in 1:nrow(patterns)) {
-        pre[i] = g(patterns[i,],pars)
+        pre[i] = funs$g(patterns[i,],pars)
       }
 
       return(pre)
@@ -113,12 +114,13 @@ In this specific case, we know that the restricted model parameters can be expec
       x = list(
         a=c(x,pars$a[2:length(pars$a)]),
         d=c(0,pars$d[2:length(pars$d)])
-        )
+      )
 
       res  = c()
       for (i in 1:nrow(patterns)) {
         px = pre[i]
-        qx = g(patterns[i,],x)
+        browser()
+        qx = funs$g(patterns[i,],x)
         res[i] =  {px*log(qx)}
       }
       re = -sum(res)
@@ -127,13 +129,13 @@ In this specific case, we know that the restricted model parameters can be expec
     unresmod = hyp$unresmod
 
     pars = unresmod$parsets
-    load.functions(unresmod$itemtype)
+funs = load.functions(unresmod$itemtype)
 
     startval = pars$a[1]
 
     maxlpre = maxlpreload(pars)
 
-    optpar = optim(startval,function(x) {maxl(x,pars,maxlpre)},method = "BFGS")
+    optpar = stats::optim(startval,function(x) {maxl(x,pars,maxlpre)},method = "BFGS")
     re = pars
     re$a = c(optpar$par[1],pars$a[2:length(pars$a)])
     re$d = c(0,pars$d[2:length(pars$d)])

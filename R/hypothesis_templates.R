@@ -35,21 +35,21 @@ h_1PLvs2PL = list(
     # Hypothesis-specific algorithm to find the maximum likelihood restricted parameter set
 
 
-    maxlpreload= function(pars) {
+    maxlpreload= function(pars,funs) {
       # returns the density for each response pattern under the model parameters pars
 
       patterns = as.matrix(expand.grid(lapply(1:length(pars$a),function(x) c(0,1))))
 
       pre = c()
       for (i in 1:nrow(patterns)) {
-        pre[i] = g(patterns[i,],pars)
+        pre[i] = funs$g(patterns[i,],pars)
       }
 
       return(pre)
     }
 
 
-    maxl = function(x,pars,pre) {
+    maxl = function(x,pars,pre,funs) {
       # calculates the likelihood of parameters x given model "pars"
 
       patterns = as.matrix(expand.grid(lapply(1:length(pars$a),function(x) c(0,1))))
@@ -58,7 +58,7 @@ h_1PLvs2PL = list(
       res  = c()
       for (i in 1:nrow(patterns)) {
         px = pre[i]
-        qx = g(patterns[i,],x)
+        qx = funs$g(patterns[i,],x)
         res[i] =  {px*log(qx)}
       }
       re = -sum(res)
@@ -67,12 +67,13 @@ h_1PLvs2PL = list(
     unresmod = hyp$unresmod
 
     pars = unresmod$parsets
-    load.functions(unresmod$itemtype)
+
+    funs = load.functions(unresmod$itemtype)
 
     startval = c(mean(pars$a),as.numeric(pars$d))
 
-    maxlpre = maxlpreload(pars)
-    optpar = stats::optim(startval,function(x) {maxl(x,pars,maxlpre)},method = "BFGS")
+    maxlpre = maxlpreload(pars,funs)
+    optpar = stats::optim(startval,function(x) {maxl(x,pars,maxlpre,funs)},method = "BFGS")
     re = pars
     re$a = rep(optpar$par[1],length(pars$a))
     re$d = optpar$par[2:length(optpar$par)]
@@ -181,9 +182,9 @@ h_DIF2PL = list(
 
     maxl = function(x,pars1,pars2,i) {
 
-      px1 = function(th) {f(th,pars1$a[i],pars1$d[i],1)}
-      px2 = function(th) {f(th,pars2$a[i],pars2$d[i],1)}
-      qx = function(th) {f(th,x[1],x[2],1)}
+      px1 = function(th) {funs$f(th,pars1$a[i],pars1$d[i],1)}
+      px2 = function(th) {funs$f(th,pars2$a[i],pars2$d[i],1)}
+      qx = function(th) {funs$f(th,x[1],x[2],1)}
       kl = function(th) {px1(th)*log(qx(th))+(1-px1(th))*log(1-qx(th)) + px2(th)*log(qx(th))+(1-px2(th))*log((1-qx(th)))
       }
       re = -spatstat.random::gauss.hermite(kl,order=20)
@@ -193,12 +194,12 @@ h_DIF2PL = list(
     unresmod = hyp$unresmod
 
     pars = unresmod$parsets
-    load.functions(unresmod$itemtype)
+    # funs = load.functions(unresmod$itemtype)
 
     pars1 = pars[[1]]
     pars2 = pars[[2]]
 
-    load.functions(pars1$itemtype)
+    funs = load.functions(pars1$itemtype)
     re = pars1
 
     for (i in 1:length(pars1$a)) {
@@ -262,7 +263,7 @@ h_PCMvsGPCM = list(
 
       pre = c()
       for (i in 1:nrow(patterns)) {
-        pre[i] = g(patterns[i,],pars)
+        pre[i] = funs$g(patterns[i,],pars)
       }
 
       return(pre)
@@ -278,7 +279,7 @@ h_PCMvsGPCM = list(
       res  = c()
       for (i in 1:nrow(patterns)) {
         px = pre[i]
-        qx = g(patterns[i,],x)
+        qx = funs$g(patterns[i,],x)
         res[i] =  {px*log(qx)}
       }
       re = -sum(res)
@@ -288,7 +289,7 @@ h_PCMvsGPCM = list(
     unresmod = hyp$unresmod
 
     pars = unresmod$parsets
-    load.functions(unresmod$itemtype)
+funs = load.functions(unresmod$itemtype)
 
     n.kat = max(ncol(pars$d),2)
     n.items = length(pars$a)
@@ -352,7 +353,7 @@ h_basic = list(
 
       pre = c()
       for (i in 1:nrow(patterns)) {
-        pre[i] = g(patterns[i,],pars)
+        pre[i] = funs$g(patterns[i,],pars)
       }
 
       return(pre)
@@ -371,7 +372,7 @@ h_basic = list(
       res  = c()
       for (i in 1:nrow(patterns)) {
         px = pre[i]
-        qx = g(patterns[i,],x)
+        qx = funs$g(patterns[i,],x)
         res[i] =  {px*log(qx)}
       }
       re = -sum(res)
@@ -380,7 +381,7 @@ h_basic = list(
     unresmod = hyp$unresmod
 
     pars = unresmod$parsets
-    load.functions(unresmod$itemtype)
+funs = load.functions(unresmod$itemtype)
 
     startval = pars$a[1]
 
@@ -441,7 +442,7 @@ h_3PL_basic = list(
 
       pre = c()
       for (i in 1:nrow(patterns)) {
-        pre[i] = g(patterns[i,],pars)
+        pre[i] = funs$g(patterns[i,],pars)
       }
 
       return(pre)
@@ -460,7 +461,7 @@ h_3PL_basic = list(
       res  = c()
       for (i in 1:nrow(patterns)) {
         px = pre[i]
-        qx = g(patterns[i,],x)
+        qx = funs$g(patterns[i,],x)
         res[i] =  {px*log(qx)}
       }
       re = -sum(res)
@@ -469,7 +470,7 @@ h_3PL_basic = list(
     unresmod = hyp$unresmod
 
     pars = unresmod$parsets
-    load.functions(unresmod$itemtype)
+funs = load.functions(unresmod$itemtype)
 
     startval = pars$a[1]
 

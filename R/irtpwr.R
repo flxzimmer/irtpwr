@@ -29,10 +29,12 @@
 #'
 irtpwr = function(hyp,stat=c("Wald","LR","Score","Gradient"),method="analytical",sampling.npers = 10^5,approx.npers=10^5,SE.type="Oakes",sampling.mat = "ApproxFisher",power = NULL,N=NULL,alpha=NULL) {
 
+
   if (method == "sampling") {
 
     data = setup.data(hyp,n = sampling.npers)
     fitted = mml.fit(hyp, data = data,infmat.unres = sampling.mat,infmat.res=sampling.mat,approx.npers=approx.npers,SE.type=SE.type)
+    # funs = load.functions(hyp$resmod$itemtype)
     obs =stat_obs(fitted,stat)
     ncps = sapply(obs,function(x) get_ncp(x,df=nrow(hyp$resmod$Amat))$ncp)
     ncps = ncps/sampling.npers
@@ -114,7 +116,7 @@ ncp.lr = function(hyp,n=1,parsr= NULL) {
   }
   res = c()
   unres = c()
-  load.functions(resmod$itemtype)
+  funs = load.functions(resmod$itemtype)
 
 
   if (isTRUE(unresmod$multigroup)) {
@@ -125,9 +127,9 @@ ncp.lr = function(hyp,n=1,parsr= NULL) {
     patterns = as.matrix(expand.grid(lapply(1:resmod$n.items,function(x) 0:(n.kat-1))))
 
     for (i in 1:nrow(patterns)) {
-      gr = g(patterns[i,],parsr)
-      g1 = g(patterns[i,],pars1)
-      g2 = g(patterns[i,],pars2)
+      gr = funs$g(patterns[i,],parsr)
+      g1 = funs$g(patterns[i,],pars1)
+      g2 = funs$g(patterns[i,],pars2)
       res[i] = log(gr) * (.5 * g1 + .5 * g2)
       unres[i] = .5 * log(g1) * g1 + .5 * log(g2) * g2
     }
@@ -141,8 +143,8 @@ ncp.lr = function(hyp,n=1,parsr= NULL) {
     patterns = as.matrix(expand.grid(lapply(1:resmod$n.items,function(x) 0:(n.kat-1))))
 
     for (i in 1:nrow(patterns)) {
-      gr = g(patterns[i,],parsr)
-      gu = g(patterns[i,],pars)
+      gr = funs$g(patterns[i,],parsr)
+      gu = funs$g(patterns[i,],pars)
       res[i] = log(gr) * (gu)
       unres[i] = log(gu) * (gu)
     }
@@ -179,7 +181,7 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
     parsr = hyp$type$maximizeL(hyp)
   }
 
-  load.functions(resmod$itemtype)
+  funs = load.functions(resmod$itemtype)
   multigroup = isTRUE(unresmod$multigroup)
 
   if (multigroup) { # Multigroup Model
@@ -191,10 +193,10 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
     n.kat = max(ncol(pars1$d),2)
     patterns = lapply(1:resmod$n.items,function(x) 0:(n.kat-1)) |> expand.grid() |> as.matrix() |> (\(x) split(x,seq(nrow(x))))()
 
-    freq12 = lapply(patterns,function(x) c(g(x,pars1)/2,g(x,pars2)/2))  |> (\(x) do.call(rbind,x))()
+    freq12 = lapply(patterns,function(x) c(funs$g(x,pars1)/2,funs$g(x,pars2)/2))  |> (\(x) do.call(rbind,x))()
     freq = cbind(rowSums(freq12),freq12)
     ly = lapply(1:length(patterns),function(i) {
-      l = ldot(patterns[[i]],parsr); list(freq[i,1] * l,freq[i,2] * l,freq[i,3] * l)} )
+      l = funs$ldot(patterns[[i]],parsr); list(freq[i,1] * l,freq[i,2] * l,freq[i,3] * l)} )
       lx = lapply(ly,function(x) x[[1]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
       lx1 = lapply(ly,function(x) x[[2]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
       lx2 = lapply(ly,function(x) x[[3]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
@@ -211,7 +213,7 @@ ncp.score = function(hyp,n=1,parsr=NULL) {
     n.kat = max(ncol(pars$d),2)
     patterns = lapply(1:resmod$n.items,function(x) 0:(n.kat-1)) |> expand.grid() |> as.matrix() |> (\(x) split(x,seq(nrow(x))))()
     i=0
-    ly = lapply(patterns,function(x) {ldot(x,parsr) * g(x,pars)})
+    ly = lapply(patterns,function(x) {funs$ldot(x,parsr) * funs$g(x,pars)})
     lx = do.call(rbind,ly) |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
   }
 
@@ -246,7 +248,7 @@ ncp.grad = function(hyp,n=1,parsr=NULL,lx=NULL) {
     parsr = hyp$type$maximizeL(hyp)
   }
 
-  load.functions(resmod$itemtype)
+  funs = load.functions(resmod$itemtype)
   multigroup = isTRUE(unresmod$multigroup)
 
   if (multigroup & is.null(lx)) { # Multigroup Model
@@ -258,11 +260,11 @@ ncp.grad = function(hyp,n=1,parsr=NULL,lx=NULL) {
     n.kat = max(ncol(pars1$d),2)
     patterns = lapply(1:resmod$n.items,function(x) 0:(n.kat-1)) |> expand.grid() |> as.matrix() |> (\(x) split(x,seq(nrow(x))))()
 
-    freq12 = lapply(patterns,function(x) c(g(x,pars1)/2,g(x,pars2)/2)) |> (\(x) do.call(rbind,x))()
+    freq12 = lapply(patterns,function(x) c(funs$g(x,pars1)/2,funs$g(x,pars2)/2)) |> (\(x) do.call(rbind,x))()
     freq = cbind(rowSums(freq12),freq12)
     ly = lapply(1:length(patterns),function(i) {
 
-      l = ldot(patterns[[i]],parsr); list(freq[i,1] * l,freq[i,2] * l,freq[i,3] * l)} )
+      l = funs$ldot(patterns[[i]],parsr); list(freq[i,1] * l,freq[i,2] * l,freq[i,3] * l)} )
       lx = lapply(ly,function(x) x[[1]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
       lx1 = lapply(ly,function(x) x[[2]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
       lx2 = lapply(ly,function(x) x[[3]]) |> (\(x) do.call(rbind,x))() |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
@@ -281,7 +283,7 @@ ncp.grad = function(hyp,n=1,parsr=NULL,lx=NULL) {
     n.kat = max(ncol(pars$d),2)
     patterns = lapply(1:resmod$n.items,function(x) 0:(n.kat-1)) |> expand.grid() |> as.matrix() |> (\(x) split(x,seq(nrow(x))))()
     i=0
-    ly = lapply(patterns,function(x) {ldot(x,parsr) * g(x,pars)})
+    ly = lapply(patterns,function(x) {funs$ldot(x,parsr) * funs$g(x,pars)})
     lx = do.call(rbind,ly) |> colSums() |> (\(x) array(x,dim=c(length(x),1)))()
   }
 
