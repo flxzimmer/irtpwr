@@ -9,7 +9,7 @@
 #' @return A ggplot object
 #' @export
 #'
-#' @examples #Load a simulation function
+#' @examples \donttest{
 #'
 #' library(mirt)
 #' dat <- expand.table(LSAT7)
@@ -17,7 +17,7 @@
 #' hyp <- setup.hypothesis(type = '1PLvs2PL', altpars = mirtfit)
 #' res <- irtpwr(hyp=hyp,alpha=.05,power =.8)
 #' plot(res)
-#'
+#' }
 plot.irtpwrresult <- function(x, bounds = NULL, ...) {
 
     if (is.null(bounds)) {
