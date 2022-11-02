@@ -199,7 +199,6 @@ h_DIF2PL <- list(res = function(altpars, nullpars = NULL) {
     unresmod <- hyp$unresmod
 
     pars <- unresmod$parsets
-    # funs = load.functions(unresmod$itemtype)
 
     pars1 <- pars[[1]]
     pars2 <- pars[[2]]
@@ -207,7 +206,7 @@ h_DIF2PL <- list(res = function(altpars, nullpars = NULL) {
     funs <- load.functions(pars1$itemtype)
     re <- pars1
 
-    for (i in 1:length(pars1$a)) {
+    for (i in seq_len(length(pars1$a))) {
         startval <- c(re$a[i], re$d[i])
         optpar <- stats::optim(startval, function(x) {
             maxl(x, pars1, pars2, i)

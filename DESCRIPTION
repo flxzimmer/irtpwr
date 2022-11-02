@@ -10,7 +10,7 @@ Authors@R: c(
 Description: 	Implementation of analytical and sampling-based power analyses for
     the Wald, LR, score, and gradient tests. Can be applied to IRT models estimated
     using marginal maximum likelihood estimation. The methods are described in our 
-    paper (Zimmer et al. (2022), https://doi.org/10.1007/s11336-022-09883-5).
+    paper (Zimmer et al. (2022) <doi:10.1007/s11336-022-09883-5>).
 License: GPL (>= 3)
 URL: https://github.com/flxzimmer/irtpwr
 BugReports: https://github.com/flxzimmer/irtpwr/issues

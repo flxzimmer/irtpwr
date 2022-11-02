@@ -43,7 +43,7 @@ Additional templates for hypothesis objects are included in the "hypothesis_temp
 
 In our restricted model, we define the A Matrix and the c vector. They formally represent the hypothesis. Then we setup the instructions for mirt to fit the model, which imply to keep the first item difficulty fixed at 0.
 ```{r}
-res = function(altpars, nullpars = NULL) {
+res <- function(altpars, nullpars = NULL) {
 
     n.items <- length(altpars[[1]])
 
@@ -64,7 +64,7 @@ res = function(altpars, nullpars = NULL) {
 The unrestricted model is a basic 2PL model. Note that we generate a longpars object that represents beta in the multiplication "A * beta = c". It results from a concatenation of the discrimination and difficulty parameters. 
 
 ```{r}
-unres = function(altpars) {
+unres <- function(altpars) {
 
     re <- list(parsets = altpars, model = 1, itemtype = "2PL",
         longpars = pars.long(pars = altpars, itemtype = "2PL"))
@@ -82,7 +82,7 @@ Note that this function can be left blank if you don't want to setup the analyti
 In this specific case, we know that the restricted model parameters can be expected to result in the true parameters for all but the first item. The only parameter in question is the discrimination of the first item parameter. We therefore ask the question: If we set the first item difficulty to 0, what is the most likely item discrimination given the data follows the true parameters.
 
 ```{r}
-maximizeL = function(hyp) {
+maximizeL <- function(hyp) {
     # Hypothesis-specific algorithm to find the
     # maximum likelihood restricted parameter set
 

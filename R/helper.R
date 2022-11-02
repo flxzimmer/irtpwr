@@ -16,14 +16,13 @@ logitinv <- function(q) {
 #' @return Numeric
 #' @export
 #'
-#' @examples
-#'
+#' @examples \donttest{
 #' library(mirt)
 #' dat <- expand.table(LSAT7)
 #' mirtfit <- mirt(dat,1,verbose = FALSE)
 #' hyp <- setup.hypothesis(type = '1PLvs2PL', altpars = mirtfit)
 #' calc.time(hyp,n.items=7)
-#'
+#' }
 calc.time <- function(hyp, n.items) {
 
     n.items.ex <- length(hyp$unresmod$parsets$d)
@@ -89,7 +88,7 @@ coef_short <- function(mirtfit, itemtype = NULL) {
         # multiple groups
 
         re <- list()
-        for (i in 1:length(coefs)) {
+        for (i in seq_len(length(coefs))) {
             # For all groups
 
             a <- as.data.frame(coefs[[i]]$items)
