@@ -3,7 +3,6 @@
 # h_1PLvs2PL --------------------------------------------------------------
 
 h_1PLvs2PL = list(
-
   res = function(altpars,nullpars = NULL) {
 
     n.items = length(altpars[[1]])
@@ -11,14 +10,13 @@ h_1PLvs2PL = list(
     re = list(
       n.items = n.items,
       itemtype = "2PL",
-      Amat = c(1,0,-1,0,rep(0,(n.items-1)*2)) %>% rep(.,n.items-2) %>% c(.,1,0,-1,0) %>% matrix(.,ncol=n.items*2,byrow=TRUE),
+      Amat = c(1,0,-1,0,rep(0,(n.items-1)*2)) |> (\(x) rep(x,n.items-2))() |> c(1,0,-1,0) |>  matrix(ncol=n.items*2,byrow=TRUE),
       cvec = 0,
       model = mirt::mirt.model(paste('F = 1-',n.items,'
                            CONSTRAIN = (1-',n.items,', a1)'))
     )
     return(re)
   },
-
   unres = function(altpars) {
 
     re = list(
@@ -30,7 +28,6 @@ h_1PLvs2PL = list(
 
     return(re)
   },
-
   maximizeL = function(hyp) {
     # Hypothesis-specific algorithm to find the maximum likelihood restricted parameter set
 
@@ -86,7 +83,6 @@ h_1PLvs2PL = list(
 # h_DIF2PL ----------------------------------------------------------------
 
 h_DIF2PL = list(
-
   res = function(altpars,nullpars = NULL) {
 
     n.items = length(altpars[[1]][[1]])
@@ -128,7 +124,6 @@ h_DIF2PL = list(
 
     return(re)
   },
-
   unres = function(altpars) {
 
     n.items = length(altpars[[1]][[1]])
@@ -175,7 +170,6 @@ h_DIF2PL = list(
 
     return(re)
   },
-
   maximizeL = function(hyp) {
     # Hypothesis-specific algorithm to find the maximum likelihood restricted parameter set
     # L Optimizer
@@ -218,7 +212,6 @@ h_DIF2PL = list(
 
 
 h_PCMvsGPCM = list(
-
   res = function(altpars,nullpars = NULL) {
 
     n.items = length(altpars[[1]])
@@ -227,15 +220,13 @@ h_PCMvsGPCM = list(
     re = list(
       n.items = n.items,
       itemtype = "gpcm",
-      Amat = c(1,rep(0,nkat-1),-1,rep(0,nkat-1),rep(0,(n.items-1)*nkat)) %>% rep(.,n.items-2) %>% c(1,rep(0,nkat-1),-1,rep(0,nkat-1)) %>% matrix(.,ncol=n.items*nkat,byrow=TRUE),
+      Amat = c(1,rep(0,nkat-1),-1,rep(0,nkat-1),rep(0,(n.items-1)*nkat)) |> (\(x) rep(x,n.items-2))() |> c(1,rep(0,nkat-1),-1,rep(0,nkat-1)) |> matrix(ncol=n.items*nkat,byrow=TRUE),
       cvec = 0,
       model = mirt::mirt.model(paste('F = 1-',n.items,'
                        CONSTRAIN = (1-',n.items,', a1)'))
     )
     return(re)
   },
-
-
   unres = function(altpars) {
 
     re = list(
@@ -247,8 +238,6 @@ h_PCMvsGPCM = list(
 
     return(re)
   },
-
-
   maximizeL = function(hyp) {
     # Hypothesis-specific algorithm to find the maximum likelihood restricted parameter set
 
@@ -313,7 +302,6 @@ funs = load.functions(unresmod$itemtype)
 #hypothesis that the first item has difficulty 0
 
 h_basic = list(
-
   res = function(altpars,nullpars = NULL) {
 
     n.items = length(altpars[[1]])
@@ -321,7 +309,7 @@ h_basic = list(
     re = list(
       n.items = n.items,
       itemtype = "2PL",
-      Amat = c(0,1,rep(0,(n.items-1)*2)) %>% matrix(.,ncol=n.items*2,byrow=TRUE),
+      Amat = c(0,1,rep(0,(n.items-1)*2)) |> (\(x) matrix(x,ncol=n.items*2,byrow=TRUE) )(),
       cvec = 0,
       model = mirt::mirt.model(paste('F = 1-',n.items,'
                            FIXED = (1, d)
@@ -329,7 +317,6 @@ h_basic = list(
     )
     return(re)
   },
-
   unres = function(altpars) {
 
     re = list(
@@ -341,7 +328,6 @@ h_basic = list(
 
     return(re)
   },
-
   maximizeL = function(hyp) {
     # Hypothesis-specific algorithm to find the maximum likelihood restricted parameter set
 
@@ -402,14 +388,13 @@ funs = load.functions(unresmod$itemtype)
 
 
 h_3PL_basic = list(
-
   res = function(altpars,nullpars = NULL) {
     n.items = length(altpars[[2]])
 
     re = list(
       n.items = n.items,
       itemtype = "3PL",
-      Amat = c(1,0,0,rep(0,(n.items-1)*3),0,1,0,rep(0,(n.items-1)*3),0,0,1,rep(0,(n.items-1)*3)) %>% matrix(.,ncol=n.items*3,byrow=TRUE),
+      Amat = c(1,0,0,rep(0,(n.items-1)*3),0,1,0,rep(0,(n.items-1)*3),0,0,1,rep(0,(n.items-1)*3)) |> matrix(ncol=n.items*3,byrow=TRUE),
       cvec = c(1,0,.2),
       model = mirt::mirt.model(paste('F = 1-',n.items,'
                            FIXED = (1, d), (1,a1), (1,g)
@@ -417,7 +402,6 @@ h_3PL_basic = list(
     )
     return(re)
   },
-
   unres = function(altpars) {
     n.items = length(altpars[[2]])
 
@@ -430,7 +414,6 @@ h_3PL_basic = list(
 
     return(re)
   },
-
   maximizeL = function(hyp) {
     # Hypothesis-specific algorithm to find the maximum likelihood restricted parameter set
 
@@ -491,17 +474,16 @@ funs = load.functions(unresmod$itemtype)
 # h_multi_basic -----------------------------------------------------------
 
 
+# d parameter of the first two items the same
 
 h_multi_basic = list(
-  # d parameter of the first two items the same
-
   res = function(altpars,nullpars = NULL) {
     n.items = length(altpars[[2]])
 
     re = list(
       n.items = n.items,
       itemtype = "2PL",
-      Amat = c(0,0,1,0,0,-1,rep(0,(n.items-3)*3+2)) %>% matrix(.,ncol=n.items*3-1,byrow=TRUE),
+      Amat = c(0,0,1,0,0,-1,rep(0,(n.items-3)*3+2)) |> matrix(ncol=n.items*3-1,byrow=TRUE),
       cvec = 0,
       model = mirt::mirt.model(paste('F1 = 1-',n.items,'
                            F2 = 1-',n.items-1,'
@@ -509,8 +491,6 @@ h_multi_basic = list(
     )
     return(re)
   },
-
-
   unres = function(altpars) {
     n.items = length(altpars[[2]])
 
@@ -524,7 +504,6 @@ h_multi_basic = list(
 
     return(re)
   },
-
   maximizeL = function(hyp) {
     # Hypothesis-specific algorithm to find the maximum likelihood restricted parameter set
 
@@ -535,17 +514,16 @@ h_multi_basic = list(
 
 # h_multi_basic2 -----------------------------------------------------------
 
+# d parameter of the first item = 2
 
 h_multi_basic2 = list(
-  # d parameter of the first item = 2
-
   res = function(altpars,nullpars = NULL) {
     n.items = length(altpars[[2]])
 
     re = list(
       n.items = n.items,
       itemtype = "2PL",
-      Amat = c(0,0,1,rep(0,(n.items-2)*3+2)) %>% matrix(.,ncol=n.items*3-1,byrow=TRUE),
+      Amat = c(0,0,1,rep(0,(n.items-2)*3+2)) |> matrix(ncol=n.items*3-1,byrow=TRUE),
       cvec = 2,
       model = mirt::mirt.model(paste('F1 = 1-',n.items,'
                            F2 = 1-',n.items-1,'
@@ -554,7 +532,6 @@ h_multi_basic2 = list(
     )
     return(re)
   },
-
   unres = function(altpars) {
     n.items = length(altpars[[2]])
 
@@ -568,13 +545,11 @@ h_multi_basic2 = list(
 
     return(re)
   },
-
   maximizeL = function(hyp) {
     # Hypothesis-specific algorithm to find the maximum likelihood restricted parameter set
 
     # not written yet, only sampling-based available for now
   }
-
 )
 
 
