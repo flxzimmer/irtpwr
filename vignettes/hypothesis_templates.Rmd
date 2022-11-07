@@ -1,6 +1,5 @@
 ---
 title: "Hypothesis Templates"
-output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{hypothesis_templates}
   %\VignetteEngine{knitr::rmarkdown}
