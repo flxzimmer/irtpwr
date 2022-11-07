@@ -36,9 +36,9 @@ The templates are described in some more detail in the respective sections.
 We are open for your suggestions to include further templates.
 
 
-# h_1PLvs2PL 
+## h_1PLvs2PL 
 
-We test the null hypothesis, that the parameters adhere to the Rasch model against the alternative hypothesis that the parameters are better described by a 2PL model. 
+We test the null hypothesis that the parameters adhere to the Rasch model against the alternative hypothesis that the parameters are better described by a 2PL model. 
 
 ```{r}
 h_1PLvs2PL <- list(res = function(altpars, nullpars = NULL) {
@@ -123,9 +123,9 @@ h_1PLvs2PL <- list(res = function(altpars, nullpars = NULL) {
 ```
 
 
-# h_DIF2PL 
+## h_DIF2PL 
 
-We test for differential item functioning. Our alternative hypothesis is that certain item parameters differ in two participant groups. Which item parameters differ can be determined in the altpars object, see the "demo" vignette for an example.  
+We test for differential item functioning in the 2PL model. Our alternative hypothesis is that certain item parameters differ in two known participant groups. Which item parameters differ can be determined in the altpars object, see the "demo" vignette for an example.  
 
 ```{r}
 h_DIF2PL <- list(res = function(altpars, nullpars = NULL) {
@@ -260,10 +260,9 @@ h_DIF2PL <- list(res = function(altpars, nullpars = NULL) {
 ```
 
 
-# h_PCMvsGPCM 
+## h_PCMvsGPCM 
 
-
-We test the null hypothesis, that the parameters adhere to the partial credit model against the alternative hypothesis that the parameters are better described by a generalized partial credit model. 
+We test the null hypothesis that the parameters adhere to the partial credit model against the alternative hypothesis that the parameters are better described by the generalized partial credit model. 
 
 ```{r}
 h_PCMvsGPCM <- list(res = function(altpars, nullpars = NULL) {
@@ -359,9 +358,10 @@ h_PCMvsGPCM <- list(res = function(altpars, nullpars = NULL) {
 })
 ```
 
-# h_basic 
 
-Null hypothesis is that the first item has difficulty 0
+## h_basic 
+
+The null hypothesis states that the first item has difficulty 0. The underlying model is the 2PL model.
 
 
 ```{r}
@@ -445,9 +445,9 @@ h_basic <- list(res = function(altpars, nullpars = NULL) {
 ```
 
 
-# h_3PL_basic
+## h_3PL_basic
 
-We test the null hypothesis that the first item parameters are (1,0,.2) for the a,d, and g parameters respectively.
+We test the null hypothesis that the first item parameters are (1,0,.2) for the a,d, and g parameters respectively. The underlying model is the 3PL model.
 
 ```{r}
 h_3PL_basic <- list(res = function(altpars, nullpars = NULL) {
@@ -532,10 +532,9 @@ h_3PL_basic <- list(res = function(altpars, nullpars = NULL) {
 ```
 
 
+## h_multi_basic 
 
-# h_multi_basic 
-
-We test the null hypothesis that the difficulty of the first two item parameters is equal.
+We test the null hypothesis that the difficulty of the first two item parameters is equal. The underlying model is the two-dimensional 2PL model. Only the sampling-based approach is available for now.
 
 ```{r}
 h_multi_basic <- list(res = function(altpars, nullpars = NULL) {
@@ -571,9 +570,9 @@ h_multi_basic <- list(res = function(altpars, nullpars = NULL) {
 ```
 
 
-# h_multi_basic2 
+## h_multi_basic2 
 
-We test the null hypothesis that the difficulty of the first item is equal to 2.
+We test the null hypothesis that the difficulty of the first item is equal to 2. The underlying model is the two-dimensional 2PL model. Only the sampling-based approach is available for now.
 
 ```{r}
 h_multi_basic2 <- list(res = function(altpars, nullpars = NULL) {
@@ -608,17 +607,3 @@ h_multi_basic2 <- list(res = function(altpars, nullpars = NULL) {
     # available for now
 })
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
