@@ -1,6 +1,5 @@
 ---
 title: "Adding Hypotheses"
-output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Adding Hypotheses}
   %\VignetteEngine{knitr::rmarkdown}
