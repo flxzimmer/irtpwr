@@ -29,7 +29,7 @@ set.seed(1)
 
 # Introduction
 
-This vignette introduces the implementation of a power analysis for the Wald, LR, score and gradient test for linear hypothesis. It uses some IRT examples and treats basic as well as additional features of the package. It is directed towards beginner to intermediate level R users. Previous experience with the mirt package may be helpful. In the following, we will cover the two-step workflow in detail:
+This vignette introduces the implementation of a power analysis for the Wald, LR, score and gradient test for linear hypotheses. It uses some IRT examples and treats basic as well as additional features of the package. It is directed towards beginner to intermediate level R users. Previous experience with the mirt package may be helpful. In the following, we will cover the two-step workflow in detail:
 
 * Setup Hypotheses (setup.hypothesis)
 * Perform the power analysis (irtpwr Function)
@@ -45,7 +45,7 @@ library(irtpwr)
 library(mirt)
 ```
 
-We want to know the power and the required sample size for a test of the Rasch vs 2PL model. We use the LSAT 7 data set which is included the mirt package.
+We want to know the power and the required sample size for a test of the Rasch vs 2PL model. We use the LSAT 7 data set which is included in the mirt package.
 
 As a first step, we load the data set and fit a 2PL model.
 
@@ -111,13 +111,13 @@ hyp <- setup.hypothesis(type = "DIF2PL", altpars = altpars)
 
 ```
 
-Note that for both hypothesis types, we do not have to provide the parameters under the null hypothesis here, because they are implicitly defined by the alternative hypothesis. The setup.hypothesis function, also allows for specifying parameters under the null hypothesis via a "nullpars" argument for cases in which the parameters under the null hypothesis are not identified by the parameters under the alternative. To implement such custom hypotheses, we provide additional guidance in the "adding_hypotheses" vignette. Some templates for hypothesis objects are included in the "hypothesis_templates" vignette.
+Note that for both hypothesis types, we do not have to provide the parameters under the null hypothesis here, because they are implicitly defined by the alternative hypothesis. The setup.hypothesis function also allows for specifying parameters under the null hypothesis via a "nullpars" argument for cases in which the parameters under the null hypothesis are not identified by the parameters under the alternative. To implement such custom hypotheses, we provide additional guidance in the "adding_hypotheses" vignette. Some templates for hypothesis objects are included in the "hypothesis_templates" vignette.
 
 
 
 ## irtpwr Function
 
-The irtpwr function can be used to perform the power analysis. Apart from an hypothesis, an alpha niveau needs to be specified. The function can:
+The irtpwr function can be used to perform the power analysis. Besides an hypothesis, an alpha niveau needs to be specified. The function can:
 
 * calculate a necessary sample size N given a desired power (using the power argument, e.g. power = .8)
 * calculate the power for a specific sample size N (using the N argument, e.g. N = 600)
@@ -149,7 +149,7 @@ res <- irtpwr(hyp = hyp, N = 600, alpha = 0.05, method = "sampling")
 summary(res)
 ```
 
-The sampling-based approach offers two parameters that can be increased to obtain a more exact result. These are the sample size of the sampling-based approach (sampling.npers) and the sample size for the approximation of the Fisher expected matrix (approx.npers). These may be tweaked upwards if the result from repeated executions of the irtpwr function is not stable. 
+The sampling-based approach offers two parameters that can be increased from their default values to obtain a more exact result. These are the sample size of the sampling-based approach (sampling.npers) and the sample size for the approximation of the Fisher expected matrix (approx.npers). These may be tweaked upwards if the result from repeated executions of the irtpwr function is not stable. 
 
 Since the analytical approach can be too time-intensive for larger numbers of items, we might want to know beforehand how long it will take approximately. We do so using the calc.time function.
 
@@ -158,7 +158,7 @@ In our example hypothesis, we used 5 items. To estimate the computation time for
 calc.time(hyp, n.items = 7)
 ```
 
-Note that the estimated time can sometimes deviate from the actual time. As a result from our test runs, I suggest to expect an increase of 80% as a worst case scenario.
+Note that the estimated time can sometimes deviate from the actual time. As a result from our test runs, we suggest to expect an increase of 80% as a worst case scenario.
 
 
 # Further Examples
@@ -197,7 +197,7 @@ summary(res)
 
 ## Multidimensional Model
 
-We test the null hypothesis that the difficulty of the first two item parameters is equal. This hypothesis is implemented as the type "multi_basic" we later use in the setup.hypothesis function. The parameters under the alternative hypothesis are taken from the LSAT7 dataset:
+We test the null hypothesis that the difficulty of the first two item parameters is equal in a multidimensional 2PL model. This hypothesis is implemented as the type "multi_basic" we later use in the setup.hypothesis function. The parameters under the alternative hypothesis are taken from the LSAT7 dataset:
 
 ```{r}
 dat <- expand.table(LSAT7)
