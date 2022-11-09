@@ -6,8 +6,8 @@
 #'
 #' @param hyp Hypothesis Object created by the setup.hypothesis function
 #' @param stat character vector containing the statistics to be calculated. Options are 'Wald','LR','Score', and 'Gradient'. By default, all statistics are included
-#' @param sampling.npers integer, sample size for the sampling-based approach
-#' @param approx.npers integer, sample size for approximating the Fisher expected information matrix in the sampling-based approach
+#' @param sampling.npers integer, sample size for the sampling-based approach. An artificial data set of this size is generated to fit a model and later estimate the noncentrality parameter from.
+#' @param approx.npers integer, sample size for approximating the Fisher expected information matrix in the sampling-based approach. An artificial data set is calculated of this size to calculate the Fisher expected information matrix from. In contrast to the data created with the sampling.npers sample size, this sample is not used to fit a model.
 #' @param method character, indicating the method used. The options are 'analytical'(default) for the analytical power analysis method or 'sampling' for the sampling-based method. The sampling-based method is generally recommended for higher numbers of items.
 #' @param SE.type Method for calculation of the observed information matrix used for calculating the statistics in the sampling-based approach ('Oakes' by default). Another option is 'Fisher'.
 #' @param sampling.mat Approach to calculate the information matrix used for calculating the statistics in the sampling-based approach. By default ('ApproxFisher'), an sampling-based approximation of the expected Fisher matrix is calculated using an observed information matrix of the type SE.type

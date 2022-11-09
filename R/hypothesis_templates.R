@@ -316,12 +316,12 @@ h_PCMvsGPCM <- list(res = function(altpars, nullpars = NULL) {
 })
 
 
-# h_basic
+# h_2PL_basic
 # --------------------------------------------------------------
 
 # hypothesis that the first item has difficulty 0
 
-h_basic <- list(res = function(altpars, nullpars = NULL) {
+h_2PL_basic <- list(res = function(altpars, nullpars = NULL) {
 
     n.items <- length(altpars[[1]])
 

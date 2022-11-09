@@ -34,7 +34,7 @@ setup.hypothesis <- function(type, altpars = NULL,
         } else if (type == "DIF2PL") {
             type <- h_DIF2PL
         } else if (type == "basic") {
-            type <- h_basic
+            type <- h_2PL_basic
         } else if (type == "PCMvsGPCM") {
             type <- h_PCMvsGPCM
         } else if (type == "multi_basic") {

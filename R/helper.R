@@ -13,7 +13,7 @@ logitinv <- function(q) {
 #' @param hyp Hypothesis object as created by the setup.hypothesis function
 #' @param n.items Number of items
 #'
-#' @return Numeric
+#' @return Numeric, estimated time in seconds
 #' @export
 #'
 #' @examples \donttest{

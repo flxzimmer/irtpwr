@@ -26,8 +26,8 @@ The templates currently include:
 * h_1PLvs2PL: Testing a Rasch against a 2PL model 
 * h_DIF2PL: Testing for DIF in a 2PL model
 * h_PCMvsGPCM: Testing a PCM against a GPCM model
-* h_basic: Testing a specific item parameter
-* h_3PL_basic: Testing specific item parameters
+* h_2PL_basic: Testing one item parameter
+* h_3PL_basic: Testing three item parameters at once
 * h_multi_basic: Comparing two item parameters
 * h_multi_basic2: Testing a specific item parameter 
 
@@ -359,13 +359,13 @@ h_PCMvsGPCM <- list(res = function(altpars, nullpars = NULL) {
 ```
 
 
-## h_basic 
+## h_2PL_basic 
 
 The null hypothesis states that the first item has difficulty 0. The underlying model is the 2PL model.
 
 
 ```{r}
-h_basic <- list(res = function(altpars, nullpars = NULL) {
+h_2PL_basic <- list(res = function(altpars, nullpars = NULL) {
 
     n.items <- length(altpars[[1]])
 
