@@ -10,13 +10,13 @@
 #' @return a list specifying the hypothesis for usage in further functions, e.g. estimation of the noncentrality parameters.
 #' @export
 #'
-#' @examples
+#' @examples \donttest{
 #'
 #' library(mirt)
 #' dat <- expand.table(LSAT7)
 #' mirtfit <- mirt(dat,1,verbose = FALSE)
 #' hyp <- setup.hypothesis(type = '1PLvs2PL', altpars = mirtfit)
-#'
+#' }
 setup.hypothesis <- function(type, altpars = NULL,
     nullpars = NULL) {
     # setup a null and alternative hypothesis
