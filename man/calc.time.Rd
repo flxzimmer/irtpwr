@@ -12,7 +12,7 @@ calc.time(hyp, n.items)
 \item{n.items}{Number of items}
 }
 \value{
-Numeric
+Numeric, estimated time in seconds
 }
 \description{
 Calculate the computation time needed for the analytical method

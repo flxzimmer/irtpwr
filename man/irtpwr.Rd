@@ -24,9 +24,9 @@ irtpwr(
 
 \item{method}{character, indicating the method used. The options are 'analytical'(default) for the analytical power analysis method or 'sampling' for the sampling-based method. The sampling-based method is generally recommended for higher numbers of items.}
 
-\item{sampling.npers}{integer, sample size for the sampling-based approach}
+\item{sampling.npers}{integer, sample size for the sampling-based approach. An artificial data set of this size is generated to fit a model and later estimate the noncentrality parameter from.}
 
-\item{approx.npers}{integer, sample size for approximating the Fisher expected information matrix in the sampling-based approach}
+\item{approx.npers}{integer, sample size for approximating the Fisher expected information matrix in the sampling-based approach. An artificial data set is calculated of this size to calculate the Fisher expected information matrix from. In contrast to the data created with the sampling.npers sample size, this sample is not used to fit a model.}
 
 \item{SE.type}{Method for calculation of the observed information matrix used for calculating the statistics in the sampling-based approach ('Oakes' by default). Another option is 'Fisher'.}
 
@@ -45,6 +45,7 @@ function returns an object of class irtpwrresult
 Perform analytical or sampling-based power analysis for the Wald, LR, score, or gradient statistic.
 }
 \examples{
+\donttest{
 
 library(mirt)
 dat <- expand.table(LSAT7)
@@ -52,5 +53,5 @@ mirtfit <- mirt(dat,1,verbose = FALSE)
 hyp <- setup.hypothesis(type = '1PLvs2PL', altpars = mirtfit)
 res <- irtpwr(hyp=hyp,alpha=.05,power =.8)
 summary(res)
-
+}
 }

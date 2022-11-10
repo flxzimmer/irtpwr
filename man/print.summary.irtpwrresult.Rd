@@ -18,6 +18,7 @@ An object of class summary.irtpwrresult
 Print Summary of the search result
 }
 \examples{
+\donttest{
 
 library(mirt)
 dat <- expand.table(LSAT7)
@@ -25,5 +26,5 @@ mirtfit <- mirt(dat,1,verbose = FALSE)
 hyp <- setup.hypothesis(type = '1PLvs2PL', altpars = mirtfit)
 res <- irtpwr(hyp=hyp,alpha=.05,power =.8)
 summary(res)
-
+}
 }
