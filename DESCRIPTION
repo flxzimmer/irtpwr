@@ -7,8 +7,8 @@ Authors@R: c(
     person("Rudolf", "Debelak", , "rudolf.debelak@psychologie.uzh.ch", role = c("aut"),
            comment = c(ORCID = "0000-0001-8900-2106"))
   )
-Description: 	Implementation of analytical and sampling-based power analyses for
-    the Wald, LR, score, and gradient tests. Can be applied to IRT models estimated
+Description: Implementation of analytical and sampling-based power analyses for
+    the Wald, likelihood ratio (LR), score, and gradient tests. Can be applied to item response theory (IRT) models estimated
     using marginal maximum likelihood estimation. The methods are described in our 
     paper (Zimmer et al. (2022) <doi:10.1007/s11336-022-09883-5>).
 License: GPL (>= 3)
