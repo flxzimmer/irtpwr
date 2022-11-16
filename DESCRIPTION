@@ -8,9 +8,10 @@ Authors@R: c(
            comment = c(ORCID = "0000-0001-8900-2106"))
   )
 Description: Implementation of analytical and sampling-based power analyses for
-    the Wald, likelihood ratio (LR), score, and gradient tests. Can be applied to item response theory (IRT) models estimated
-    using marginal maximum likelihood estimation. The methods are described in our 
-    paper (Zimmer et al. (2022) <doi:10.1007/s11336-022-09883-5>).
+    the Wald, likelihood ratio (LR), score, and gradient tests. Can be applied
+    to item response theory (IRT) models that are fitted using marginal maximum
+    likelihood estimation. The methods are described in our paper
+    (Zimmer et al. (2022) <doi:10.1007/s11336-022-09883-5>).
 License: GPL (>= 3)
 URL: https://github.com/flxzimmer/irtpwr
 BugReports: https://github.com/flxzimmer/irtpwr/issues
