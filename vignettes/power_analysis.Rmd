@@ -2,7 +2,7 @@
 title: "Power Analysis for the Wald, LR, Score, and Gradient Tests using irtpwr"
 author: "Jan Radek"
 vignette: >
-  %\VignetteIndexEntry{Power Analysis}
+  %\VignetteIndexEntry{Power Analysis for the Wald, LR, Score, and Gradient Tests using irtpwr}
   \usepackage[utf8]{inputenc}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
