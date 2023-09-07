@@ -4,6 +4,8 @@
 # irtpwr
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/flxzimmer/irtpwr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/flxzimmer/irtpwr/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 This package offers implementation of analytical and sampling-based
@@ -93,11 +95,12 @@ plot(res)
 Further documentation on how to use the package is found in the package
 vignettes:
 
--   The vignette “demo” gives an introduction of basic features,
--   “adding_hypotheses” gives a tutorial on setting up custom
-    hypotheses,
--   “hypothesis_templates” includes some templates for hypothesis
-    objects that can be altered for your specific use case.
+- The vignette “demo” gives a short introduction of basic features,
+- “power_analysis” gives a more thorough walkthrough of power analysis
+  with irtpwr,
+- “adding_hypotheses” gives a tutorial on setting up custom hypotheses,
+- “hypothesis_templates” includes some templates for hypothesis objects
+  that can be altered for your specific use case.
 
 If the vignettes were included during installation (for example using
 the methods above), they can be accessed via:

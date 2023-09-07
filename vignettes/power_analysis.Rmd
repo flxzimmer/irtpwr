@@ -1,0 +1,459 @@
+---
+title: "Power Analysis for the Wald, LR, Score, and Gradient Tests using irtpwr"
+author: "Jan Radek"
+vignette: >
+  %\VignetteIndexEntry{Power Analysis}
+  \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    theme: united
+    toc: yes
+    toc_float: yes
+  rmarkdown::html_vignette:
+    toc: true
+---
+
+# 1. Introduction
+
+Statistical power is the probability of finding an effect of a certain size if it really exists. If studies have too little power, the probability increases that effects that actually exist will be overlooked. In addition, significant results are unlikely to represent actual effects. If the power is too high, there is a risk of wasting resources such as money and time when planning the study. Because of these considerations, power analysis is essential for an empirical study. 
+
+When used in item response theory (IRT) models, power analysis can help evaluate study designs for psychological and educational assessments. IRT models serve to describe the relationship between a construct or ability to be tested and the actual response behaviour of the participants in a test. This leads to the question which IRT model better describes the data. Statistical tests are used here to test hypotheses about model fit or parameter values. Common methods for hypothesis testing in IRT models are the Wald, LR, score and gradient statistics. A power analysis for these tests clarifies, for example, how many participants are required to reject a falsely hypothesised model with a given desired probability. This prevents the use of a misspecified model from leading to misinterpretation of the results and consequently incorrect decision-making.
+
+This vignette presents the implementation of a power analysis for the Wald, Likelihood Ratio (LR), score and gradient tests for linear hypotheses using the free available R package irtpwr. It uses some IRT examples and treats basic as well as additional features of the package. It is directed towards beginner to intermediate level R users. Previous experience with the mirt package may be helpful. In the next chapters this vignette illustrates the application of irtpwr for two IRT use cases. First it carries out a power analysis for testing a Rasch model against a 2PL model. Secondly, a power analysis is conducted for testing differential item functioning (DIF) in a 2PL model. In each chapter, first of all, the underlying hypothesis is explained. Then it describes the application of irtpwr step by step. For this, the determination of power is explained for a case where the package user is devising an empirical study (a priori power analysis) and on the other hand where the package user has finished the data collection and now intends to perform a power analysis afterwards (a posteriori power analysis). This vignette aims to embed the R package into data analysis in psychology. At the same time, we want to show when and how \texttt{irtpwr} can be used in practice. 
+
+# 2. General workflow for irtpwr
+
+To conduct the power analysis for the Wald, LR, Score, and Gradient Tests using \texttt{irtpwr} we will cover the two-step workflow in detail:
+
+- Setup Hypotheses (\texttt{setup.hypothesis} function)
+- Perform the power analysis (\texttt{irtpwr} function)
+
+Before we perform the power analysis with \texttt{irtpwr} we setup the null and alternative hypothesis. The usage of \texttt{setup.hypothesis} is the following: 
+```{r setup.hypothesis usage, results = "hide", eval = FALSE}
+setup.hypothesis(type, altpars = NULL, nullpars = NULL)
+```
+With the \texttt{type} argument we define the hypothesis test we intend to conduct. If we e.g. want to perform a power analysis to test the Rasch model against the 2PL model we set \texttt{type = "1PLvs2PL"}. 
+
+There are currently three types available in the package:
+
+- Testing a Rasch against a 2PL model (\texttt{type = "1PLvs2PL"}),
+- Testing for DIF in a 2PL model (\texttt{type = "DIF2PL"}),
+- Testing a PCM against a GPCM model (\texttt{type = "PCMvsGPCM"}).
+
+In the next step we determine the parameters under the alternative (\texttt{altpars}) and null (\texttt{nullpars}) hypothesis. If we have already collected the data, we can use a fitted \texttt{mirt} model (for a posteriori power analysis). However, if this is not the situation, we have the option to specify alternative parameters directly (for a priori power analysis). For example in cases where researchers assume a typical pattern in the item parameters and already know that they will test model fit or certain parameter values. The determination of the parameters under the null hypothesis is not always necessary because they are often implicitly defined by the alternative hypothesis.
+
+Finally, we are now ready to perform the power analysis by passing the hypothesis to \texttt{irtpwr}. Besides the hypothesis, an alpha level needs to be specified. The function can:
+
+- calculate a necessary sample size N given a desired power (using the \texttt{power} argument, e.g. \texttt{power = .8})
+- calculate the power for a specific sample size N (using the \texttt{N} argument, e.g. \texttt{N = 600})
+
+To get more insights into the usage of \texttt{irtpwr} this vignette now provides some examples starting with the power analysis to test the Rasch model against the 2PL model.
+
+To get ready, we first have to install the needed package: 
+```{r install packages, results = "hide", eval = FALSE}
+install.packages("irtpwr")
+```
+
+Then we have to load the package: 
+```{r load packages, results = "hide", eval = TRUE, message = FALSE}
+library("irtpwr")
+```
+
+# 3. Rasch against 2PL model
+
+In psychology, researchers measure mental attributes of people whose values of e.g. mathematical ability or personality traits are not directly observable in this way. Hence psychological tests are constructed to measure latent properties. When a test taker answers a maths test, researchers want to conclude as reliably as possible about the person's maths competence. Methods from IRT are used for psychological test construction and evaluation. A well-known approach is the Rasch model. The Rasch model assumes that the probability of solving an individual item from the test is determined by the characteristics of the item (item parameters) and of the person (person parameters). The more pronounced the math ability $\theta$ of person $p$ the higher the probability of answering an item correctly. Another observation regarding the Rasch model is that as the easiness $d$ of an item $i$ increases, the probability of answering the item correctly also increases. The easiness is known as the intercept-parameter. We can transfer this assumption into a formula: 
+
+$$ \text{Pr}(U_{pi} = 1|\theta_{p}, d_{i}) = \frac{e^{\theta_p + d_{i}}}{1 + e^{\theta_p + d_{i}}} $$
+
+One strict assumption of the Rasch model is that all items share the same slope parameter. In this context, the slope plays an important role in accurately distinguishing between abilities slightly above and abilities slightly below its easiness. In other literature the slope parameter is also called discrimination. Two people with an math ability difference of 1 would in all items have the same probability difference of solving an item correctly. The Rasch model equation from above does not contain an extra parameter for modeling the slope. For items that are not well described by the Rasch model, other more flexible models can be applied. 
+
+The two-parameter logistic (2PL) model from Birnbaum (1968) is a more adaptable solution and can be seen as an extension of the Rasch model. When the assumption of equal slopes among all items is violated, this model can be utilized. Therefore the 2PL model introduces besides the intercept parameter or easiness $d_{i}$ a second item parameter called the slope parameter $a$ of an item $i$. Mathematically the 2PL model can be described with: 
+
+$$ \text{Pr}(U_{pi} = 1|\theta_{p},a_{i}, d_{i}) = \frac{e^{a_i \cdot \theta_p + d_{i}}}{1 + e^{a_i \cdot \theta_p + d_{i}}} $$
+If $a$ is high, it indicates that the item possesses a strong ability to distinguish among test taker. This means that the probability of giving a correct response increases more rapidly as the ability $\theta$ increases.
+
+When it comes to the evaluation of psychological and educational tests researcher face the question which IRT model is better to describe the data. There are various statistical methods such as Wald, LR, score and gradient tests that compare two models in terms of their data fit. In this example, our specific hypothesis test aims to address the question of whether the inclusion of the additional slope parameter in the 2PL model is essential for describing the data, or if the slope parameters are sufficiently similar for the Rasch model to adequately describe the data. Therefore it becomes relevant to test the null hypothesis of equal slope parameters as this may allow the rejection of an incorrectly assumed Rasch model. With a power analysis we can answer the question what sample size is minimally needed to discard the simpler Rasch model. In the following we first conduct a priori power analysis and then a posteriori power analysis for testing the Rasch model against the 2PL model.
+
+## 3.1. A priori power analysis
+We are in the process of creating a novel test designed to assess the mathematical ability of test takers. We plan a test with 5 items that measure the same construct. After an intensive incorporation with the subject of math tests and the 5 already formulated items we discusses with other authors the expected item parameter for each item. Specifically, we hypothesize the presence of unequal slope parameters. We know that after collecting data we want to evaluate the test using the Rasch or the 2PL model. We aim to ensure that if a model comparison favors the 2PL model, we can confidently assert that this model choice provides the best fit for our expected data. This is only with a sufficiently large power possible. To conduct a power analysis we use the R package \texttt{irtpwr}. 
+
+To setup a hypothesis, we use the \texttt{altpars} argument of the \texttt{setup.hypothesis} function to define the parameters under the alternative  hypothesis of unequal slope parameters. We do not have to determine the null hypothesis of equal parameters because they are implicitly defined by the alternative hypothesis. Firstly, we generate distinct slope and intercept parameters for each item. Then we pass them into the \texttt{altpars} argument from the function \texttt{setup.hypothesis}. Additionally, due to the underlying hypothesis test, we set the \texttt{type} to \texttt{"1PLvs2PL"}.
+```{r set.seed Rasch vs 2PL a priori, echo = FALSE}
+set.seed(7443)
+```
+
+```{r Rasch vs 2PL setup.hypothesis a priori, results = "hide", eval = TRUE}
+# parameters under the alternative hypothesis
+altpars <- list(a = rlnorm(5, sdlog = 0.4),    
+                d = rnorm(5))                  
+ 
+hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = altpars)
+```
+
+The hypothesis is prepared for subsequent power analysis. We want to know the required sample size for a test of the Rasch against 2PL model for a power of 0.8 while using an alpha level of 0.05. Therefore, we transfer the previously defined hypothesis \texttt{"hyp"} into the \texttt{irtpwr} function: 
+
+```{r Rasch vs 2PL irtpwr a priori, results = "hide", eval = TRUE}
+res <- irtpwr(hyp = hyp, power = 0.8, alpha = 0.05)
+summary(res)
+
+#> Sample sizes for power = 0.8 (alpha = 0.05): 
+#>
+#> Statistic   N
+#>      Wald 503
+#>        LR 504
+#>     Score 520
+#>  Gradient 505
+#>
+#> Method: Analytical
+
+```
+
+Prior to the commencement of the study we now planned the sample size. The results show that to reach our desired power of 0.8 we need a sample size of 503 to 520. The Wald Test would in this case be the most efficient choice. In addition, we have the option to generate power curves through power analysis. This allows us to obtain a more comprehensive understanding of the associations between sample size and power: 
+
+```{r Rasch vs 2PL irtpwr a priori plot, echo = TRUE}
+plot(res) 
+```
+
+A second reflection about our study design revealed that we want a higher statistical power. The alternative and null hypothesis remain unchanged. We take the saved \texttt{irtpwr} result object \texttt{res} and modify it within the generic \texttt{summary} function: 
+
+```{r Rasch vs 2PL irtpwr a priori pwr 0.9, results = "hide", eval = TRUE}
+summary(res, power = 0.9)
+
+#> Sample sizes for power = 0.8 (alpha = 0.05): 
+#>
+#> Statistic   N
+#>      Wald 649
+#>        LR 650
+#>     Score 671
+#>  Gradient 652
+#>
+#> Method: Analytical
+
+```
+
+As expected we need more test taker to answer the test to reach a power of 0.9. We minimum sample size would be 649.  
+
+## 3.2. A posteriori power analysis
+In this chapter we already have constructed a 5 item math test but without a prior conducted power analysis. Exactly 1000 participants answered the test. We aim to assess the test by employing both the Rasch model and the 2PL model. Later on, we would compare both IRT models and conclude which one would provide the best model fit. To allow a reliable model comparison we need a minimum of 80% statistical power. To do this, we conduct a posteriori power analysis. First of all we need the dataset from our math test. We use the LSAT 7 dataset which is included in the \texttt{mirt} package. The dataset includes 5 columns (for each item one) and 1000 rows (for each participant one). One row shows for each item if the participant answered this item correctly (coded with 1) or not (coded with 0). For the first time we now have to install and load the \texttt{mirt} package:
+
+```{r install packages mirt, results = "hide", eval = FALSE}
+install.packages("mirt")
+```
+```{r load packages mirt, results = "hide", eval = TRUE, message = FALSE}
+library("mirt")
+```
+
+We load the data with: 
+```{r set.seed Rasch vs 2PL a posteriori, echo = FALSE}
+set.seed(1258)
+```
+```{r Rasch vs 2PL data a posteriori, results = "hide", eval = TRUE}
+dat <- expand.table(LSAT7)
+```
+
+For the power analysis we again have to define the \texttt{type} and parameters under the alternative hypothesis. In this situation where the data is collected we can use a fitted \texttt{mirt} model. Hence, we fit a 2PL model to analyze our data and obtain the parameters associated with the alternative hypothesis of unequal slopes. To fit a 2PL model one can execute the following code: 
+```{r Rasch vs 2PL mirt a posteriori, results = "hide", eval = TRUE}
+mirtfit <- mirt(dat, 1, verbose = FALSE)
+```
+
+The fitted 2PL model \texttt{mirtfit} is then used for the \texttt{altpars} argument from the function \texttt{setup.hypothesis}. As above we set \texttt{type = "1PLvs2PL"}. We write the following code: 
+```{r Rasch vs 2PL setup.hypothesis a posteriori, results = "hide", eval = TRUE}
+hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
+```
+
+To calculate the power for a sample size of 1000 using our hypothesis from above we run: 
+```{r Rasch vs 2PL irtpwr a posteriori, results = "hide", eval = TRUE}
+res <- irtpwr(hyp = hyp, N = 1000, alpha = 0.05)
+summary(res)
+
+#> Power for N = 1000 (alpha = 0.05):  
+#>
+#> Statistic  Power
+#>      Wald 0.7411
+#>        LR 0.8513
+#>     Score 0.8308
+#>  Gradient 0.8987
+#>
+#> Method: Analytical
+
+```
+
+For a sample size of 1000 we reach a power between 0.74 to 0.89 depending the underlying test statistic. For our further analysis we should use the gradient test. If the gradient test favors the 2PL model, we can confidently claim that the 2PL model is a better fit than the Rasch model with a probability of 89%. We would conclude that given our data it would be better to assume unequal slope parameter. 
+
+A detailed look on the relationships between sample size and power can be plotted with: 
+```{r Rasch vs 2PL irtpwr a posteriori plot, echo = TRUE}
+plot(res) 
+```
+
+The \texttt{irtpwr} function builds on one of two available methods that are described in our paper in more detail (Zimmer et al. (2022), https://doi.org/10.1007/s11336-022-09883-5):
+
+- an analytical approach (\texttt{method = “analytical”}, this is the default option)
+- a sampling-based approach (\texttt{method = “sampling”})
+
+To use the sampling based approach, we can execute:
+```{r Rasch vs 2PL irtpwr sampling a posteriori, results = "hide", eval = TRUE}
+res <- irtpwr(hyp = hyp, N = 600, alpha = 0.05, method = "sampling")
+summary(res)
+
+#> Power for N = 1000 (alpha = 0.05):  
+#>
+#> Statistic  Power
+#>      Wald 0.4946
+#>        LR 0.6073
+#>     Score 0.5957
+#>  Gradient 0.6578
+#>
+#> Method: Sampling-Based
+
+```
+
+The sampling-based approach offers two parameters that can be increased from their default values to obtain a more exact result. These are the sample size of the sampling-based approach (\texttt{sampling.npers}) and the sample size for the approximation of the Fisher expected matrix (\texttt{approx.npers}). These may be tweaked upwards if the result from repeated executions of the \texttt{irtpwr} function is not stable.
+
+Since the analytical approach can be too time-intensive for larger numbers of items, we might want to know beforehand how long it will take approximately. We do so using the \texttt{calc.time} function. In our example hypothesis, we used 5 items. To estimate the computation time (in seconds) for 10 items we can use:
+```{r calc.time, results = "hide", eval = TRUE}
+calc.time(hyp, n.items = 10)
+
+#> [1] 103.488
+```
+
+Note that the estimated time can sometimes deviate from the actual time. As a result from our test runs, we suggest to expect an increase of 80% as a worst case scenario. Is the estimated computational load when using the analytical default setting too large, we can use the sampling-based approach for these applications. The interpretation of the \texttt{irtpwr} output remains the same.
+
+# 4. DIF analysis in 2PL model
+
+A central assumption of parametric logistic models of IRT is that people with the same level of ability should have the same probability of solving an item correctly. If this model assumption is violated, a test can be unfair. This means that items of a test are easier for one group of subjects than for another group of subjects despite the same ability characteristics. This violation of measurement invariance is called differential item functioning (DIF). If an item of an tests is presenting DIF, this item functions differently for different groups. Common sociodemographic characteristics that are examined when detecting DIF are gender, age, language and academic background. DIF tests play an important role in educational testing. If a test is unfair, we disadvantage a certain group of subjects, which could lead to wrong decisions. For example in relation to a student who takes aptitude tests and the result decides whether he is admitted to a course of studies or not. Therefore, it is important to reliably detect DIF in data. Statistical procedures such as Wald, LR, score-based and gradient tests are used to detect DIF. In this context, we need the sufficient likelihood to find a DIF effect if it really exists. Hence, we employ a power analysis to estimate how likely we will detect actually existing DIF for different groups of people. In an other situation we decide how many people do we need to detect an expected DIF effect in a specific item of interest. In the next steps we conduct a priori power analysis for the Wald, LR, score and gradient tests.
+
+## 4.1. A priori power analysis
+
+In this szenario we are about to start a study where we constructed an educational test which measures the mathematical ability of test taker. The test includes 5 items that measure the same construct. Following the formulation of the items and engaging in discussions with several mathematics experts, we have identified item 1 as problematic. For item 1 we assume that it could potentially show DIF due to the wording of the item. The assumption is that non-native English speaking test takers will struggle with this item more than native English speaking test takers even though we only want to test mathematics ability. In other words, test taker with the same math abilities might have different solution probabilities for item 1. Thus we want to apply a power analysis that answers the question: At a significance level of 0.05 and a power of 0.8, what is the minimum sample size required to identify a significant item parameter difference between native and non-native English speaking test taker with a DIF effect in the d parameter of 0.5 and in the a parameter of 2 in a 2PL model? We assume standard normally distributed person parameters for all participants.
+
+In the previous chapter we have already seen the Rasch against 2PL hypothesis setup. The procedure for the DIF in 2PL hypothesis (\texttt{type = "DIF2PL"}) is analogous, yet a bit more complicated since we need to define two groups, the native and non-native English speaking group. The package is already loaded so we can start with our example:
+```{r set.seed, echo = FALSE}
+set.seed(8989)
+```
+
+```{r DIF setup.hypothesis a priori, results = "hide", eval = TRUE}
+native <- nonnative <- list(a = rlnorm(5, sdlog = 0.2), 
+                            d = rnorm(5))               
+
+nonnative$a[1] <- (nonnative$a[1])^2   # DIF effect in the a parameter
+nonnative$d[1] <- nonnative$d[1] - 0.5 # DIF effect in the d parameter
+
+altpars <- list(native, nonnative) # parameters under the alternative hypothesis
+
+hyp <- setup.hypothesis(type = "DIF2PL", altpars = altpars)
+```
+
+Note that for both hypothesis types, we do not have to provide the parameters under the null hypothesis here, because they are implicitly defined by the alternative hypothesis. The \texttt{setup.hypothesis} function also allows for specifying parameters under the null hypothesis via the \texttt{nullpars} argument for cases in which the parameters under the null hypothesis are not identified by the parameters under the alternative. To implement such custom hypotheses, we provide additional guidance in the “adding_hypotheses” vignette. Some templates for hypothesis objects are included in the “hypothesis_templates” vignette.
+
+Given the specifications we already made, we now can obtain the sample size necessary for reaching a power of 0.8 while using an alpha level of 0.05. We perform the power analysis with: 
+```{r DIF irtpwr a priori, results = "hide", eval = TRUE}
+res <- irtpwr(hyp = hyp, power = 0.8, alpha = 0.05)
+summary(res)
+
+#> Sample sizes for power = 0.8 (alpha = 0.05): 
+#>
+#> Statistic   N
+#>      Wald 814
+#>        LR 794
+#>     Score 796
+#>  Gradient 790
+#>
+#> Method: Analytical
+
+```
+
+Based on these findings, it is evident that to achieve a power of 0.8 in detecting the group difference in our example, an approximate sample size ranging from 790 to 814 is necessary. If 794 participants answer the test and if e.g. the LR Test is used to detect DIF we can say with a probability of 80% that finding a DIF effect means there is actually a violation in the measurement invariance assumption. By utilizing this information we can avoid an over- and underpowered study design when it comes to the study implementation in practice. To sum up we see that the gradient statistic would be the most efficient to test our hypothesis: We would need a sample size of 790 to reach our desired power.
+
+We can also plot the power curves of the power analysis. Here we get a more detailed look on the relationships between sample size and power by using:
+```{r irtpwr a priori plot, echo = TRUE}
+plot(res) 
+```
+
+## 4.2. A posteriori power analysis
+
+In this part of the vignette we describe a situation where we have constructed the math test and 732 participants already answered the test. Besides that they reported whether they were native English speakers or not. A pre-study power analysis was not conducted. We can use a posteriori power analysis to estimate how likely we will detect actually existing DIF for groups differing in language background. It resulted a data frame called dat with 732 observations and 6 columns. The first 6 rows are shown: 
+
+```{r generate difdata, echo = FALSE}
+sim_2pl <- function(n_Per = 1000, n_Item = 5, covariate = "binary", a_delta = 1, d_delta = 0, t_delta = 0, numsplit = 50) {
+  a <- runif(n_Item, 1, 2.25)
+  d <- rnorm(n_Item, 0, 1)
+  a_diff <- a
+  d_diff <- d
+  # Kein DIF auf Item 1 | a_delta = 1, d_delta = 0
+  a_diff[1] <- a_diff[1] * a_delta
+  d_diff[1] <- d_diff[1] - d_delta
+  if (covariate == "binary") {
+    language <- sample(c("native", "nonnative"), n_Per, replace = TRUE, prob = c(.5, .5))
+    language <- sort(language)
+    t_ref <- rnorm(sum(language == "native"), 0 - t_delta / 2, 1)
+    t_dif <- rnorm(sum(language == "nonnative"), 0 + t_delta / 2, 1)
+    dat1 <- simdata(a, d, N = sum(language == "native"), itemtype = "2PL", Theta = t_ref)
+    dat2 <- simdata(a_diff, d_diff, N = sum(language == "nonnative"), itemtype = "2PL", Theta = t_dif)
+    dat3 <- rbind(dat1, dat2)
+    colnames(dat3) <- NULL
+    dat <- data.frame(matrix(nrow = n_Per, ncol = 0))
+    dat$item <- as.matrix(dat3)
+    dat$language <- as.factor(language)
+    return(dat)
+  } else if (covariate == "numeric") {
+    age <- round(runif(n_Per, 0, 100))
+    while (median(age) != 50) {
+      age <- round(runif(n_Per, 0, 100))
+    }
+    age <- sort(age)
+    obs <- which(age == numsplit)
+    t_ref <- rnorm(obs[length(obs)], 0 - t_delta / 2, 1)
+    t_dif <- rnorm(n_Per - obs[length(obs)], 0 + t_delta / 2, 1)
+    dat1 <- simdata(a, d, N = obs[length(obs)], itemtype = "2PL", Theta = t_ref)
+    dat2 <- simdata(a_diff, d_diff, N = n_Per - obs[length(obs)], itemtype = "2PL", Theta = t_dif)
+    dat3 <- rbind(dat1, dat2)
+    colnames(dat3) <- NULL
+    dat <- data.frame(matrix(nrow = n_Per, ncol = 0))
+    dat$Item <- as.matrix(dat3)
+    dat$age <- age
+    return(dat)
+  } else {
+    stop("Covariate is neither binary nor numeric")
+  }
+}
+
+# generate data
+set.seed(5666)
+dat <- sim_2pl(732, 5, "binary", a_delta = 2, d_delta = 0.5, t_delta = 0)
+```
+
+```{r showing data, results = "hide"}
+head(dat)
+
+#>   item.1 item.2 item.3 item.4 item.5  language
+#> 1      0      0      0      0      0 nonnative
+#> 2      0      0      0      0      1    native
+#> 3      1      1      0      1      1    native
+#> 4      0      0      1      0      0 nonnative
+#> 5      1      0      1      0      1    native
+#> 6      0      0      0      1      1 nonnative
+```
+
+Now after we have collected the data in an extensive study we estimate the item parameter along the covariate language. Once again, we assume the possibility of the presence of DIF in item 1. The item parameter are estimated for each group by using the function \texttt{multipleGroup} from the package \texttt{mirt}. But first we have to define a newmodel where we constrain the slopes and intercepts across groups for item 2 to 5. The parameters from item 1, our item of interest, may vary between the groups. We assume standard normally distributed person parameters for all participants. This results in the following code: 
+
+```{r DIF mirt a posteriori, results = "hide", eval = TRUE}
+newmodel <- '
+    F = 1-5
+    CONSTRAINB = (2-5, a1), (2-5, d)'
+
+difmirt <- multipleGroup(as.data.frame(dat[,"item"]), newmodel, group = dat$language)
+```
+
+Now let us take a look at the parameters for both groups: 
+
+```{r DIF coef, results = "hide", eval = TRUE}
+pars <- coef(difmirt, 
+     IRTpars = FALSE,  
+     simplify = TRUE)
+pars
+
+#> $native
+#> $items
+#>       a1      d
+#> V1 1.558  0.594
+#> V2 2.241 -0.390
+#> V3 2.204 -0.328
+#> V4 1.908 -1.043
+#> V5 1.003  1.040
+#> 
+#> $nonnative
+#> $items
+#>       a1      d
+#> V1 1.677  0.012
+#> V2 2.241 -0.390
+#> V3 2.204 -0.328
+#> V4 1.908 -1.043
+#> V5 1.003  1.040
+```
+
+With this item parameter estimates we now have all informations to set up the hypothesis for a DIF effect in a 2PL model. As in the last chapter we prepare the parameters under the alternative hypothesis for the altpars argument of the setup.hypothesis function. One way to do this is the following: 
+
+```{r DIF setup.hypothesis a posteriori, results = "hide", eval = TRUE}
+# parameters of native English speaking test taker
+pars_native <- pars[["native"]][["items"]]
+native <- list(a = pars_native[,"a1"], 
+               d = pars_native[,"d"])
+
+# parameters of non-native English speaking test taker
+pars_nonnative <- pars[["nonnative"]][["items"]]
+nonnative <- list(a = pars_nonnative[,"a1"], 
+                  d = pars_nonnative[,"d"])
+
+altpars <- list(native, nonnative) # parameters under the alternative hypothesis
+
+hyp <- setup.hypothesis(type = "DIF2PL", altpars = altpars)
+```
+
+To calculate the statistical power for a sample size of 732 using our DIF hypothesis, we execute: 
+
+```{r DIF irtpwr a posteriori, results = "hide", eval = TRUE}
+res <- irtpwr(hyp = hyp, N = 732, alpha = 0.05)
+summary(res)
+
+#>  Power for N = 732 (alpha = 0.05): 
+#> 
+#>  Statistic  Power
+#>       Wald 0.7779
+#>         LR 0.7917
+#>      Score 0.7900
+#>   Gradient 0.7949
+#> 
+#> Method: Analytical
+```
+
+As above a graphical interpretation can be shown: 
+```{r irtpwr a posteriori plot, echo = TRUE}
+plot(res) 
+```
+
+In sum the power to detect DIF if it really exists in item 1 is too low. We can obtain the sample size necessary for reaching a power of 0.9. The object resulting from \texttt{irtpwr} can be used to gather further information about the relationship between sample size and power: 
+
+```{r irtpwr pwr 0.9, results = "hide", eval = TRUE}
+summary(res, power = 0.9) 
+
+#>  Sample sizes for power = 0.9 (alpha = 0.05): 
+#> 
+#>  Statistic    N
+#>       Wald 1013
+#>         LR  981
+#>      Score  985
+#>   Gradient  974
+#> 
+#> Method: Analytical
+```
+
+The results shows that the choice for using the gradient statistic for detecting DIF in the 2PL model would be the most efficient. To reach a power of 0.9 we have to recruit 974 people. In contrast, it would take as many as 1013 people to achieve the same power if we use the Wald test. 
+
+But maybe we do not have enough resources to test up to 974 participants. Due to budget constraints or limited financial resources available and a strict deadline we only have time to examine maximum 800 participants. How high is the power when 800 test taker answer the test given the hypothesis we have earlier defined? To obtain the power for a different sample size than originally specified in our execution of the irtpwr function, we type in: 
+
+```{r irtpwr N 800, results = "hide", eval = TRUE}
+summary(res, N = 800) 
+
+#>  Power for N = 800 (alpha = 0.05): 
+#> 
+#>  Statistic  Power
+#>       Wald 0.8154
+#>         LR 0.8283
+#>      Score 0.8267
+#>   Gradient 0.8313
+#> 
+#> Method: Analytical
+```
+
+We can achieve a minimum power of 0.82 (see Wald test) to detect DIF in item 1 when recruiting 800 participants. This power is enough for us and we can continue with the data collection. 
+
+
+
+
+
+

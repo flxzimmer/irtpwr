@@ -1,5 +1,6 @@
-# irtpwr 1.0.0.9000
+# irtpwr 1.0.1
 
+* Added a new vignette "Power Analysis for the Wald, LR, Score, and Gradient Tests using irtpwr" authored by Jan Radek. It gives a more thorough power analysis walkthrough using the package. 
 
 # irtpwr 1.0.0
 

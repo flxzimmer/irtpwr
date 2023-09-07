@@ -21,6 +21,7 @@ knitr::opts_chunk$set(
 # irtpwr
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/flxzimmer/irtpwr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/flxzimmer/irtpwr/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 This package offers implementation of analytical and sampling-based power analyses for the Wald, LR, score, and gradient tests in the frameworks of linear hypotheses and marginal maximum likelihood estimation. The methods are described in our paper (Zimmer et al. (2022), https://doi.org/10.1007/s11336-022-09883-5).
@@ -85,7 +86,8 @@ plot(res)
 
 Further documentation on how to use the package is found in the package vignettes:
 
-* The vignette "demo" gives an introduction of basic features,
+* The vignette "demo" gives a short introduction of basic features,
+* "power_analysis" gives a more thorough walkthrough of power analysis with irtpwr,
 * "adding_hypotheses" gives a tutorial on setting up custom hypotheses,
 * "hypothesis_templates" includes some templates for hypothesis objects that can be altered for your specific use case.
 
