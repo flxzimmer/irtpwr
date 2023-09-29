@@ -18,35 +18,35 @@ Statistical power is the probability of finding an effect of a certain size if i
 
 When used in item response theory (IRT) models, power analysis can help evaluate study designs for psychological and educational assessments. IRT models serve to describe the relationship between a construct or ability to be tested and the actual response behaviour of the participants in a test. This leads to the question which IRT model better describes the data. Statistical tests are used here to test hypotheses about model fit or parameter values. Common methods for hypothesis testing in IRT models are the Wald, LR, score and gradient statistics. A power analysis for these tests clarifies, for example, how many participants are required to reject a falsely hypothesised model with a given desired probability. This prevents the use of a misspecified model from leading to misinterpretation of the results and consequently incorrect decision-making.
 
-This vignette presents the implementation of a power analysis for the Wald, Likelihood Ratio (LR), score and gradient tests for linear hypotheses using the free available R package irtpwr. It uses some IRT examples and treats basic as well as additional features of the package. It is directed towards beginner to intermediate level R users. Previous experience with the mirt package may be helpful. In the next chapters this vignette illustrates the application of irtpwr for two IRT use cases. First it carries out a power analysis for testing a Rasch model against a 2PL model. Secondly, a power analysis is conducted for testing differential item functioning (DIF) in a 2PL model. In each chapter, first of all, the underlying hypothesis is explained. Then it describes the application of irtpwr step by step. For this, the determination of power is explained for a case where the package user is devising an empirical study (a priori power analysis) and on the other hand where the package user has finished the data collection and now intends to perform a power analysis afterwards (a posteriori power analysis). This vignette aims to embed the R package into data analysis in psychology. At the same time, we want to show when and how \texttt{irtpwr} can be used in practice. 
+This vignette presents the implementation of a power analysis for the Wald, Likelihood Ratio (LR), score and gradient tests for linear hypotheses using the free available R package irtpwr. It uses some IRT examples and treats basic as well as additional features of the package. It is directed towards beginner to intermediate level R users. Previous experience with the mirt package may be helpful. In the next chapters this vignette illustrates the application of irtpwr for two IRT use cases. First it carries out a power analysis for testing a Rasch model against a 2PL model. Secondly, a power analysis is conducted for testing differential item functioning (DIF) in a 2PL model. In each chapter, first of all, the underlying hypothesis is explained. Then it describes the application of irtpwr step by step. For this, the determination of power is explained for a case where the package user is devising an empirical study (a priori power analysis) and on the other hand where the package user has finished the data collection and now intends to perform a power analysis afterwards (a posteriori power analysis). This vignette aims to embed the R package into data analysis in psychology. At the same time, we want to show when and how `irtpwr` can be used in practice. 
 
 # 2. General workflow for irtpwr
 
-To conduct the power analysis for the Wald, LR, Score, and Gradient Tests using \texttt{irtpwr} we will cover the two-step workflow in detail:
+To conduct the power analysis for the Wald, LR, Score, and Gradient Tests using `irtpwr` we will cover the two-step workflow in detail:
 
-- Setup Hypotheses (\texttt{setup.hypothesis} function)
-- Perform the power analysis (\texttt{irtpwr} function)
+- Setup Hypotheses (`setup.hypothesis` function)
+- Perform the power analysis (`irtpwr` function)
 
-Before we perform the power analysis with \texttt{irtpwr} we setup the null and alternative hypothesis. The usage of \texttt{setup.hypothesis} is the following: 
+Before we perform the power analysis with `irtpwr` we setup the null and alternative hypothesis. The usage of `setup.hypothesis` is the following: 
 ```{r setup.hypothesis usage, results = "hide", eval = FALSE}
 setup.hypothesis(type, altpars = NULL, nullpars = NULL)
 ```
-With the \texttt{type} argument we define the hypothesis test we intend to conduct. If we e.g. want to perform a power analysis to test the Rasch model against the 2PL model we set \texttt{type = "1PLvs2PL"}. 
+With the `type` argument we define the hypothesis test we intend to conduct. If we e.g. want to perform a power analysis to test the Rasch model against the 2PL model we set `type = "1PLvs2PL"`. 
 
 There are currently three types available in the package:
 
-- Testing a Rasch against a 2PL model (\texttt{type = "1PLvs2PL"}),
-- Testing for DIF in a 2PL model (\texttt{type = "DIF2PL"}),
-- Testing a PCM against a GPCM model (\texttt{type = "PCMvsGPCM"}).
+- Testing a Rasch against a 2PL model (`type = "1PLvs2PL"`),
+- Testing for DIF in a 2PL model (`type = "DIF2PL"`),
+- Testing a PCM against a GPCM model (`type = "PCMvsGPCM"`).
 
-In the next step we determine the parameters under the alternative (\texttt{altpars}) and null (\texttt{nullpars}) hypothesis. If we have already collected the data, we can use a fitted \texttt{mirt} model (for a posteriori power analysis). However, if this is not the situation, we have the option to specify alternative parameters directly (for a priori power analysis). For example in cases where researchers assume a typical pattern in the item parameters and already know that they will test model fit or certain parameter values. The determination of the parameters under the null hypothesis is not always necessary because they are often implicitly defined by the alternative hypothesis.
+In the next step we determine the parameters under the alternative (`altpars`) and null (`nullpars`) hypothesis. If we have already collected the data, we can use a fitted `mirt` model (for a posteriori power analysis). However, if this is not the situation, we have the option to specify alternative parameters directly (for a priori power analysis). For example in cases where researchers assume a typical pattern in the item parameters and already know that they will test model fit or certain parameter values. The determination of the parameters under the null hypothesis is not always necessary because they are often implicitly defined by the alternative hypothesis.
 
-Finally, we are now ready to perform the power analysis by passing the hypothesis to \texttt{irtpwr}. Besides the hypothesis, an alpha level needs to be specified. The function can:
+Finally, we are now ready to perform the power analysis by passing the hypothesis to `irtpwr`. Besides the hypothesis, an alpha level needs to be specified. The function can:
 
-- calculate a necessary sample size N given a desired power (using the \texttt{power} argument, e.g. \texttt{power = .8})
-- calculate the power for a specific sample size N (using the \texttt{N} argument, e.g. \texttt{N = 600})
+- calculate a necessary sample size N given a desired power (using the `power` argument, e.g. `power = .8`)
+- calculate the power for a specific sample size N (using the `N` argument, e.g. `N = 600`)
 
-To get more insights into the usage of \texttt{irtpwr} this vignette now provides some examples starting with the power analysis to test the Rasch model against the 2PL model.
+To get more insights into the usage of `irtpwr` this vignette now provides some examples starting with the power analysis to test the Rasch model against the 2PL model.
 
 To get ready, we first have to install the needed package: 
 ```{r install packages, results = "hide", eval = FALSE}
@@ -74,9 +74,9 @@ If $a$ is high, it indicates that the item possesses a strong ability to disting
 When it comes to the evaluation of psychological and educational tests researcher face the question which IRT model is better to describe the data. There are various statistical methods such as Wald, LR, score and gradient tests that compare two models in terms of their data fit. In this example, our specific hypothesis test aims to address the question of whether the inclusion of the additional slope parameter in the 2PL model is essential for describing the data, or if the slope parameters are sufficiently similar for the Rasch model to adequately describe the data. Therefore it becomes relevant to test the null hypothesis of equal slope parameters as this may allow the rejection of an incorrectly assumed Rasch model. With a power analysis we can answer the question what sample size is minimally needed to discard the simpler Rasch model. In the following we first conduct a priori power analysis and then a posteriori power analysis for testing the Rasch model against the 2PL model.
 
 ## 3.1. A priori power analysis
-We are in the process of creating a novel test designed to assess the mathematical ability of test takers. We plan a test with 5 items that measure the same construct. After an intensive incorporation with the subject of math tests and the 5 already formulated items we discusses with other authors the expected item parameter for each item. Specifically, we hypothesize the presence of unequal slope parameters. We know that after collecting data we want to evaluate the test using the Rasch or the 2PL model. We aim to ensure that if a model comparison favors the 2PL model, we can confidently assert that this model choice provides the best fit for our expected data. This is only with a sufficiently large power possible. To conduct a power analysis we use the R package \texttt{irtpwr}. 
+We are in the process of creating a novel test designed to assess the mathematical ability of test takers. We plan a test with 5 items that measure the same construct. After an intensive incorporation with the subject of math tests and the 5 already formulated items we discusses with other authors the expected item parameter for each item. Specifically, we hypothesize the presence of unequal slope parameters. We know that after collecting data we want to evaluate the test using the Rasch or the 2PL model. We aim to ensure that if a model comparison favors the 2PL model, we can confidently assert that this model choice provides the best fit for our expected data. This is only with a sufficiently large power possible. To conduct a power analysis we use the R package `irtpwr`. 
 
-To setup a hypothesis, we use the \texttt{altpars} argument of the \texttt{setup.hypothesis} function to define the parameters under the alternative  hypothesis of unequal slope parameters. We do not have to determine the null hypothesis of equal parameters because they are implicitly defined by the alternative hypothesis. Firstly, we generate distinct slope and intercept parameters for each item. Then we pass them into the \texttt{altpars} argument from the function \texttt{setup.hypothesis}. Additionally, due to the underlying hypothesis test, we set the \texttt{type} to \texttt{"1PLvs2PL"}.
+To setup a hypothesis, we use the `altpars` argument of the `setup.hypothesis` function to define the parameters under the alternative  hypothesis of unequal slope parameters. We do not have to determine the null hypothesis of equal parameters because they are implicitly defined by the alternative hypothesis. Firstly, we generate distinct slope and intercept parameters for each item. Then we pass them into the `altpars` argument from the function `setup.hypothesis`. Additionally, due to the underlying hypothesis test, we set the `type` to `"1PLvs2PL"`.
 ```{r set.seed Rasch vs 2PL a priori, echo = FALSE}
 set.seed(7443)
 ```
@@ -89,7 +89,7 @@ altpars <- list(a = rlnorm(5, sdlog = 0.4),
 hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = altpars)
 ```
 
-The hypothesis is prepared for subsequent power analysis. We want to know the required sample size for a test of the Rasch against 2PL model for a power of 0.8 while using an alpha level of 0.05. Therefore, we transfer the previously defined hypothesis \texttt{"hyp"} into the \texttt{irtpwr} function: 
+The hypothesis is prepared for subsequent power analysis. We want to know the required sample size for a test of the Rasch against 2PL model for a power of 0.8 while using an alpha level of 0.05. Therefore, we transfer the previously defined hypothesis `"hyp"` into the `irtpwr` function: 
 
 ```{r Rasch vs 2PL irtpwr a priori, results = "hide", eval = TRUE}
 res <- irtpwr(hyp = hyp, power = 0.8, alpha = 0.05)
@@ -113,7 +113,7 @@ Prior to the commencement of the study we now planned the sample size. The resul
 plot(res) 
 ```
 
-A second reflection about our study design revealed that we want a higher statistical power. The alternative and null hypothesis remain unchanged. We take the saved \texttt{irtpwr} result object \texttt{res} and modify it within the generic \texttt{summary} function: 
+A second reflection about our study design revealed that we want a higher statistical power. The alternative and null hypothesis remain unchanged. We take the saved `irtpwr` result object `res` and modify it within the generic `summary` function: 
 
 ```{r Rasch vs 2PL irtpwr a priori pwr 0.9, results = "hide", eval = TRUE}
 summary(res, power = 0.9)
@@ -133,7 +133,7 @@ summary(res, power = 0.9)
 As expected we need more test taker to answer the test to reach a power of 0.9. We minimum sample size would be 649.  
 
 ## 3.2. A posteriori power analysis
-In this chapter we already have constructed a 5 item math test but without a prior conducted power analysis. Exactly 1000 participants answered the test. We aim to assess the test by employing both the Rasch model and the 2PL model. Later on, we would compare both IRT models and conclude which one would provide the best model fit. To allow a reliable model comparison we need a minimum of 80% statistical power. To do this, we conduct a posteriori power analysis. First of all we need the dataset from our math test. We use the LSAT 7 dataset which is included in the \texttt{mirt} package. The dataset includes 5 columns (for each item one) and 1000 rows (for each participant one). One row shows for each item if the participant answered this item correctly (coded with 1) or not (coded with 0). For the first time we now have to install and load the \texttt{mirt} package:
+In this chapter we already have constructed a 5 item math test but without a prior conducted power analysis. Exactly 1000 participants answered the test. We aim to assess the test by employing both the Rasch model and the 2PL model. Later on, we would compare both IRT models and conclude which one would provide the best model fit. To allow a reliable model comparison we need a minimum of 80% statistical power. To do this, we conduct a posteriori power analysis. First of all we need the dataset from our math test. We use the LSAT 7 dataset which is included in the `mirt` package. The dataset includes 5 columns (for each item one) and 1000 rows (for each participant one). One row shows for each item if the participant answered this item correctly (coded with 1) or not (coded with 0). For the first time we now have to install and load the `mirt` package:
 
 ```{r install packages mirt, results = "hide", eval = FALSE}
 install.packages("mirt")
@@ -150,12 +150,12 @@ set.seed(1258)
 dat <- expand.table(LSAT7)
 ```
 
-For the power analysis we again have to define the \texttt{type} and parameters under the alternative hypothesis. In this situation where the data is collected we can use a fitted \texttt{mirt} model. Hence, we fit a 2PL model to analyze our data and obtain the parameters associated with the alternative hypothesis of unequal slopes. To fit a 2PL model one can execute the following code: 
+For the power analysis we again have to define the `type` and parameters under the alternative hypothesis. In this situation where the data is collected we can use a fitted `mirt` model. Hence, we fit a 2PL model to analyze our data and obtain the parameters associated with the alternative hypothesis of unequal slopes. To fit a 2PL model one can execute the following code: 
 ```{r Rasch vs 2PL mirt a posteriori, results = "hide", eval = TRUE}
 mirtfit <- mirt(dat, 1, verbose = FALSE)
 ```
 
-The fitted 2PL model \texttt{mirtfit} is then used for the \texttt{altpars} argument from the function \texttt{setup.hypothesis}. As above we set \texttt{type = "1PLvs2PL"}. We write the following code: 
+The fitted 2PL model `mirtfit` is then used for the `altpars` argument from the function `setup.hypothesis`. As above we set `type = "1PLvs2PL"`. We write the following code: 
 ```{r Rasch vs 2PL setup.hypothesis a posteriori, results = "hide", eval = TRUE}
 hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
 ```
@@ -184,10 +184,10 @@ A detailed look on the relationships between sample size and power can be plotte
 plot(res) 
 ```
 
-The \texttt{irtpwr} function builds on one of two available methods that are described in our paper in more detail (Zimmer et al. (2022), https://doi.org/10.1007/s11336-022-09883-5):
+The `irtpwr` function builds on one of two available methods that are described in our paper in more detail (Zimmer et al. (2022), https://doi.org/10.1007/s11336-022-09883-5):
 
-- an analytical approach (\texttt{method = “analytical”}, this is the default option)
-- a sampling-based approach (\texttt{method = “sampling”})
+- an analytical approach (`method = “analytical”`, this is the default option)
+- a sampling-based approach (`method = “sampling”`)
 
 To use the sampling based approach, we can execute:
 ```{r Rasch vs 2PL irtpwr sampling a posteriori, results = "hide", eval = TRUE}
@@ -206,16 +206,16 @@ summary(res)
 
 ```
 
-The sampling-based approach offers two parameters that can be increased from their default values to obtain a more exact result. These are the sample size of the sampling-based approach (\texttt{sampling.npers}) and the sample size for the approximation of the Fisher expected matrix (\texttt{approx.npers}). These may be tweaked upwards if the result from repeated executions of the \texttt{irtpwr} function is not stable.
+The sampling-based approach offers two parameters that can be increased from their default values to obtain a more exact result. These are the sample size of the sampling-based approach (`sampling.npers`) and the sample size for the approximation of the Fisher expected matrix (`approx.npers`). These may be tweaked upwards if the result from repeated executions of the `irtpwr` function is not stable.
 
-Since the analytical approach can be too time-intensive for larger numbers of items, we might want to know beforehand how long it will take approximately. We do so using the \texttt{calc.time} function. In our example hypothesis, we used 5 items. To estimate the computation time (in seconds) for 10 items we can use:
+Since the analytical approach can be too time-intensive for larger numbers of items, we might want to know beforehand how long it will take approximately. We do so using the `calc.time` function. In our example hypothesis, we used 5 items. To estimate the computation time (in seconds) for 10 items we can use:
 ```{r calc.time, results = "hide", eval = TRUE}
 calc.time(hyp, n.items = 10)
 
 #> [1] 103.488
 ```
 
-Note that the estimated time can sometimes deviate from the actual time. As a result from our test runs, we suggest to expect an increase of 80% as a worst case scenario. Is the estimated computational load when using the analytical default setting too large, we can use the sampling-based approach for these applications. The interpretation of the \texttt{irtpwr} output remains the same.
+Note that the estimated time can sometimes deviate from the actual time. As a result from our test runs, we suggest to expect an increase of 80% as a worst case scenario. Is the estimated computational load when using the analytical default setting too large, we can use the sampling-based approach for these applications. The interpretation of the `irtpwr` output remains the same.
 
 # 4. DIF analysis in 2PL model
 
@@ -225,7 +225,7 @@ A central assumption of parametric logistic models of IRT is that people with th
 
 In this szenario we are about to start a study where we constructed an educational test which measures the mathematical ability of test taker. The test includes 5 items that measure the same construct. Following the formulation of the items and engaging in discussions with several mathematics experts, we have identified item 1 as problematic. For item 1 we assume that it could potentially show DIF due to the wording of the item. The assumption is that non-native English speaking test takers will struggle with this item more than native English speaking test takers even though we only want to test mathematics ability. In other words, test taker with the same math abilities might have different solution probabilities for item 1. Thus we want to apply a power analysis that answers the question: At a significance level of 0.05 and a power of 0.8, what is the minimum sample size required to identify a significant item parameter difference between native and non-native English speaking test taker with a DIF effect in the d parameter of 0.5 and in the a parameter of 2 in a 2PL model? We assume standard normally distributed person parameters for all participants.
 
-In the previous chapter we have already seen the Rasch against 2PL hypothesis setup. The procedure for the DIF in 2PL hypothesis (\texttt{type = "DIF2PL"}) is analogous, yet a bit more complicated since we need to define two groups, the native and non-native English speaking group. The package is already loaded so we can start with our example:
+In the previous chapter we have already seen the Rasch against 2PL hypothesis setup. The procedure for the DIF in 2PL hypothesis (`type = "DIF2PL"`) is analogous, yet a bit more complicated since we need to define two groups, the native and non-native English speaking group. The package is already loaded so we can start with our example:
 ```{r set.seed, echo = FALSE}
 set.seed(8989)
 ```
@@ -242,7 +242,7 @@ altpars <- list(native, nonnative) # parameters under the alternative hypothesis
 hyp <- setup.hypothesis(type = "DIF2PL", altpars = altpars)
 ```
 
-Note that for both hypothesis types, we do not have to provide the parameters under the null hypothesis here, because they are implicitly defined by the alternative hypothesis. The \texttt{setup.hypothesis} function also allows for specifying parameters under the null hypothesis via the \texttt{nullpars} argument for cases in which the parameters under the null hypothesis are not identified by the parameters under the alternative. To implement such custom hypotheses, we provide additional guidance in the “adding_hypotheses” vignette. Some templates for hypothesis objects are included in the “hypothesis_templates” vignette.
+Note that for both hypothesis types, we do not have to provide the parameters under the null hypothesis here, because they are implicitly defined by the alternative hypothesis. The `setup.hypothesis` function also allows for specifying parameters under the null hypothesis via the `nullpars` argument for cases in which the parameters under the null hypothesis are not identified by the parameters under the alternative. To implement such custom hypotheses, we provide additional guidance in the “adding_hypotheses” vignette. Some templates for hypothesis objects are included in the “hypothesis_templates” vignette.
 
 Given the specifications we already made, we now can obtain the sample size necessary for reaching a power of 0.8 while using an alpha level of 0.05. We perform the power analysis with: 
 ```{r DIF irtpwr a priori, results = "hide", eval = TRUE}
@@ -333,7 +333,7 @@ head(dat)
 #> 6      0      0      0      1      1 nonnative
 ```
 
-Now after we have collected the data in an extensive study we estimate the item parameter along the covariate language. Once again, we assume the possibility of the presence of DIF in item 1. The item parameter are estimated for each group by using the function \texttt{multipleGroup} from the package \texttt{mirt}. But first we have to define a newmodel where we constrain the slopes and intercepts across groups for item 2 to 5. The parameters from item 1, our item of interest, may vary between the groups. We assume standard normally distributed person parameters for all participants. This results in the following code: 
+Now after we have collected the data in an extensive study we estimate the item parameter along the covariate language. Once again, we assume the possibility of the presence of DIF in item 1. The item parameter are estimated for each group by using the function `multipleGroup` from the package `mirt`. But first we have to define a newmodel where we constrain the slopes and intercepts across groups for item 2 to 5. The parameters from item 1, our item of interest, may vary between the groups. We assume standard normally distributed person parameters for all participants. This results in the following code: 
 
 ```{r DIF mirt a posteriori, results = "hide", eval = TRUE}
 newmodel <- '
@@ -410,7 +410,7 @@ As above a graphical interpretation can be shown:
 plot(res) 
 ```
 
-In sum the power to detect DIF if it really exists in item 1 is too low. We can obtain the sample size necessary for reaching a power of 0.9. The object resulting from \texttt{irtpwr} can be used to gather further information about the relationship between sample size and power: 
+In sum the power to detect DIF if it really exists in item 1 is too low. We can obtain the sample size necessary for reaching a power of 0.9. The object resulting from `irtpwr` can be used to gather further information about the relationship between sample size and power: 
 
 ```{r irtpwr pwr 0.9, results = "hide", eval = TRUE}
 summary(res, power = 0.9) 
