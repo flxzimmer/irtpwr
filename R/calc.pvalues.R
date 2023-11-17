@@ -22,23 +22,6 @@
 #' test <- calc.pvalues(data = dat, hyp = hyp, group = group)
 #' test
 #'
-#'
-#' ## DIF in a 2PL model
-#'
-#' dat <- expand.table(LSAT7)
-#' group <- as.factor(c(rep(0, times = 250), rep(1, times = 750)))
-#'
-#' # Setting up the alternative hypothesis
-#' group1 <- group2 <- list(a = rlnorm(5, sdlog = 0.2), d = rnorm(5))
-#' group2$a[1] <- (group2$a[1])^2
-#' group2$d[1] <- group2$d[1] + 0.5
-#' altpars <- list(group1, group2)
-#' hyp <- setup.hypothesis(type = "DIF2PL", altpars = altpars)
-#'
-#' # Testing the hypothesis
-#' test <- calc.pvalues(dat = dat, hyp = hyp, group = group)
-#' test
-#'
 calc.pvalues <- function(dat = dat, hyp = hyp, group = NULL){
 
   datx = list()
@@ -51,9 +34,9 @@ calc.pvalues <- function(dat = dat, hyp = hyp, group = NULL){
   }
 
   df <-  nrow(hyp$resmod$Amat)
-  fitted <- irtpwr:::mml.fit(data = datx,hyp = hyp)
-  stats <- irtpwr:::stat_obs(fitted)
-  lpvals <- pchisq(stats,df,lower.tail=F)
+  fitted <- mml.fit(data = datx,hyp = hyp)
+  stats <- stat_obs(fitted)
+  lpvals <- stats::pchisq(stats,df,lower.tail=F)
 }
 
 
