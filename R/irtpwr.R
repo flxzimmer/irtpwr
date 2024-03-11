@@ -57,7 +57,16 @@ irtpwr <- function(hyp, stat = c("Wald", "LR", "Score",
         # Gradient
         if ("LR" %in% stat | "Score" %in% stat | "Gradient" %in%
             stat) {
-            parsr <- hyp$type$maximizeL(hyp)
+
+          parsr <- tryCatch({
+            hyp$type$maximizeL(hyp)
+          }, error = function(e) {
+            if (grepl("cannot allocate vector", e$message)) {
+              message(paste0("This might be too many items for the analytical approach. Consider using the sampling based method (method = 'sampling')."))
+            } else {
+              stop(e)
+            }
+          })
         }
 
         if ("Wald" %in% stat) {
