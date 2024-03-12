@@ -225,6 +225,11 @@ h_DIF2PL <- list(res = function(altpars, nullpars = NULL) {
 
 h_PCMvsGPCM <- list(res = function(altpars, nullpars = NULL) {
 
+    # Assure correct format
+    if(any(altpars$d[,1] != 0)) {
+      altpars$d <- cbind(rep(0, nrow(altpars$d)), altpars$d)
+    }
+
     n.items <- length(altpars[[1]])
     nkat <- ncol(altpars$d)
 
@@ -241,6 +246,11 @@ h_PCMvsGPCM <- list(res = function(altpars, nullpars = NULL) {
             n.items, ", a1)")))
     return(re)
 }, unres = function(altpars) {
+
+    # Assure correct format
+    if(any(altpars$d[,1] != 0)) {
+      altpars$d <- cbind(rep(0, nrow(altpars$d)), altpars$d)
+    }
 
     re <- list(parsets = altpars, model = 1, itemtype = "gpcm",
         longpars = pars.long(pars = altpars, itemtype = "gpcm"))
