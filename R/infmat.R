@@ -34,8 +34,14 @@ infmat <- function(pars, method = "Fisher", approx.npers = 10^6,
             technical = list(NCYCLES = 1), pars = "values")
         apars <- which(synt$name == "a1")
         synt$lbound[apars] <- synt$ubound[apars] <- pars$a
-        dpars <- which(synt$name == "d")
-        synt$lbound[dpars] <- synt$ubound[dpars] <- pars$d
+        if (itemtype == "gpcm") {
+            # gpcm thresholds are named d0, d1, ...
+            dpars <- grep("^d[0-9]+$", synt$name)
+            synt$lbound[dpars] <- synt$ubound[dpars] <- as.numeric(t(pars$d))
+        } else {
+            dpars <- which(synt$name == "d")
+            synt$lbound[dpars] <- synt$ubound[dpars] <- pars$d
+        }
         gpars <- which(synt$name == "g")
         synt$lbound[gpars] <- synt$ubound[gpars] <- pars$g
         mml <- mirt::mirt(dat, model = model, itemtype = itemtype,

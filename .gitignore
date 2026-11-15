@@ -10,3 +10,7 @@ doc
 Meta
 inst/doc
 notes.txt
+src/*.o
+src/*.so
+src/*.dll
+irtpwr_*.tar.gz

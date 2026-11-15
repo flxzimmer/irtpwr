@@ -33,11 +33,13 @@ setup.hypothesis(type, altpars = NULL, nullpars = NULL)
 ```
 With the `type` argument we define the hypothesis test we intend to conduct. If we e.g. want to perform a power analysis to test the Rasch model against the 2PL model we set `type = "1PLvs2PL"`. 
 
-There are currently three types available in the package:
+This vignette covers three of the types available in the package:
 
 - Testing a Rasch against a 2PL model (`type = "1PLvs2PL"`),
 - Testing for DIF in a 2PL model (`type = "DIF2PL"`),
 - Testing a PCM against a GPCM model (`type = "PCMvsGPCM"`).
+
+Three further types test hypotheses about specific item parameters: `type = "basic"` (2PL model), `type = "3PL_basic"` (3PL model) and `type = "multi_basic"` (two-dimensional 2PL model). They are described in `?setup.hypothesis`, and the last two are shown in the "demo" vignette.
 
 In the next step we determine the parameters under the alternative (`altpars`) and null (`nullpars`) hypothesis. If we have already collected the data, we can use a fitted `mirt` model (for a posteriori power analysis). However, if this is not the situation, we have the option to specify alternative parameters directly (for a priori power analysis). For example in cases where researchers assume a typical pattern in the item parameters and already know that they will test model fit or certain parameter values. The determination of the parameters under the null hypothesis is not always necessary because they are often implicitly defined by the alternative hypothesis.
 
@@ -118,7 +120,7 @@ A second reflection about our study design revealed that we want a higher statis
 ```{r Rasch vs 2PL irtpwr a priori pwr 0.9, results = "hide", eval = TRUE}
 summary(res, power = 0.9)
 
-#> Sample sizes for power = 0.8 (alpha = 0.05): 
+#> Sample sizes for power = 0.9 (alpha = 0.05): 
 #>
 #> Statistic   N
 #>      Wald 649
@@ -194,7 +196,7 @@ To use the sampling based approach, we can execute:
 res <- irtpwr(hyp = hyp, N = 600, alpha = 0.05, method = "sampling")
 summary(res)
 
-#> Power for N = 1000 (alpha = 0.05):  
+#> Power for N = 600 (alpha = 0.05):  
 #>
 #> Statistic  Power
 #>      Wald 0.4946
@@ -209,13 +211,18 @@ summary(res)
 The sampling-based approach offers two parameters that can be increased from their default values to obtain a more exact result. These are the sample size of the sampling-based approach (`sampling.npers`) and the sample size for the approximation of the Fisher expected matrix (`approx.npers`). These may be tweaked upwards if the result from repeated executions of the `irtpwr` function is not stable.
 
 Since the analytical approach can be too time-intensive for larger numbers of items, we might want to know beforehand how long it will take approximately. We do so using the `calc.time` function. In our example hypothesis, we used 5 items. To estimate the computation time (in seconds) for 10 items we can use:
-```{r calc.time, results = "hide", eval = TRUE}
+```{r calc.time, eval = TRUE}
 calc.time(hyp, n.items = 10)
-
-#> [1] 103.488
 ```
 
-Note that the estimated time can sometimes deviate from the actual time. As a result from our test runs, we suggest to expect an increase of 80% as a worst case scenario. Is the estimated computational load when using the analytical default setting too large, we can use the sampling-based approach for these applications. The interpretation of the `irtpwr` output remains the same.
+Note that the estimated time can deviate from the actual time. The estimate is meant to err on the high side: in our test runs, the actual time was usually between about half of the estimate and 25% more. For 14 or more items the estimate can be too low (actual time up to about 1.5 times the estimate). Is the estimated computational load when using the analytical default setting too large, we can use the sampling-based approach for these applications. The interpretation of the `irtpwr` output remains the same.
+
+Because the data in this example have already been collected, we can also carry out the four tests themselves. The `calc.pvalues` function fits the Rasch and the 2PL model to the data `dat` and returns the p values of the Wald, LR, score and gradient tests for our hypothesis `hyp`:
+```{r calc.pvalues, eval = TRUE}
+calc.pvalues(dat = dat, hyp = hyp)
+```
+
+All four tests reject the Rasch model at an alpha level of 0.05. For hypotheses with two groups, such as the DIF hypothesis in the next chapter, the group variable is passed via the `group` argument.
 
 # 4. DIF analysis in 2PL model
 
@@ -223,7 +230,7 @@ A central assumption of parametric logistic models of IRT is that people with th
 
 ## 4.1. A priori power analysis
 
-In this szenario we are about to start a study where we constructed an educational test which measures the mathematical ability of test taker. The test includes 5 items that measure the same construct. Following the formulation of the items and engaging in discussions with several mathematics experts, we have identified item 1 as problematic. For item 1 we assume that it could potentially show DIF due to the wording of the item. The assumption is that non-native English speaking test takers will struggle with this item more than native English speaking test takers even though we only want to test mathematics ability. In other words, test taker with the same math abilities might have different solution probabilities for item 1. Thus we want to apply a power analysis that answers the question: At a significance level of 0.05 and a power of 0.8, what is the minimum sample size required to identify a significant item parameter difference between native and non-native English speaking test taker with a DIF effect in the d parameter of 0.5 and in the a parameter of 2 in a 2PL model? We assume standard normally distributed person parameters for all participants.
+In this scenario we are about to start a study where we constructed an educational test which measures the mathematical ability of test taker. The test includes 5 items that measure the same construct. Following the formulation of the items and engaging in discussions with several mathematics experts, we have identified item 1 as problematic. For item 1 we assume that it could potentially show DIF due to the wording of the item. The assumption is that non-native English speaking test takers will struggle with this item more than native English speaking test takers even though we only want to test mathematics ability. In other words, test taker with the same math abilities might have different solution probabilities for item 1. Thus we want to apply a power analysis that answers the question: At a significance level of 0.05 and a power of 0.8, what is the minimum sample size required to identify a significant item parameter difference between native and non-native English speaking test taker with a DIF effect in the d parameter of 0.5 and in the a parameter of 2 in a 2PL model? We assume standard normally distributed person parameters for all participants.
 
 In the previous chapter we have already seen the Rasch against 2PL hypothesis setup. The procedure for the DIF in 2PL hypothesis (`type = "DIF2PL"`) is analogous, yet a bit more complicated since we need to define two groups, the native and non-native English speaking group. The package is already loaded so we can start with our example:
 ```{r set.seed, echo = FALSE}
@@ -321,16 +328,8 @@ set.seed(5666)
 dat <- sim_2pl(732, 5, "binary", a_delta = 2, d_delta = 0.5, t_delta = 0)
 ```
 
-```{r showing data, results = "hide"}
+```{r showing data}
 head(dat)
-
-#>   item.1 item.2 item.3 item.4 item.5  language
-#> 1      0      0      0      0      0 nonnative
-#> 2      0      0      0      0      1    native
-#> 3      1      1      0      1      1    native
-#> 4      0      0      1      0      0 nonnative
-#> 5      1      0      1      0      1    native
-#> 6      0      0      0      1      1 nonnative
 ```
 
 Now after we have collected the data in an extensive study we estimate the item parameter along the covariate language. Once again, we assume the possibility of the presence of DIF in item 1. The item parameter are estimated for each group by using the function `multipleGroup` from the package `mirt`. But first we have to define a newmodel where we constrain the slopes and intercepts across groups for item 2 to 5. The parameters from item 1, our item of interest, may vary between the groups. We assume standard normally distributed person parameters for all participants. This results in the following code: 

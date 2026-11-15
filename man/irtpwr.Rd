@@ -22,7 +22,7 @@ irtpwr(
 
 \item{stat}{character vector containing the statistics to be calculated. Options are 'Wald','LR','Score', and 'Gradient'. By default, all statistics are included}
 
-\item{method}{character, indicating the method used. The options are 'analytical'(default) for the analytical power analysis method or 'sampling' for the sampling-based method. The sampling-based method is generally recommended for higher numbers of items.}
+\item{method}{character, indicating the method used. The options are 'analytical'(default) for the analytical power analysis method or 'sampling' for the sampling-based method. The sampling-based method is generally recommended for higher numbers of items. 3PL models and multidimensional models (e.g. type = 'multi_basic') are only supported by the sampling-based method.}
 
 \item{sampling.npers}{integer, sample size for the sampling-based approach. An artificial data set of this size is generated to fit a model and later estimate the noncentrality parameter from.}
 
@@ -32,17 +32,20 @@ irtpwr(
 
 \item{sampling.mat}{Approach to calculate the information matrix used for calculating the statistics in the sampling-based approach. By default ('ApproxFisher'), an sampling-based approximation of the expected Fisher matrix is calculated using an observed information matrix of the type SE.type}
 
-\item{power}{numeric, statistical power for which the necessary sample size is calculated}
+\item{power}{numeric, statistical power for which the necessary sample size is calculated, given as a proportion (e.g. 0.8, not 80). A single number strictly between 0 and 1.}
 
-\item{N}{integer, sample size for which the statistical power is calculated.}
+\item{N}{numeric, sample size for which the statistical power is calculated. A single positive number; for several sample sizes, use \code{summary(res, N = n)} for each n or \code{plot(res)}.}
 
-\item{alpha}{numeric, alpha level}
+\item{alpha}{numeric, alpha level, given as a proportion (e.g. 0.05). A single number strictly between 0 and 1.}
 }
 \value{
 function returns an object of class irtpwrresult
 }
 \description{
 Perform analytical or sampling-based power analysis for the Wald, LR, score, or gradient statistic.
+}
+\details{
+Specify either \code{power} or \code{N}, together with \code{alpha}. They can also be given or changed later in \code{summary()}.
 }
 \examples{
 \donttest{

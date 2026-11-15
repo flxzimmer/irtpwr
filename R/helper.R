@@ -13,6 +13,14 @@ logitinv <- function(q) {
 #' @param hyp Hypothesis object as created by the setup.hypothesis function
 #' @param n.items Number of items
 #'
+#' @details The analytical method is run once (twice if the run is short) for
+#'   the example hypothesis \code{hyp}, and its run time is extrapolated to
+#'   \code{n.items} items, assuming a fixed overhead plus a part proportional
+#'   to the number of response patterns. The estimate is meant to err on the
+#'   high side: in our test runs, the actual time was usually between about
+#'   half of the estimate and 25\% more. For 14 or more items the estimate
+#'   can be too low (actual time up to about 1.5 times the estimate).
+#'
 #' @return Numeric, estimated time in seconds
 #' @export
 #'
@@ -23,18 +31,39 @@ logitinv <- function(q) {
 #' hyp <- setup.hypothesis(type = '1PLvs2PL', altpars = mirtfit)
 #' calc.time(hyp,n.items=7)
 #' }
+# elapsed time in seconds (separate function so that tests can mock the clock)
+elapsed <- function() as.numeric(proc.time()[["elapsed"]])
+
 calc.time <- function(hyp, n.items) {
 
-    n.items.ex <- length(hyp$unresmod$parsets$d)
+    # number of items and categories of the example hypothesis
+    pars <- hyp$unresmod$parsets
+    if (isTRUE(hyp$unresmod$multigroup)) {
+        pars <- pars[[1]]
+    }
+    n.items.ex <- NROW(pars$a)
+    n.cat <- max(NCOL(pars$d), 2)
 
-    ptm <- proc.time()  #start timer
-    ncps <- irtpwr(hyp = hyp)$ncps
-    time <- proc.time() - ptm  #stop timer
+    run.time <- function() {
+        ptm <- elapsed()  #start timer
+        irtpwr(hyp = hyp)
+        elapsed() - ptm  #stop timer
+    }
+    time <- run.time()
+    # the first call in a session includes start-up costs: for short runs,
+    # time a second run and keep the shorter one
+    if (time < 1) {
+        time <- min(time, run.time())
+    }
 
-    time <- as.numeric(time[3])
-
-    # time is t * 2^3
-    re <- time * 2^(n.items - n.items.ex)
+    # Run time model: time = c * (h + n.cat^n.items), a fixed overhead plus
+    # a part proportional to the number of response patterns. h = 64 and
+    # the factor 1.2 (so that estimates err slightly high) were fitted to
+    # analytical run times of irtpwr 1.1.0 for the types basic, 1PLvs2PL,
+    # DIF2PL (3-16 items) and PCMvsGPCM (3-10 items); see
+    # tools/calc_time/ in the source repository.
+    h <- 64
+    re <- 1.2 * time * (h + n.cat^n.items)/(h + n.cat^n.items.ex)
 
     return(re)
 }
@@ -247,4 +276,27 @@ calc.power <- function(hyp, ncp, ssize, alpha = 0.05) {
     re <- 1 - stats::pchisq(q = crit, df = df, ncp = ncp *
         ssize)
     return(re)
+}
+
+
+# Input checks for power, alpha and N (irtpwr() and summary()). NULL is
+# allowed (the value is then given later or not needed).
+check.prob.arg <- function(x, name, example) {
+    if (!is.null(x) && !(is.numeric(x) && length(x) == 1 &&
+        !is.na(x) && x > 0 && x < 1)) {
+        stop("'", name, "' must be a single number strictly between 0 and 1",
+            " (a proportion, e.g. ", name, " = ", example, ").",
+            call. = FALSE)
+    }
+    invisible(x)
+}
+
+check.N.arg <- function(N) {
+    if (!is.null(N) && !(is.numeric(N) && length(N) == 1 &&
+        is.finite(N) && N > 0)) {
+        stop("'N' must be a single positive number (e.g. N = 600). ",
+            "For several sample sizes, call summary(res, N = n) for each n ",
+            "or use plot(res).", call. = FALSE)
+    }
+    invisible(N)
 }

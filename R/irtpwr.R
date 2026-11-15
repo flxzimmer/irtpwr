@@ -8,15 +8,18 @@
 #' @param stat character vector containing the statistics to be calculated. Options are 'Wald','LR','Score', and 'Gradient'. By default, all statistics are included
 #' @param sampling.npers integer, sample size for the sampling-based approach. An artificial data set of this size is generated to fit a model and later estimate the noncentrality parameter from.
 #' @param approx.npers integer, sample size for approximating the Fisher expected information matrix in the sampling-based approach. An artificial data set is calculated of this size to calculate the Fisher expected information matrix from. In contrast to the data created with the sampling.npers sample size, this sample is not used to fit a model.
-#' @param method character, indicating the method used. The options are 'analytical'(default) for the analytical power analysis method or 'sampling' for the sampling-based method. The sampling-based method is generally recommended for higher numbers of items.
+#' @param method character, indicating the method used. The options are 'analytical'(default) for the analytical power analysis method or 'sampling' for the sampling-based method. The sampling-based method is generally recommended for higher numbers of items. 3PL models and multidimensional models (e.g. type = 'multi_basic') are only supported by the sampling-based method.
 #' @param SE.type Method for calculation of the observed information matrix used for calculating the statistics in the sampling-based approach ('Oakes' by default). Another option is 'Fisher'.
 #' @param sampling.mat Approach to calculate the information matrix used for calculating the statistics in the sampling-based approach. By default ('ApproxFisher'), an sampling-based approximation of the expected Fisher matrix is calculated using an observed information matrix of the type SE.type
-#' @param power numeric, statistical power for which the necessary sample size is calculated
-#' @param N integer, sample size for which the statistical power is calculated.
-#' @param alpha numeric, alpha level
+#' @param power numeric, statistical power for which the necessary sample size is calculated, given as a proportion (e.g. 0.8, not 80). A single number strictly between 0 and 1.
+#' @param N numeric, sample size for which the statistical power is calculated. A single positive number; for several sample sizes, use \code{summary(res, N = n)} for each n or \code{plot(res)}.
+#' @param alpha numeric, alpha level, given as a proportion (e.g. 0.05). A single number strictly between 0 and 1.
+#'
+#' @details Specify either \code{power} or \code{N}, together with \code{alpha}. They can also be given or changed later in \code{summary()}.
 #'
 #' @return function returns an object of class irtpwrresult
 #' @export
+#' @useDynLib irtpwr, .registration = TRUE
 #'
 #' @examples \donttest{
 #'
@@ -32,6 +35,20 @@ irtpwr <- function(hyp, stat = c("Wald", "LR", "Score",
     approx.npers = 10^5, SE.type = "Oakes", sampling.mat = "ApproxFisher",
     power = NULL, N = NULL, alpha = NULL) {
 
+    stat.names <- c("Wald", "LR", "Score", "Gradient")
+    if (!all(stat %in% stat.names)) {
+        stop("Unknown statistic(s) in 'stat': ", paste(setdiff(stat,
+            stat.names), collapse = ", "), ". Options are ",
+            paste(stat.names, collapse = ", "), ".", call. = FALSE)
+    }
+    if (length(stat) == 0) {
+        stop("'stat' is empty: select at least one of ",
+            paste(stat.names, collapse = ", "), ".", call. = FALSE)
+    }
+    method <- match.arg(method, c("analytical", "sampling"))
+    check.prob.arg(power, "power", "0.8")
+    check.prob.arg(alpha, "alpha", "0.05")
+    check.N.arg(N)
 
     if (method == "sampling") {
 
@@ -43,10 +60,27 @@ irtpwr <- function(hyp, stat = c("Wald", "LR", "Score",
         ncps <- sapply(obs, function(x) get_ncp(x,
             df = nrow(hyp$resmod$Amat))$ncp)
         ncps <- ncps/sampling.npers
-        names(ncps) <- stat
+        names(ncps) <- names(obs)
     }
 
     if (method == "analytical") {
+
+        if (identical(hyp$unresmod$itemtype, "3PL")) {
+            stop("The analytical method is not supported for 3PL models. ",
+                "Please use the sampling-based method (method = 'sampling').",
+                call. = FALSE)
+        }
+        pa <- if (isTRUE(hyp$unresmod$multigroup)) {
+            hyp$unresmod$parsets[[1]]$a
+        } else {
+            hyp$unresmod$parsets$a
+        }
+        if (NCOL(pa) > 1) {
+            stop("The analytical method is not supported for ",
+                "multidimensional models (e.g. type = 'multi_basic'). ",
+                "Please use the sampling-based method (method = 'sampling').",
+                call. = FALSE)
+        }
 
         a <- rep(NA, 4)  # Prepare Result Vector
 
@@ -58,13 +92,13 @@ irtpwr <- function(hyp, stat = c("Wald", "LR", "Score",
         if ("LR" %in% stat | "Score" %in% stat | "Gradient" %in%
             stat) {
 
-          parsr <- tryCatch({
+          # On allocation errors, give a hint and let the original error
+          # propagate (do not continue with parsr = NULL)
+          parsr <- withCallingHandlers({
             hyp$type$maximizeL(hyp)
           }, error = function(e) {
-            if (grepl("cannot allocate vector", e$message)) {
+            if (grepl("cannot allocate vector", conditionMessage(e))) {
               message(paste0("This might be too many items for the analytical approach. Consider using the sampling based method (method = 'sampling')."))
-            } else {
-              stop(e)
             }
           })
         }
@@ -84,8 +118,9 @@ irtpwr <- function(hyp, stat = c("Wald", "LR", "Score",
             a[4] <- ncp.grad(hyp = hyp, parsr = parsr,
                 lx = lx)
         }
-        ncps <- a[!is.na(a)]
-        names(ncps) <- stat
+        # values are stored in the fixed order of stat.names
+        ncps <- a[stat.names %in% stat]
+        names(ncps) <- stat.names[stat.names %in% stat]
     }
 
     re <- list(call = match.call(), hyp = hyp, ncps = ncps,
@@ -144,14 +179,11 @@ ncp.lr <- function(hyp, n = 1, parsr = NULL) {
         patterns <- as.matrix(expand.grid(lapply(1:resmod$n.items,
             function(x) 0:(n.kat - 1))))
 
-        for (i in seq_len(nrow(patterns))) {
-            gr <- funs$g(patterns[i, ], parsr)
-            g1 <- funs$g(patterns[i, ], pars1)
-            g2 <- funs$g(patterns[i, ], pars2)
-            res[i] <- log(gr) * (0.5 * g1 + 0.5 * g2)
-            unres[i] <- 0.5 * log(g1) * g1 + 0.5 *
-                log(g2) * g2
-        }
+        gr <- g_all(resmod$itemtype, patterns, parsr)
+        g1 <- g_all(resmod$itemtype, patterns, pars1)
+        g2 <- g_all(resmod$itemtype, patterns, pars2)
+        res <- log(gr) * (0.5 * g1 + 0.5 * g2)
+        unres <- 0.5 * log(g1) * g1 + 0.5 * log(g2) * g2
 
     } else {
         # unresmod$multigroup NA or FALSE
@@ -161,12 +193,10 @@ ncp.lr <- function(hyp, n = 1, parsr = NULL) {
         patterns <- as.matrix(expand.grid(lapply(1:resmod$n.items,
             function(x) 0:(n.kat - 1))))
 
-        for (i in seq_len(nrow(patterns))) {
-            gr <- funs$g(patterns[i, ], parsr)
-            gu <- funs$g(patterns[i, ], pars)
-            res[i] <- log(gr) * (gu)
-            unres[i] <- log(gu) * (gu)
-        }
+        gr <- g_all(resmod$itemtype, patterns, parsr)
+        gu <- g_all(resmod$itemtype, patterns, pars)
+        res <- log(gr) * (gu)
+        unres <- log(gu) * (gu)
 
     }
 
@@ -208,31 +238,21 @@ ncp.score <- function(hyp, n = 1, parsr = NULL) {
         patterns <- lapply(1:resmod$n.items, function(x) 0:(n.kat -
             1)) |>
             expand.grid() |>
-            as.matrix() |>
-            (function(x) split(x, seq(nrow(x))))()
+            as.matrix()
 
-        freq12 <- lapply(patterns, function(x) c(funs$g(x,
-            pars1)/2, funs$g(x, pars2)/2)) |>
-            (function(x) do.call(rbind, x))()
+        # vectorised over patterns, bit-identical to the per-pattern
+        # funs$g()/funs$ldot() calls (see R/integrate.R)
+        freq12 <- cbind(g_all(resmod$itemtype, patterns, pars1)/2,
+            g_all(resmod$itemtype, patterns, pars2)/2)
         freq <- cbind(rowSums(freq12), freq12)
-        ly <- lapply(seq_len(length(patterns)), function(i) {
-            l <- funs$ldot(patterns[[i]], parsr)
-            list(freq[i, 1] * l, freq[i, 2] * l, freq[i,
-                3] * l)
-        })
-        lx <- lapply(ly, function(x) x[[1]]) |>
-            (function(x) do.call(rbind, x))() |>
-            colSums() |>
+        L <- ldot_all(resmod$itemtype, patterns, parsr)
+        lx <- colSums(freq[, 1] * L) |>
             (function(x) array(x, dim = c(length(x),
                 1)))()
-        lx1 <- lapply(ly, function(x) x[[2]]) |>
-            (function(x) do.call(rbind, x))() |>
-            colSums() |>
+        lx1 <- colSums(freq[, 2] * L) |>
             (function(x) array(x, dim = c(length(x),
                 1)))()
-        lx2 <- lapply(ly, function(x) x[[3]]) |>
-            (function(x) do.call(rbind, x))() |>
-            colSums() |>
+        lx2 <- colSums(freq[, 3] * L) |>
             (function(x) array(x, dim = c(length(x),
                 1)))()
 
@@ -253,13 +273,12 @@ ncp.score <- function(hyp, n = 1, parsr = NULL) {
         patterns <- lapply(1:resmod$n.items, function(x) 0:(n.kat -
             1)) |>
             expand.grid() |>
-            as.matrix() |>
-            (function(x) split(x, seq(nrow(x))))()
-        i <- 0
-        ly <- lapply(patterns, function(x) {
-            funs$ldot(x, parsr) * funs$g(x, pars)
-        })
-        lx <- do.call(rbind, ly) |>
+            as.matrix()
+        # vectorised over patterns, bit-identical to the per-pattern
+        # funs$ldot(x, parsr) * funs$g(x, pars) (see R/integrate.R)
+        ly <- ldot_all(resmod$itemtype, patterns, parsr) * g_all(resmod$itemtype,
+            patterns, pars)
+        lx <- ly |>
             colSums() |>
             (function(x) array(x, dim = c(length(x),
                 1)))()
@@ -303,32 +322,21 @@ ncp.grad <- function(hyp, n = 1, parsr = NULL, lx = NULL) {
         patterns <- lapply(1:resmod$n.items, function(x) 0:(n.kat -
             1)) |>
             expand.grid() |>
-            as.matrix() |>
-            (function(x) split(x, seq(nrow(x))))()
+            as.matrix()
 
-        freq12 <- lapply(patterns, function(x) c(funs$g(x,
-            pars1)/2, funs$g(x, pars2)/2)) |>
-            (function(x) do.call(rbind, x))()
+        # vectorised over patterns, bit-identical to the per-pattern
+        # funs$g()/funs$ldot() calls (see R/integrate.R)
+        freq12 <- cbind(g_all(resmod$itemtype, patterns, pars1)/2,
+            g_all(resmod$itemtype, patterns, pars2)/2)
         freq <- cbind(rowSums(freq12), freq12)
-        ly <- lapply(seq_len(length(patterns)), function(i) {
-
-            l <- funs$ldot(patterns[[i]], parsr)
-            list(freq[i, 1] * l, freq[i, 2] * l, freq[i,
-                3] * l)
-        })
-        lx <- lapply(ly, function(x) x[[1]]) |>
-            (function(x) do.call(rbind, x))() |>
-            colSums() |>
+        L <- ldot_all(resmod$itemtype, patterns, parsr)
+        lx <- colSums(freq[, 1] * L) |>
             (function(x) array(x, dim = c(length(x),
                 1)))()
-        lx1 <- lapply(ly, function(x) x[[2]]) |>
-            (function(x) do.call(rbind, x))() |>
-            colSums() |>
+        lx1 <- colSums(freq[, 2] * L) |>
             (function(x) array(x, dim = c(length(x),
                 1)))()
-        lx2 <- lapply(ly, function(x) x[[3]]) |>
-            (function(x) do.call(rbind, x))() |>
-            colSums() |>
+        lx2 <- colSums(freq[, 3] * L) |>
             (function(x) array(x, dim = c(length(x),
                 1)))()
 
@@ -351,13 +359,12 @@ ncp.grad <- function(hyp, n = 1, parsr = NULL, lx = NULL) {
         patterns <- lapply(1:resmod$n.items, function(x) 0:(n.kat -
             1)) |>
             expand.grid() |>
-            as.matrix() |>
-            (function(x) split(x, seq(nrow(x))))()
-        i <- 0
-        ly <- lapply(patterns, function(x) {
-            funs$ldot(x, parsr) * funs$g(x, pars)
-        })
-        lx <- do.call(rbind, ly) |>
+            as.matrix()
+        # vectorised over patterns, bit-identical to the per-pattern
+        # funs$ldot(x, parsr) * funs$g(x, pars) (see R/integrate.R)
+        ly <- ldot_all(resmod$itemtype, patterns, parsr) * g_all(resmod$itemtype,
+            patterns, pars)
+        lx <- ly |>
             colSums() |>
             (function(x) array(x, dim = c(length(x),
                 1)))()

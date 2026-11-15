@@ -6,6 +6,11 @@
 ^LICENSE\.md$
 ^cran-comments.md$
 ^notes.txt$
-^.gitignore$
+^\.gitignore$
+^\.git$
+^RELEASE\.md$
 ^CRAN-SUBMISSION$
 ^\.github$
+^tools$
+^notes$
+^irtpwr_.*\.tar\.gz$

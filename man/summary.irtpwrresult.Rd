@@ -11,11 +11,11 @@
 
 \item{...}{additional arguments to be passed}
 
-\item{power}{numeric, statistical power for which the necessary sample size is calculated}
+\item{power}{numeric, statistical power for which the necessary sample size is calculated, given as a proportion (e.g. 0.8). A single number strictly between 0 and 1.}
 
-\item{N}{integer, sample size for which the statistical power is calculated.}
+\item{N}{numeric, sample size for which the statistical power is calculated. A single positive number.}
 
-\item{alpha}{numeric, alpha level}
+\item{alpha}{numeric, alpha level, given as a proportion (e.g. 0.05). A single number strictly between 0 and 1.}
 }
 \value{
 An object of class summary.irtpwrresult

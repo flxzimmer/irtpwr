@@ -89,14 +89,14 @@ unres <- function(altpars) {
 We define a function that calculates the maximum likelihood parameters under the restricted model.
 Note that this function can be left blank if you don't want to setup the analytical approach. The sampling-based approach can still be used without this function. 
 
-In this specific case, we know that the restricted model parameters can be expected to result in the true parameters for all but the first item. The only parameter in question is the discrimination of the first item parameter. We therefore ask the question: If we set the first item difficulty to 0, what is the most likely item discrimination given the data follows the true parameters.
+In this specific case, the restricted model fixes the difficulty of the first item to 0, while all other item parameters are free. We therefore ask the question: If we set the first item difficulty to 0, what are the most likely values of all other item parameters given the data follows the true parameters? Note that it is not sufficient to optimize only the parameters of the first item, since the parameters of the other items also adjust under the restriction.
 
 ```{r}
 maximizeL <- function(hyp) {
     # Hypothesis-specific algorithm to find the
     # maximum likelihood restricted parameter set
   
-  # in this case, the a parameter of the first item is searched for.
+  # in this case, all parameters except the fixed first difficulty are searched for.
 
 
     maxlpreload <- function(pars) {
@@ -126,9 +126,11 @@ maximizeL <- function(hyp) {
         patterns <- as.matrix(expand.grid(lapply(seq_len(length(pars$a)),
             function(x) c(0, 1))))
 
-        # collecting all parameters in a list, inserting x as the first a parameter
-        x <- list(a = c(x, pars$a[2:length(pars$a)]),
-            d = c(0, pars$d[2:length(pars$d)]))
+        # collecting all parameters in a list: x holds all a parameters
+        # and the d parameters of items 2 to n; d of the first item is 0
+        n.items <- length(pars$a)
+        x <- list(a = x[1:n.items], d = c(0, x[(n.items + 1):(2 *
+            n.items - 1)]))
 
         res <- c()
         # calculating the likelihoods for each pattern under this parameter set
@@ -148,20 +150,21 @@ maximizeL <- function(hyp) {
     # loading the model specific density functions 
     funs <- load.functions(unresmod$itemtype)
 
-    # setting some starting value for the optimization
-    startval <- pars$a[1]
+    # starting values for the optimization: the true parameters
+    startval <- c(pars$a, pars$d[-1])
 
     # calculating the densities as definied above
     maxlpre <- maxlpreload(pars)
 
-    # finding the a parameter with the highest likelihood
+    # finding the parameters with the highest likelihood
     optpar <- stats::optim(startval, function(x) {
         maxl(x, pars, maxlpre)
     }, method = "BFGS")
     re <- pars
     # saving the resulting item parameters
-    re$a <- c(optpar$par[1], pars$a[2:length(pars$a)])
-    re$d <- c(0, pars$d[2:length(pars$d)])
+    n.items <- length(pars$a)
+    re$a <- optpar$par[1:n.items]
+    re$d <- c(0, optpar$par[(n.items + 1):(2 * n.items - 1)])
 
     return(re)
 }
@@ -183,6 +186,7 @@ h_2PL_basic <- list(res = res, unres = unres, maximizeL = maximizeL)
 The new hypothesis can be set up using the h_2PL_basic list object as the type argument of the setup.hypothesis function. We may then calculate the power at arbitrary sample sizes.
 
 ```{r}
+set.seed(1)
 altpars <- list(a = rlnorm(5, sdlog = 0.4), d = rnorm(5))
 
 altpars$d[1] <- 0.2

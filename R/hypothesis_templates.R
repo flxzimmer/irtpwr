@@ -36,31 +36,20 @@ h_1PLvs2PL <- list(res = function(altpars, nullpars = NULL) {
         patterns <- as.matrix(expand.grid(lapply(seq_len(length(pars$a)),
             function(x) c(0, 1))))
 
-        pre <- c()
-        for (i in seq_len(nrow(patterns))) {
-            pre[i] <- funs$g(patterns[i, ], pars)
-        }
+        pre <- g_all("2PL", patterns, pars)
 
         return(pre)
     }
 
 
-    maxl <- function(x, pars, pre, funs) {
+    maxl <- function(x, pars, pre, funs, patterns) {
         # calculates the likelihood of parameters
         # x given model 'pars'
 
-        patterns <- as.matrix(expand.grid(lapply(seq_len(length(pars$a)),
-            function(x) c(0, 1))))
         x <- list(a = rep(x[1], length(pars$a)), d = x[2:length(x)])
 
-        res <- c()
-        for (i in seq_len(nrow(patterns))) {
-            px <- pre[i]
-            qx <- funs$g(patterns[i, ], x)
-            res[i] <- {
-                px * log(qx)
-            }
-        }
+        qx <- g_all("2PL", patterns, x)
+        res <- pre * log(qx)
         re <- -sum(res)
     }
     resmod <- hyp$resmod
@@ -73,8 +62,10 @@ h_1PLvs2PL <- list(res = function(altpars, nullpars = NULL) {
     startval <- c(mean(pars$a), as.numeric(pars$d))
 
     maxlpre <- maxlpreload(pars, funs)
+    patterns <- as.matrix(expand.grid(lapply(seq_len(length(pars$a)),
+        function(x) c(0, 1))))
     optpar <- stats::optim(startval, function(x) {
-        maxl(x, pars, maxlpre, funs)
+        maxl(x, pars, maxlpre, funs, patterns)
     }, method = "BFGS")
     re <- pars
     re$a <- rep(optpar$par[1], length(pars$a))
@@ -113,9 +104,9 @@ h_DIF2PL <- list(res = function(altpars, nullpars = NULL) {
 
     delcols <- (colSums(Amat) == 0) & (1:(n.items *
         2 * 2)) > 2 * n.items
-    relpars <- colSums(Amat[, 1:(2 * n.items)]) ==
+    relpars <- colSums(Amat[, 1:(2 * n.items), drop = FALSE]) ==
         1
-    Amat <- Amat[, !delcols]
+    Amat <- Amat[, !delcols, drop = FALSE]
 
     re <- list(n.items = n.items, itemtype = "2PL",
         Amat = Amat, cvec = 0, model = mirt::mirt.model(paste("F = 1-",
@@ -192,7 +183,7 @@ h_DIF2PL <- list(res = function(altpars, nullpars = NULL) {
                 log(1 - qx(th)) + px2(th) * log(qx(th)) +
                 (1 - px2(th)) * log((1 - qx(th)))
         }
-        re <- -spatstat.random::gauss.hermite(kl, order = 20)
+        re <- -gauss_hermite(kl, order = 20)
     }
 
     resmod <- hyp$resmod
@@ -222,13 +213,47 @@ h_DIF2PL <- list(res = function(altpars, nullpars = NULL) {
 # h_PCMvsGPCM
 # --------------------------------------------------------------
 
+gpcm_format_d <- function(d) {
+    # Return the GPCM thresholds d (one row per item) with the leading
+    # column of zeros (mirt's d0 = 0), adding it if it is not present.
+    # Accepted: a matrix with two threshold columns per item (3 response
+    # categories), with or without the zero column. The PCMvsGPCM code
+    # supports exactly 3 categories, so anything else stops here.
+    if (is.null(dim(d))) {
+        stop("PCMvsGPCM: 'd' is a vector, i.e. one threshold per item ",
+            "(2 response categories). Only items with exactly 3 response ",
+            "categories are supported: give 'd' as a matrix with one row ",
+            "per item and two threshold columns, optionally preceded by ",
+            "a column of zeros (mirt's d0).", call. = FALSE)
+    }
+    cn <- colnames(d)
+    if (!is.null(cn) && cn[1] %in% c("d0", "d1")) {
+        # named as in mirt's coef(): d0 is the zero column
+        has.zero.col <- cn[1] == "d0"
+    } else {
+        # A first column of zeros is taken to be the zero column only if at
+        # least two threshold columns follow (3+ categories); otherwise it
+        # is a threshold column that happens to be zero.
+        has.zero.col <- ncol(d) >= 3 && all(d[, 1] == 0)
+    }
+    if (!has.zero.col) {
+        d <- cbind(rep(0, nrow(d)), d)
+    }
+    if (ncol(d) != 3) {
+        stop("PCMvsGPCM: 'd' describes items with ", ncol(d),
+            " response categories. Only items with exactly 3 response ",
+            "categories are supported: give 'd' as a matrix with one row ",
+            "per item and two threshold columns, optionally preceded by ",
+            "a column of zeros (mirt's d0).", call. = FALSE)
+    }
+    d
+}
+
 
 h_PCMvsGPCM <- list(res = function(altpars, nullpars = NULL) {
 
     # Assure correct format
-    if(any(altpars$d[,1] != 0)) {
-      altpars$d <- cbind(rep(0, nrow(altpars$d)), altpars$d)
-    }
+    altpars$d <- gpcm_format_d(altpars$d)
 
     n.items <- length(altpars[[1]])
     nkat <- ncol(altpars$d)
@@ -248,9 +273,7 @@ h_PCMvsGPCM <- list(res = function(altpars, nullpars = NULL) {
 }, unres = function(altpars) {
 
     # Assure correct format
-    if(any(altpars$d[,1] != 0)) {
-      altpars$d <- cbind(rep(0, nrow(altpars$d)), altpars$d)
-    }
+    altpars$d <- gpcm_format_d(altpars$d)
 
     re <- list(parsets = altpars, model = 1, itemtype = "gpcm",
         longpars = pars.long(pars = altpars, itemtype = "gpcm"))
@@ -271,32 +294,20 @@ h_PCMvsGPCM <- list(res = function(altpars, nullpars = NULL) {
         patterns <- as.matrix(expand.grid(lapply(1:n.items,
             function(x) 0:(n.kat - 1))))
 
-        pre <- c()
-        for (i in seq_len(nrow(patterns))) {
-            pre[i] <- funs$g(patterns[i, ], pars)
-        }
+        pre <- g_all("gpcm", patterns, pars)
 
         return(pre)
     }
 
-    maxl <- function(x, pars, pre) {
+    maxl <- function(x, pars, pre, patterns) {
         # calculates the likelihood of parameters
         # x given model 'pars'
         n.items <- length(pars$a)
-        n.kat <- max(ncol(pars$d), 2)
-        patterns <- as.matrix(expand.grid(lapply(1:n.items,
-            function(x) 0:(n.kat - 1))))
         x <- list(a = rep(x[1], n.items), d = matrix(c(rep(0,
             n.items), x[2:length(x)]), ncol = ncol(pars$d)))
 
-        res <- c()
-        for (i in seq_len(nrow(patterns))) {
-            px <- pre[i]
-            qx <- funs$g(patterns[i, ], x)
-            res[i] <- {
-                px * log(qx)
-            }
-        }
+        qx <- g_all("gpcm", patterns, x)
+        res <- pre * log(qx)
         re <- -sum(res)
     }
 
@@ -313,9 +324,11 @@ h_PCMvsGPCM <- list(res = function(altpars, nullpars = NULL) {
 
 
     maxlpre <- maxlpreload(pars)
+    patterns <- as.matrix(expand.grid(lapply(1:n.items,
+        function(x) 0:(n.kat - 1))))
 
     optpar <- stats::optim(startval, function(x) {
-        maxl(x, pars, maxlpre)
+        maxl(x, pars, maxlpre, patterns)
     }, method = "BFGS")
     re <- pars
     re$a <- rep(optpar$par[1], n.items)
@@ -361,32 +374,22 @@ h_2PL_basic <- list(res = function(altpars, nullpars = NULL) {
         patterns <- as.matrix(expand.grid(lapply(seq_len(length(pars$a)),
             function(x) c(0, 1))))
 
-        pre <- c()
-        for (i in seq_len(nrow(patterns))) {
-            pre[i] <- funs$g(patterns[i, ], pars)
-        }
+        pre <- g_all("2PL", patterns, pars)
 
         return(pre)
     }
 
 
-    maxl <- function(x, pars, pre) {
+    maxl <- function(x, pars, pre, patterns) {
         # calculates the likelihood of parameters
         # x given model 'pars'
-        patterns <- as.matrix(expand.grid(lapply(seq_len(length(pars$a)),
-            function(x) c(0, 1))))
+        # under H0, d1 = 0 and all other parameters are free
+        n.items <- length(pars$a)
+        x <- list(a = x[1:n.items], d = c(0, x[(n.items + 1):(2 *
+            n.items - 1)]))
 
-        x <- list(a = c(x, pars$a[2:length(pars$a)]),
-            d = c(0, pars$d[2:length(pars$d)]))
-
-        res <- c()
-        for (i in seq_len(nrow(patterns))) {
-            px <- pre[i]
-            qx <- funs$g(patterns[i, ], x)
-            res[i] <- {
-                px * log(qx)
-            }
-        }
+        qx <- g_all("2PL", patterns, x)
+        res <- pre * log(qx)
         re <- -sum(res)
     }
     resmod <- hyp$resmod
@@ -395,16 +398,19 @@ h_2PL_basic <- list(res = function(altpars, nullpars = NULL) {
     pars <- unresmod$parsets
     funs <- load.functions(unresmod$itemtype)
 
-    startval <- pars$a[1]
+    startval <- c(pars$a, pars$d[-1])
 
     maxlpre <- maxlpreload(pars)
+    patterns <- as.matrix(expand.grid(lapply(seq_len(length(pars$a)),
+        function(x) c(0, 1))))
 
     optpar <- stats::optim(startval, function(x) {
-        maxl(x, pars, maxlpre)
+        maxl(x, pars, maxlpre, patterns)
     }, method = "BFGS")
     re <- pars
-    re$a <- c(optpar$par[1], pars$a[2:length(pars$a)])
-    re$d <- c(0, pars$d[2:length(pars$d)])
+    n.items <- length(pars$a)
+    re$a <- optpar$par[1:n.items]
+    re$d <- c(0, optpar$par[(n.items + 1):(2 * n.items - 1)])
 
     return(re)
 })

@@ -17,6 +17,15 @@ Numeric, estimated time in seconds
 \description{
 Calculate the computation time needed for the analytical method
 }
+\details{
+The analytical method is run once (twice if the run is short) for
+the example hypothesis \code{hyp}, and its run time is extrapolated to
+\code{n.items} items, assuming a fixed overhead plus a part proportional
+to the number of response patterns. The estimate is meant to err on the
+high side: in our test runs, the actual time was usually between about
+half of the estimate and 25\% more. For 14 or more items the estimate
+can be too low (actual time up to about 1.5 times the estimate).
+}
 \examples{
 \donttest{
 library(mirt)

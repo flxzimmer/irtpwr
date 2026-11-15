@@ -4,9 +4,9 @@
 #'
 #' @param object Object of class irtpwrresult as created by the irtpwr function
 #' @param ... additional arguments to be passed
-#' @param power numeric, statistical power for which the necessary sample size is calculated
-#' @param N integer, sample size for which the statistical power is calculated.
-#' @param alpha numeric, alpha level
+#' @param power numeric, statistical power for which the necessary sample size is calculated, given as a proportion (e.g. 0.8). A single number strictly between 0 and 1.
+#' @param N numeric, sample size for which the statistical power is calculated. A single positive number.
+#' @param alpha numeric, alpha level, given as a proportion (e.g. 0.05). A single number strictly between 0 and 1.
 #'
 #' @return An object of class summary.irtpwrresult
 #' @export
@@ -24,6 +24,10 @@ summary.irtpwrresult <- function(object, ..., power = NULL,
     N = NULL, alpha = NULL) {
 
     ds <- object
+
+    check.prob.arg(power, "power", "0.8")
+    check.prob.arg(alpha, "alpha", "0.05")
+    check.N.arg(N)
 
     if (!is.null(power)) {
         ds$power <- power

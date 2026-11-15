@@ -1,6 +1,6 @@
 Package: irtpwr
-Title: Power Analysis for IRT Models Using the Wald, LR, Score, and Gradient Statistics
-Version: 1.0.3.9000
+Title: Power Analysis for Wald, LR, Score, and Gradient Tests in IRT
+Version: 1.1.0
 Authors@R: c(
     person("Felix", "Zimmer", , "felix.zimmer@mail.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-8127-0007")),
@@ -17,14 +17,17 @@ License: GPL (>= 3)
 URL: https://github.com/flxzimmer/irtpwr
 BugReports: https://github.com/flxzimmer/irtpwr/issues
 Encoding: UTF-8
-RoxygenNote: 7.2.3
-Suggests: 
-    testthat, knitr, rmarkdown
-Imports: 
-    mirt,
-    Deriv,
-    digest,
-    spatstat.random,
+Depends:
+    R (>= 4.1.0)
+Imports:
     ggplot2,
-    methods
+    methods,
+    mirt,
+    stats
+Suggests:
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.1.1
