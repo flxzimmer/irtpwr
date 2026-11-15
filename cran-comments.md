@@ -18,6 +18,7 @@ This is an update of irtpwr from 1.0.3 to 1.1.0. See NEWS.md. In short:
   and with AddressSanitizer and UndefinedBehaviorSanitizer for the C code
 * GitHub Actions: macOS (R release), Windows (R release), Ubuntu (R devel,
   release, oldrel-1)
+* win-builder: Windows, R devel and release
 
 ## R CMD check results
 
