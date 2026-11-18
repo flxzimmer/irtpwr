@@ -107,8 +107,10 @@ stat_obs <- function(fitted, stat = c("Wald", "LR",
         a[4] <- grad_obs(fitted, lx = lx)
     }
 
-    re <- a[!is.na(a)]
-    names(re) <- stat
+    # values are stored in the fixed order Wald, LR, Score, Gradient
+    stat.names <- c("Wald", "LR", "Score", "Gradient")
+    re <- a[stat.names %in% stat]
+    names(re) <- stat.names[stat.names %in% stat]
 
     return(re)
 }
@@ -150,7 +152,7 @@ score_obs <- function(fitted, export.lx = FALSE) {
     is.multi <- "a2" %in% colnames(parsr$a)
     funs <- load.functions(resmod$itemtype, multi = is.multi)
     patterns <- mirt::extract.mirt(fitted$res, "data")
-    hashs <- apply(patterns, 1, digest::digest) |>
+    hashs <- row_keys(patterns) |>
         (function(x) factor(x, levels = unique(x)))()
     rownames(patterns) <- hashs
     up <- unique(patterns)
@@ -161,8 +163,10 @@ score_obs <- function(fitted, export.lx = FALSE) {
 
         relpars <- resmod$relpars
 
-        freq1 <- table(hashs[1:(nrow(patterns)/2)])
-        freq2 <- table(hashs[(nrow(patterns)/2 + 1):nrow(patterns)])
+        # pattern frequencies per group (group order as in mirt's coef)
+        grp <- mirt::extract.mirt(fitted$res, "group")
+        freq1 <- table(hashs[grp == levels(grp)[1]])
+        freq2 <- table(hashs[grp == levels(grp)[2]])
 
         parsr <- parsr[[1]]
 
@@ -231,9 +235,10 @@ grad_obs <- function(fitted, lx = NULL) {
     resmod <- fitted$hyp$resmod
     unresmod <- fitted$hyp$unresmod
     parsr <- coef_short(fitted$res, itemtype = resmod$itemtype)
-    funs <- load.functions(resmod$itemtype)
+    is.multi <- "a2" %in% colnames(parsr$a)
+    funs <- load.functions(resmod$itemtype, multi = is.multi)
     patterns <- mirt::extract.mirt(fitted$res, "data")
-    hashs <- apply(patterns, 1, digest::digest) |>
+    hashs <- row_keys(patterns) |>
         (function(x) factor(x, levels = unique(x)))()
     rownames(patterns) <- hashs
     up <- unique(patterns)
@@ -246,8 +251,10 @@ grad_obs <- function(fitted, lx = NULL) {
 
         relpars <- resmod$relpars
 
-        freq1 <- table(hashs[1:(nrow(patterns)/2)])
-        freq2 <- table(hashs[(nrow(patterns)/2 + 1):nrow(patterns)])
+        # pattern frequencies per group (group order as in mirt's coef)
+        grp <- mirt::extract.mirt(fitted$res, "group")
+        freq1 <- table(hashs[grp == levels(grp)[1]])
+        freq2 <- table(hashs[grp == levels(grp)[2]])
 
         parsr <- parsr[[1]]
 
@@ -280,13 +287,18 @@ grad_obs <- function(fitted, lx = NULL) {
     }
 
     if (!multigroup & is.null(lx)) {
-        # Single Group Model
+        # Single Group Model (same computation as in score_obs)
+        if (resmod$itemtype == "3PL") {
+            parsr$g <- logit(parsr$g)
+        }
         ly <- lapply(rownames(up), function(i) funs$ldot(up[i,
             ], parsr) * freq[i])
         lx <- do.call(rbind, ly) |>
-            colSums() |>
+            (function(x) colSums(x, na.rm = TRUE))() |>
             (function(x) array(x, dim = c(length(x),
                 1)))()
+        if (is.multi)
+            lx <- lx[-(nrow(lx) - 1), 1]  # since it is not estimated
     }
 
     pars <- pars.long(pars = fitted$unres, itemtype = resmod$itemtype,

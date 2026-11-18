@@ -19,10 +19,15 @@ setup.data <- function(hyp, n, dist.fun = stats::rnorm) {
     if (isTRUE(hyp$unresmod$multigroup)) {
         # Multigroup Model
 
-        df <- lapply(hyp$unresmod$parsets, function(pars) mirt::simdata(a = pars$a,
-            d = pars$d, Theta = distfun(n/2), itemtype = hyp$unresmod$itemtype)) |>
+        # group sizes; for odd n the first group gets the extra person
+        n.groups <- c(ceiling(n/2), floor(n/2))
+        df <- lapply(1:2, function(i) {
+            pars <- hyp$unresmod$parsets[[i]]
+            mirt::simdata(a = pars$a, d = pars$d, Theta = distfun(n.groups[i]),
+                itemtype = hyp$unresmod$itemtype)
+        }) |>
             (function(x) do.call(rbind, x))()
-        group <- rep(c("A", "B"), each = n/2)
+        group <- rep(c("A", "B"), times = n.groups)
         re <- list(data = df, group = group)
 
     } else {

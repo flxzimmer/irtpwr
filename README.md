@@ -59,6 +59,11 @@ hypothesis in our hypothesis definition.
 hyp <- setup.hypothesis(type = "1PLvs2PL", altpars = mirtfit)
 ```
 
+Besides `"1PLvs2PL"`, the hypothesis types `"DIF2PL"`, `"PCMvsGPCM"`,
+`"basic"`, `"3PL_basic"` and `"multi_basic"` are available (see
+`?setup.hypothesis`), and custom hypotheses can be added (see the
+vignette “adding_hypotheses”).
+
 We can now perform the power analysis. We want to determine the sample
 size necessary for a power of .8 while using an alpha level of .05.
 
@@ -88,7 +93,16 @@ relationships between sample size and power:
 plot(res)
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="70%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" alt="" width="70%" />
+
+Once the data are collected, the same hypothesis object can be used to
+carry out the Wald, LR, score, and gradient tests on the observed data:
+
+``` r
+calc.pvalues(dat = dat, hyp = hyp)
+#>        Wald          LR       Score    Gradient 
+#> 0.032439664 0.015982394 0.021722804 0.007367445
+```
 
 ## Further documentation
 

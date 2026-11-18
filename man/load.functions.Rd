@@ -12,7 +12,7 @@ load.functions(model, multi = FALSE)
 \item{multi}{logical, multidimensional model if TRUE (available for 2PL)}
 }
 \value{
-nothing
+list of functions: f (item response function), g (marginal probability of a response pattern), fdot, gdot, and ldot (derivatives with respect to the item parameters)
 }
 \description{
 This is a helper function used to generate custom hypotheses. See the 'adding_hypotheses' vignette.

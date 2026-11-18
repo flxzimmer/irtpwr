@@ -233,7 +233,7 @@ h_DIF2PL <- list(res = function(altpars, nullpars = NULL) {
                 log(1 - qx(th)) + px2(th) * log(qx(th)) +
                 (1 - px2(th)) * log((1 - qx(th)))
         }
-        re <- -spatstat.random::gauss.hermite(kl, order = 20)
+        re <- -gauss_hermite(kl, order = 20)
     }
 
     resmod <- hyp$resmod
@@ -410,8 +410,10 @@ h_2PL_basic <- list(res = function(altpars, nullpars = NULL) {
         patterns <- as.matrix(expand.grid(lapply(seq_len(length(pars$a)),
             function(x) c(0, 1))))
 
-        x <- list(a = c(x, pars$a[2:length(pars$a)]),
-            d = c(0, pars$d[2:length(pars$d)]))
+        # under H0, d1 = 0 and all other parameters are free
+        n.items <- length(pars$a)
+        x <- list(a = x[1:n.items], d = c(0, x[(n.items + 1):(2 *
+            n.items - 1)]))
 
         res <- c()
         for (i in seq_len(nrow(patterns))) {
@@ -429,7 +431,7 @@ h_2PL_basic <- list(res = function(altpars, nullpars = NULL) {
     pars <- unresmod$parsets
     funs <- load.functions(unresmod$itemtype)
 
-    startval <- pars$a[1]
+    startval <- c(pars$a, pars$d[-1])
 
     maxlpre <- maxlpreload(pars)
 
@@ -437,8 +439,9 @@ h_2PL_basic <- list(res = function(altpars, nullpars = NULL) {
         maxl(x, pars, maxlpre)
     }, method = "BFGS")
     re <- pars
-    re$a <- c(optpar$par[1], pars$a[2:length(pars$a)])
-    re$d <- c(0, pars$d[2:length(pars$d)])
+    n.items <- length(pars$a)
+    re$a <- optpar$par[1:n.items]
+    re$d <- c(0, optpar$par[(n.items + 1):(2 * n.items - 1)])
 
     return(re)
 })

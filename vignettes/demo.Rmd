@@ -94,7 +94,12 @@ The following types are currently available in the package:
 
 * Rasch against 2PL (type = "1PLvs2PL"),
 * DIF in 2PL (type = "DIF2PL"),
-* PCM against GPCM (type = "PCMvsGPCM").
+* PCM against GPCM (type = "PCMvsGPCM"),
+* a single item parameter in a 2PL model: is the intercept d of the first item 0? (type = "basic"),
+* three item parameters in a 3PL model: are a, d and g of the first item 1, 0 and .2? (type = "3PL_basic", sampling-based method only),
+* two item parameters in a two-dimensional 2PL model: do the first two items have the same intercept d? (type = "multi_basic", sampling-based method only).
+
+The last two types are shown in the sections "3PL Model" and "Multidimensional Model" below.
 
 We have already seen the Rasch against 2PL hypothesis setup in the toy example above. The procedure for the DIF in 2PL hypothesis is analogous, yet a bit more complicated since we need to define two groups. An example is:
 
@@ -117,7 +122,7 @@ Note that for both hypothesis types, we do not have to provide the parameters un
 
 ## irtpwr Function
 
-The irtpwr function can be used to perform the power analysis. Besides an hypothesis, an alpha niveau needs to be specified. The function can:
+The irtpwr function can be used to perform the power analysis. Besides an hypothesis, an alpha level needs to be specified. The function can:
 
 * calculate a necessary sample size N given a desired power (using the power argument, e.g. power = .8)
 * calculate the power for a specific sample size N (using the N argument, e.g. N = 600)
@@ -158,7 +163,7 @@ In our example hypothesis, we used 5 items. To estimate the computation time for
 calc.time(hyp, n.items = 7)
 ```
 
-Note that the estimated time can sometimes deviate from the actual time. As a result from our test runs, we suggest to expect an increase of 80% as a worst case scenario.
+Note that the estimated time can deviate from the actual time. The estimate is meant to err on the high side: in our test runs, the actual time was usually between about half of the estimate and 25% more. For 14 or more items the estimate can be too low (actual time up to about 1.5 times the estimate).
 
 
 # Further Examples
